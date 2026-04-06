@@ -59,13 +59,13 @@
     /* ── Header ─────────────────────────────── */
     .header {
       text-align: center;
-      padding: 16px 16px 8px;
+      padding: 12px 16px 4px;
     }
     .header h1 {
       color: var(--gold);
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 700;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
     .mode-toggle {
       display: flex;
@@ -93,13 +93,13 @@
       display: flex;
       justify-content: space-around;
       align-items: center;
-      padding: 20px 16px 12px;
+      padding: 12px 16px 8px;
     }
     .team { text-align: center; flex: 1; }
     .team-label { color: var(--gold); font-size: 18px; font-weight: 700; }
     .team-score { color: var(--navy); font-size: 52px; font-weight: 700; line-height: 1.1; }
     .score-divider { color: var(--navy); font-size: 28px; opacity: 0.3; padding: 0 4px; }
-    .progress-wrap { padding: 0 24px 16px; display: flex; gap: 8px; }
+    .progress-wrap { padding: 0 24px 8px; display: flex; gap: 8px; }
     .progress-bar { flex: 1; height: 6px; background: rgba(26, 39, 68, 0.1); border-radius: 3px; overflow: hidden; }
     .progress-fill { height: 100%; background: var(--burgundy); border-radius: 3px; transition: width 0.4s ease; }
     .progress-fill.lahum { background: var(--navy); }
@@ -112,14 +112,15 @@
     .round-type.sun { background: var(--gold); }
     .round-type.hokm { background: var(--navy); }
     .round-scores { font-weight: 600; color: var(--text); }
-    .saying { text-align: center; color: var(--gold); font-size: 18px; font-weight: 700; padding: 12px 16px; min-height: 48px; opacity: 0; transition: opacity 0.5s ease; }
+    .saying { text-align: center; color: var(--gold); font-size: 16px; font-weight: 700; padding: 4px 16px; min-height: 0; opacity: 0; transition: opacity 0.5s ease; }
+    .saying.visible { min-height: 32px; }
     .saying.visible { opacity: 1; }
     .actions { padding: 8px 16px 12px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-    .btn-primary { width: 100%; max-width: 280px; padding: 14px 28px; font-size: 18px; }
-    .btn-secondary { background: transparent; color: var(--navy); border: 1px solid var(--navy); font-size: 13px; padding: 8px 20px; }
-    .session-bar { text-align: center; padding: 8px 16px; font-size: 15px; font-weight: 700; color: var(--navy); }
-    .room-actions { display: flex; justify-content: center; gap: 8px; padding: 4px 16px 16px; }
-    .room-actions button { font-size: 12px; padding: 8px 16px; background: var(--navy); }
+    .btn-primary { width: 100%; max-width: 200px; padding: 10px 24px; font-size: 16px; }
+    .btn-secondary { background: transparent; color: var(--navy); border: 1px solid rgba(26,39,68,0.2); font-size: 12px; padding: 6px 16px; opacity: 0.6; }
+    .session-bar { text-align: center; padding: 6px 16px; font-size: 13px; font-weight: 600; color: var(--navy); opacity: 0.5; }
+    .room-actions { display: flex; justify-content: center; gap: 6px; padding: 2px 16px 8px; }
+    .room-actions button { font-size: 11px; padding: 6px 12px; background: var(--navy); opacity: 0.7; }
     .bottom-pad { height: env(safe-area-inset-bottom, 16px); }
     .suit-accent { color: var(--burgundy); opacity: 0.08; font-size: 120px; position: fixed; pointer-events: none; z-index: 0; }
     .suit-accent.top-left { top: -20px; right: -20px; }
@@ -175,11 +176,11 @@
     .input-label { display: block; color: var(--gold); font-size: 16px; font-weight: 700; margin-bottom: 6px; }
     .input-field {
       width: 100%;
-      padding: 12px 16px;
+      padding: 10px 12px;
       border: 1px solid rgba(26, 39, 68, 0.2);
-      border-radius: 16px;
+      border-radius: 14px;
       font-family: 'Cairo', sans-serif;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 700;
       text-align: center;
       background: white;
@@ -287,8 +288,10 @@
     }
 
     .score-entry {
-      padding: 0 16px 12px;
+      padding: 0 16px 8px;
     }
+    .score-entry .input-group { margin-bottom: 8px; }
+    .score-entry .input-label { font-size: 14px; margin-bottom: 4px; }
 
     .game-over-overlay {
       position: fixed;
@@ -351,16 +354,6 @@
       <div class="progress-bar">
         <div class="progress-fill lahum" id="progLahum" style="width:0%"></div>
       </div>
-    </div>
-
-    <div class="geo-divider">
-      <svg viewBox="0 0 80 16" fill="none">
-        <path d="M40 0L48 8L40 16L32 8Z" fill="#1A2744"/>
-        <path d="M20 4L28 8L20 12L12 8Z" fill="#C9A227"/>
-        <path d="M60 4L68 8L60 12L52 8Z" fill="#C9A227"/>
-        <path d="M4 6L8 8L4 10L0 8Z" fill="#722F37"/>
-        <path d="M76 6L80 8L76 10L72 8Z" fill="#722F37"/>
-      </svg>
     </div>
 
     <!-- Inline Score Entry -->
@@ -479,12 +472,12 @@
 
     <div class="saying" id="saying"></div>
 
-    <div class="rounds-section">
+    <div class="rounds-section" id="roundsSection" style="display:none">
       <div class="rounds-label">الجولات</div>
       <div class="rounds-list" id="roundsList"></div>
-      <div style="text-align:center;padding:4px 0">
+      <div style="text-align:center;padding:4px 0" id="undoBtn" style="display:none">
         <button class="btn-secondary" style="font-size:11px;padding:4px 14px;border-radius:12px"
-          onclick="undoRound()">تراجع عن آخر جولة</button>
+          onclick="undoRound()">تراجع</button>
       </div>
     </div>
 
@@ -497,7 +490,6 @@
 
     <div class="actions">
       <button class="btn-secondary" onclick="confirmNewSession()">جلسة جديدة</button>
-      <button class="btn-secondary" id="installBtn" style="display:none" onclick="installPWA()">تثبيت التطبيق</button>
     </div>
 
     <div class="bottom-pad"></div>
@@ -802,6 +794,14 @@
       document.getElementById('scoreEntry').style.display = (gameJustEnded || sessionOver) ? 'none' : '';
       document.getElementById('btnNewGame').style.display = gameJustEnded ? '' : 'none';
       document.getElementById('btnSessionOver').style.display = sessionOver ? '' : 'none';
+
+      // Hide rounds section when empty
+      const hasRounds = currentGame.rounds.length > 0;
+      document.getElementById('roundsSection').style.display = hasRounds ? '' : 'none';
+
+      // Hide session bar until at least one game is complete
+      const hasGames = session.games.length > 0;
+      document.getElementById('sessionBar').style.display = hasGames ? '' : 'none';
 
       // If connected as player and edit is locked, hide score entry
       if (hostConn && !editUnlocked) {
