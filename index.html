@@ -19,6 +19,7 @@
       --navy: #1A2744;
       --text: #1D1E20;
       --cream: #F5F0E6;
+      --gold-text: #8B7318;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -33,6 +34,8 @@
       direction: rtl;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
+      overscroll-behavior: contain;
+      touch-action: manipulation;
     }
 
     button {
@@ -49,6 +52,15 @@
     }
     button:active { opacity: 0.8; }
 
+    button:focus-visible, .toggle-btn:focus-visible, .stepper-btn:focus-visible {
+      outline: 2px solid var(--burgundy);
+      outline-offset: 2px;
+    }
+    .input-field:focus-visible {
+      border-color: var(--burgundy);
+      box-shadow: 0 0 0 2px rgba(114, 47, 55, 0.2);
+    }
+
     .card {
       background: var(--cream);
       border: 1px solid var(--navy);
@@ -60,9 +72,10 @@
     .header {
       text-align: center;
       padding: 12px 16px 4px;
+      position: relative;
     }
     .header h1 {
-      color: var(--gold);
+      color: var(--gold-text);
       font-size: 20px;
       font-weight: 700;
       margin-bottom: 2px;
@@ -96,7 +109,7 @@
       padding: 12px 16px 8px;
     }
     .team { text-align: center; flex: 1; }
-    .team-label { color: var(--gold); font-size: 18px; font-weight: 700; }
+    .team-label { color: var(--gold-text); font-size: 18px; font-weight: 700; }
     .team-score { color: var(--navy); font-size: 52px; font-weight: 700; line-height: 1.1; }
     .score-divider { color: var(--navy); font-size: 28px; opacity: 0.3; padding: 0 4px; }
     .progress-wrap { padding: 0 24px 8px; display: flex; gap: 8px; }
@@ -112,7 +125,7 @@
     .round-type.sun { background: var(--gold); }
     .round-type.hokm { background: var(--navy); }
     .round-scores { font-weight: 600; color: var(--text); }
-    .saying { text-align: center; color: var(--gold); font-size: 16px; font-weight: 700; padding: 4px 16px; min-height: 0; opacity: 0; transition: opacity 0.5s ease; }
+    .saying { text-align: center; color: var(--gold-text); font-size: 16px; font-weight: 700; padding: 4px 16px; min-height: 0; opacity: 0; transition: opacity 0.5s ease; }
     .saying.visible { min-height: 32px; }
     .saying.visible { opacity: 1; }
     .actions { padding: 8px 16px 12px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
@@ -173,7 +186,7 @@
     }
 
     .input-group { margin-bottom: 16px; }
-    .input-label { display: block; color: var(--gold); font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+    .input-label { display: block; color: var(--gold-text); font-size: 16px; font-weight: 700; margin-bottom: 6px; }
     .input-field {
       width: 100%;
       padding: 10px 12px;
@@ -216,13 +229,13 @@
     .checkbox-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; }
     .checkbox-row input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--burgundy); }
     .checkbox-label { font-size: 14px; color: var(--text); }
-    .checkbox-value { margin-right: auto; font-size: 13px; color: var(--gold); font-weight: 700; }
+    .checkbox-value { margin-right: auto; font-size: 13px; color: var(--gold-text); font-weight: 700; }
 
     .stepper-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; }
     .stepper-label { font-size: 13px; color: var(--text); }
     .stepper-controls { display: flex; align-items: center; gap: 8px; }
     .stepper-btn {
-      width: 28px; height: 28px; border-radius: 50%; padding: 0;
+      width: 36px; height: 36px; border-radius: 50%; padding: 0;
       font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center;
       background: var(--navy); color: var(--cream);
     }
@@ -316,6 +329,88 @@
       font-weight: 700;
       margin-bottom: 24px;
     }
+    /* ── Button Flash ──────────────────────── */
+    .btn-flash {
+      animation: flash 0.3s ease;
+    }
+    @keyframes flash {
+      0% { transform: scale(1); }
+      50% { transform: scale(0.95); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ── Theme Toggle ──────────────────────── */
+    .theme-toggle {
+      position: absolute;
+      left: 16px;
+      top: 12px;
+      background: transparent;
+      font-size: 18px;
+      padding: 4px;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── Dark Mode ─────────────────────────── */
+    [data-theme="dark"] {
+      --bg: #1A1A2E;
+      --burgundy: #A84450;
+      --gold: #D4AF37;
+      --gold-text: #D4AF37;
+      --navy: #E8E4DC;
+      --text: #E8E4DC;
+      --cream: #1A1A2E;
+      --card-bg: #252542;
+      --input-bg: #2A2A4A;
+      --input-border: rgba(232, 228, 220, 0.15);
+      --overlay: rgba(0, 0, 0, 0.7);
+    }
+    [data-theme="dark"] .input-field {
+      background: var(--input-bg);
+      border-color: var(--input-border);
+      color: var(--text);
+    }
+    [data-theme="dark"] .round-card {
+      background: var(--card-bg);
+      border-color: var(--input-border);
+    }
+    [data-theme="dark"] .modal {
+      background: var(--bg);
+    }
+    [data-theme="dark"] .modal-overlay {
+      background: var(--overlay);
+    }
+    [data-theme="dark"] .toggle-btn {
+      border-color: var(--input-border);
+    }
+    [data-theme="dark"] .progress-bar {
+      background: rgba(232, 228, 220, 0.1);
+    }
+    [data-theme="dark"] .kabout-toggle {
+      background: rgba(168, 68, 80, 0.1);
+    }
+    [data-theme="dark"] .switch .slider {
+      background: #555;
+    }
+    [data-theme="dark"] .btn-secondary {
+      color: var(--text);
+      border-color: rgba(232, 228, 220, 0.2);
+    }
+    [data-theme="dark"] .game-over-overlay {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    /* ── Reduced Motion ────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -333,6 +428,7 @@
         <button id="btnSimple" class="active" onclick="setMode('simple')">بسيط</button>
         <button id="btnAdvanced" onclick="setMode('advanced')">تفصيلي</button>
       </div>
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="تغيير المظهر" id="themeToggle">🌙</button>
     </div>
 
     <div class="scoreboard">
@@ -475,7 +571,7 @@
     <div class="rounds-section" id="roundsSection" style="display:none">
       <div class="rounds-label">الجولات</div>
       <div class="rounds-list" id="roundsList"></div>
-      <div style="text-align:center;padding:4px 0" id="undoBtn" style="display:none">
+      <div style="text-align:center;padding:4px 0" id="undoBtn">
         <button class="btn-secondary" style="font-size:11px;padding:4px 14px;border-radius:12px"
           onclick="undoRound()">تراجع</button>
       </div>
@@ -499,7 +595,7 @@
       <div class="modal">
         <div class="modal-header">
           <span class="modal-title" id="roomModalTitle">غرفة جديدة</span>
-          <button class="modal-close" onclick="closeRoomModal()">✕</button>
+          <button class="modal-close" onclick="closeRoomModal()" aria-label="إغلاق">✕</button>
         </div>
 
         <div id="roomCreateView">
@@ -799,6 +895,12 @@
       const hasRounds = currentGame.rounds.length > 0;
       document.getElementById('roundsSection').style.display = hasRounds ? '' : 'none';
 
+      // Show hint when no rounds yet
+      if (currentGame.rounds.length === 0 && !document.getElementById('saying').classList.contains('visible')) {
+        document.getElementById('saying').textContent = 'أدخل نتيجة أول جولة';
+        document.getElementById('saying').style.opacity = '0.3';
+      }
+
       // Hide session bar until at least one game is complete
       const hasGames = session.games.length > 0;
       document.getElementById('sessionBar').style.display = hasGames ? '' : 'none';
@@ -859,6 +961,8 @@
       if (lana < 0 || lahum < 0) return;
 
       const result = StateManager.addRound(appState, { lana, lahum }, {});
+      document.querySelector('#simpleForm .btn-primary').classList.add('btn-flash');
+      setTimeout(() => document.querySelector('#simpleForm .btn-primary').classList.remove('btn-flash'), 300);
       document.getElementById('simpleLana').value = '';
       document.getElementById('simpleLahum').value = '';
       render();
@@ -936,9 +1040,9 @@
             <div class="stepper-row">
               <span class="stepper-label">${p.label} <span class="checkbox-value">${p[type]}</span></span>
               <div class="stepper-controls">
-                <button class="stepper-btn" onclick="stepProject('${team}','${p.key}',-1)">−</button>
+                <button class="stepper-btn" onclick="stepProject('${team}','${p.key}',-1)" aria-label="أقل ${p.label}">−</button>
                 <span class="stepper-count" id="proj_${team}_${p.key}">0</span>
-                <button class="stepper-btn" onclick="stepProject('${team}','${p.key}',1)">+</button>
+                <button class="stepper-btn" onclick="stepProject('${team}','${p.key}',1)" aria-label="أكثر ${p.label}">+</button>
               </div>
             </div>
           `).join('');
@@ -1079,6 +1183,8 @@
       };
 
       const result = StateManager.addRound(appState, { lana, lahum }, roundMeta);
+      document.querySelector('#advancedForm .btn-primary').classList.add('btn-flash');
+      setTimeout(() => document.querySelector('#advancedForm .btn-primary').classList.remove('btn-flash'), 300);
       resetAdvancedForm();
       render();
       checkSayings(result.gameOver ? 'gameOver' : 'roundEnd');
@@ -1305,6 +1411,7 @@
     function showSaying(text) {
       const el = document.getElementById('saying');
       el.textContent = text;
+      el.style.opacity = '';
       el.classList.add('visible');
       clearTimeout(sayingTimeout);
       sayingTimeout = setTimeout(() => el.classList.remove('visible'), 4000);
@@ -1401,6 +1508,30 @@
         document.getElementById('installBtn').style.display = 'none';
       });
     }
+
+    // ── Theme Manager ───────────────────────────────────────────
+    function getPreferredTheme() {
+      const saved = localStorage.getItem('baloot_theme');
+      if (saved) return saved;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
+      localStorage.setItem('baloot_theme', theme);
+      // Update meta theme-color
+      const meta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+      if (meta) meta.content = theme === 'dark' ? '#1A1A2E' : '#722F37';
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      applyTheme(current === 'dark' ? 'light' : 'dark');
+    }
+
+    // Apply theme on load
+    applyTheme(getPreferredTheme());
 
     // Initial render
     if (appState.settings.mode === 'advanced') {
