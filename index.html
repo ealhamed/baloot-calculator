@@ -104,7 +104,7 @@
     .progress-fill.lahum { background: var(--navy); }
     .rounds-section { padding: 0 16px; }
     .rounds-label { color: var(--navy); font-size: 14px; font-weight: 700; margin-bottom: 8px; }
-    .rounds-list { display: flex; flex-direction: column; gap: 8px; max-height: 35vh; overflow-y: auto; padding-bottom: 8px; }
+    .rounds-list { display: flex; flex-direction: column; gap: 8px; max-height: 35vh; overflow-y: auto; padding-bottom: 8px; scroll-behavior: smooth; }
     .round-card { background: var(--cream); border: 1px solid rgba(26, 39, 68, 0.15); border-radius: 20px; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; font-size: 15px; }
     .round-num { color: var(--navy); font-weight: 700; min-width: 24px; }
     .round-type { font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 10px; color: var(--cream); }
@@ -264,6 +264,40 @@
     }
     .switch input:checked + .slider { background: var(--burgundy); }
     .switch input:checked + .slider:before { transform: translateX(-20px); }
+
+    .geo-divider {
+      text-align: center;
+      padding: 8px 0;
+      opacity: 0.12;
+    }
+    .geo-divider svg {
+      width: 80px;
+      height: 16px;
+    }
+
+    .game-over-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(26, 39, 68, 0.85);
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--cream);
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .game-over-overlay h2 {
+      font-size: 28px;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    .game-over-overlay .winner-text {
+      font-size: 48px;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
   </style>
 </head>
 <body>
@@ -304,9 +338,23 @@
       </div>
     </div>
 
+    <div class="geo-divider">
+      <svg viewBox="0 0 80 16" fill="none">
+        <path d="M40 0L48 8L40 16L32 8Z" fill="#1A2744"/>
+        <path d="M20 4L28 8L20 12L12 8Z" fill="#C9A227"/>
+        <path d="M60 4L68 8L60 12L52 8Z" fill="#C9A227"/>
+        <path d="M4 6L8 8L4 10L0 8Z" fill="#722F37"/>
+        <path d="M76 6L80 8L76 10L72 8Z" fill="#722F37"/>
+      </svg>
+    </div>
+
     <div class="rounds-section">
       <div class="rounds-label">الجولات</div>
       <div class="rounds-list" id="roundsList"></div>
+      <div style="text-align:center;padding:4px 0">
+        <button class="btn-secondary" style="font-size:11px;padding:4px 14px;border-radius:12px"
+          onclick="undoRound()">تراجع عن آخر جولة</button>
+      </div>
     </div>
 
     <div class="saying" id="saying"></div>
@@ -325,6 +373,7 @@
 
     <div class="actions">
       <button class="btn-secondary" onclick="confirmNewSession()">جلسة جديدة</button>
+      <button class="btn-secondary" id="installBtn" style="display:none" onclick="installPWA()">تثبيت التطبيق</button>
     </div>
 
     <div class="bottom-pad"></div>
@@ -720,6 +769,10 @@
       if (hostConn && !editUnlocked) {
         document.getElementById('btnNewRound').style.display = 'none';
       }
+
+      // Auto-scroll to latest round
+      const roundsList = document.getElementById('roundsList');
+      if (roundsList.lastChild) roundsList.lastChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
 
     function setMode(mode) {
@@ -741,6 +794,15 @@
         render();
         hideSaying();
       }
+    }
+
+    function undoRound() {
+      if (appState.currentGame.rounds.length === 0) return;
+      if (!confirm('تراجع عن آخر جولة؟')) return;
+      StateManager.undoLastRound(appState);
+      render();
+      hideSaying();
+      broadcastState();
     }
 
     // ── Modal Logic ─────────────────────────────────────────────
@@ -934,8 +996,16 @@
       broadcastState();
     }
 
-    // Placeholder functions (implemented in later tasks)
-    function showGameOver(winner) {}
+    function showGameOver(winner) {
+      const overlay = document.createElement('div');
+      overlay.className = 'game-over-overlay';
+      overlay.innerHTML = `
+        <h2>انتهت اللعبة!</h2>
+        <div class="winner-text">${winner === 'lana' ? 'لنا' : 'لهم'} فاز</div>
+        <button onclick="this.parentElement.remove()" style="font-size:16px">متابعة</button>
+      `;
+      document.body.appendChild(overlay);
+    }
 
     // ── P2P Manager ─────────────────────────────────────────────
 
@@ -1225,6 +1295,21 @@
           return;
         }
       }
+    }
+
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('installBtn').style.display = '';
+    });
+    function installPWA() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => {
+        deferredPrompt = null;
+        document.getElementById('installBtn').style.display = 'none';
+      });
     }
 
     // Initial render
