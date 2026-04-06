@@ -3,7 +3,8 @@ const ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js'
+  'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js',
+  'https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap'
 ];
 
 self.addEventListener('install', e => {
@@ -22,14 +23,15 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   e.respondWith(
-    fetch(e.request)
-      .then(resp => {
+    caches.match(e.request).then(cached => {
+      if (cached) return cached;
+      return fetch(e.request).then(resp => {
         if (resp.ok && (e.request.url.startsWith(self.location.origin) || e.request.url.includes('peerjs'))) {
           const clone = resp.clone();
           caches.open(CACHE).then(c => c.put(e.request, clone));
         }
         return resp;
-      })
-      .catch(() => caches.match(e.request))
+      });
+    })
   );
 });

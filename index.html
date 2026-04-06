@@ -7,6 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="#722F37">
   <title>حاسبة بلوت - الديوانية</title>
   <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -435,6 +436,14 @@
             </label>
           </div>
 
+          <div id="kaboutWinnerSection" style="display:none">
+            <div class="input-label">من كبت؟</div>
+            <div class="toggle-group">
+              <button class="toggle-btn active" id="kaboutWinnerLana" onclick="setKaboutWinner('lana')">لنا</button>
+              <button class="toggle-btn" id="kaboutWinnerLahum" onclick="setKaboutWinner('lahum')">لهم</button>
+            </div>
+          </div>
+
           <div id="cardPointsSection">
             <div class="input-label">نقاط الورق</div>
             <div class="input-row">
@@ -807,7 +816,7 @@
 
     // ── Modal Logic ─────────────────────────────────────────────
 
-    let advState = { type: 'sun', buyer: 'lana', multiplier: 'normal' };
+    let advState = { type: 'sun', buyer: 'lana', multiplier: 'normal', kaboutWinner: 'lana' };
 
     function openRoundModal() {
       const modal = document.getElementById('roundModal');
@@ -818,7 +827,7 @@
       document.getElementById('advancedForm').style.display = isAdvanced ? '' : 'none';
 
       if (isAdvanced) {
-        advState = { type: 'sun', buyer: 'lana', multiplier: 'normal' };
+        advState = { type: 'sun', buyer: 'lana', multiplier: 'normal', kaboutWinner: 'lana' };
         resetAdvancedForm();
       } else {
         document.getElementById('simpleLana').value = '';
@@ -834,6 +843,7 @@
       const lana = parseInt(document.getElementById('simpleLana').value) || 0;
       const lahum = parseInt(document.getElementById('simpleLahum').value) || 0;
       if (lana === 0 && lahum === 0) return;
+      if (lana < 0 || lahum < 0) return;
 
       const result = StateManager.addRound(appState, { lana, lahum }, {});
       closeRoundModal();
@@ -874,6 +884,14 @@
     function toggleKabout() {
       const kabout = document.getElementById('advKabout').checked;
       document.getElementById('cardPointsSection').style.display = kabout ? 'none' : '';
+      document.getElementById('kaboutWinnerSection').style.display = kabout ? '' : 'none';
+      updateAdvPreview();
+    }
+
+    function setKaboutWinner(team) {
+      advState.kaboutWinner = team;
+      document.getElementById('kaboutWinnerLana').classList.toggle('active', team === 'lana');
+      document.getElementById('kaboutWinnerLahum').classList.toggle('active', team === 'lahum');
       updateAdvPreview();
     }
 
@@ -923,15 +941,19 @@
       if (advState.multiplier === 'coffee') return;
 
       const kabout = document.getElementById('advKabout').checked;
-      const rawLana = parseInt(document.getElementById('advRawLana').value) || 0;
-      const rawLahum = parseInt(document.getElementById('advRawLahum').value) || 0;
+      let rawLana = parseInt(document.getElementById('advRawLana').value) || 0;
+      let rawLahum = parseInt(document.getElementById('advRawLahum').value) || 0;
+
+      // Add last trick bonus
+      if (document.getElementById('advLastTrickLana').checked) rawLana += 10;
+      if (document.getElementById('advLastTrickLahum').checked) rawLahum += 10;
 
       const roundData = {
         type: advState.type,
         buyer: advState.buyer,
         multiplier: advState.multiplier,
         kabout,
-        kaboutWinner: advState.buyer,
+        kaboutWinner: advState.kaboutWinner || advState.buyer,
         projects: {
           lana: getSelectedProjects('Lana'),
           lahum: getSelectedProjects('Lahum')
@@ -954,13 +976,19 @@
       document.getElementById('advRawLahum').value = '';
       document.getElementById('advLastTrickLana').checked = false;
       document.getElementById('advLastTrickLahum').checked = false;
+      advState.kaboutWinner = 'lana';
+      document.getElementById('kaboutWinnerSection').style.display = 'none';
       renderProjects();
       updateAdvPreview();
     }
 
     function submitAdvanced() {
       if (advState.multiplier === 'coffee') {
-        const winner = advState.buyer === 'lana' ? 'lahum' : 'lana';
+        // Ask who won the coffee round
+        const buyerName = advState.buyer === 'lana' ? 'لنا' : 'لهم';
+        const opponentName = advState.buyer === 'lana' ? 'لهم' : 'لنا';
+        const buyerWon = confirm(`هل فاز المشتري (${buyerName}) بالجولة؟`);
+        const winner = buyerWon ? advState.buyer : (advState.buyer === 'lana' ? 'lahum' : 'lana');
         const result = StateManager.handleCoffee(appState, winner);
         closeRoundModal();
         render();
@@ -971,15 +999,19 @@
       }
 
       const kabout = document.getElementById('advKabout').checked;
-      const rawLana = parseInt(document.getElementById('advRawLana').value) || 0;
-      const rawLahum = parseInt(document.getElementById('advRawLahum').value) || 0;
+      let rawLana = parseInt(document.getElementById('advRawLana').value) || 0;
+      let rawLahum = parseInt(document.getElementById('advRawLahum').value) || 0;
+
+      // Add last trick bonus
+      if (document.getElementById('advLastTrickLana').checked) rawLana += 10;
+      if (document.getElementById('advLastTrickLahum').checked) rawLahum += 10;
 
       const roundData = {
         type: advState.type,
         buyer: advState.buyer,
         multiplier: advState.multiplier,
         kabout,
-        kaboutWinner: advState.buyer,
+        kaboutWinner: advState.kaboutWinner || advState.buyer,
         projects: {
           lana: getSelectedProjects('Lana'),
           lahum: getSelectedProjects('Lahum')
