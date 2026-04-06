@@ -276,6 +276,10 @@
       height: 16px;
     }
 
+    .score-entry {
+      padding: 0 16px 12px;
+    }
+
     .game-over-overlay {
       position: fixed;
       inset: 0;
@@ -349,6 +353,132 @@
       </svg>
     </div>
 
+    <!-- Inline Score Entry -->
+    <div class="score-entry" id="scoreEntry">
+      <!-- Simple Mode Form -->
+      <div id="simpleForm">
+        <div class="input-row">
+          <div class="input-group">
+            <label class="input-label">لنا</label>
+            <input type="number" class="input-field" id="simpleLana" min="0" inputmode="numeric">
+          </div>
+          <div class="input-group">
+            <label class="input-label">لهم</label>
+            <input type="number" class="input-field" id="simpleLahum" min="0" inputmode="numeric">
+          </div>
+        </div>
+        <div style="text-align:center;padding-top:8px">
+          <button class="btn-primary" style="max-width:200px" onclick="submitSimple()">تأكيد</button>
+        </div>
+      </div>
+
+      <!-- Advanced Mode Form -->
+      <div id="advancedForm" style="display:none">
+        <!-- Row 1: Type & Buyer -->
+        <div class="input-row" style="margin-bottom:12px">
+          <div class="input-group" style="margin-bottom:0">
+            <label class="input-label" style="font-size:13px">نوع اللعب</label>
+            <div class="toggle-group" style="margin-bottom:0">
+              <button class="toggle-btn active" id="advTypeSun" onclick="setAdvType('sun')">صن</button>
+              <button class="toggle-btn" id="advTypeHokm" onclick="setAdvType('hokm')">حكم</button>
+            </div>
+          </div>
+          <div class="input-group" style="margin-bottom:0">
+            <label class="input-label" style="font-size:13px">المشتري</label>
+            <div class="toggle-group" style="margin-bottom:0">
+              <button class="toggle-btn active" id="advBuyerLana" onclick="setAdvBuyer('lana')">لنا</button>
+              <button class="toggle-btn" id="advBuyerLahum" onclick="setAdvBuyer('lahum')">لهم</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2: Multiplier -->
+        <div class="input-label" style="font-size:13px">المضاعفة</div>
+        <div class="toggle-group" style="flex-wrap:wrap">
+          <button class="toggle-btn active" id="advMultNormal" onclick="setAdvMult('normal')">عادي</button>
+          <button class="toggle-btn" id="advMultDouble" onclick="setAdvMult('double')">دبل</button>
+          <button class="toggle-btn" id="advMultTriple" onclick="setAdvMult('triple')">ثري</button>
+          <button class="toggle-btn" id="advMultFour" onclick="setAdvMult('four')">فور</button>
+          <button class="toggle-btn" id="advMultCoffee" onclick="setAdvMult('coffee')">قهوة</button>
+        </div>
+
+        <!-- Kabout -->
+        <div class="kabout-toggle">
+          <span class="kabout-label">كبوت</span>
+          <label class="switch">
+            <input type="checkbox" id="advKabout" onchange="toggleKabout()">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div id="kaboutWinnerSection" style="display:none">
+          <div class="input-label" style="font-size:13px">من كبت؟</div>
+          <div class="toggle-group">
+            <button class="toggle-btn active" id="kaboutWinnerLana" onclick="setKaboutWinner('lana')">لنا</button>
+            <button class="toggle-btn" id="kaboutWinnerLahum" onclick="setKaboutWinner('lahum')">لهم</button>
+          </div>
+        </div>
+
+        <!-- Card Points (hidden if kabout or coffee) -->
+        <div id="cardPointsSection">
+          <div class="input-row">
+            <div class="input-group">
+              <label class="input-label" style="font-size:13px">نقاط لنا</label>
+              <input type="number" class="input-field" id="advRawLana" min="0" inputmode="numeric" oninput="syncRawPoints('lana')">
+            </div>
+            <div class="input-group">
+              <label class="input-label" style="font-size:13px">نقاط لهم</label>
+              <input type="number" class="input-field" id="advRawLahum" min="0" inputmode="numeric" oninput="syncRawPoints('lahum')">
+            </div>
+          </div>
+          <div class="input-row">
+            <div class="checkbox-row" style="flex:1">
+              <input type="checkbox" id="advLastTrickLana" onchange="if(this.checked) document.getElementById('advLastTrickLahum').checked=false; updateAdvPreview()">
+              <span class="checkbox-label" style="font-size:12px">أكلة الأرض</span>
+            </div>
+            <div class="checkbox-row" style="flex:1">
+              <input type="checkbox" id="advLastTrickLahum" onchange="if(this.checked) document.getElementById('advLastTrickLana').checked=false; updateAdvPreview()">
+              <span class="checkbox-label" style="font-size:12px">أكلة الأرض</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Projects -->
+        <div id="projectsSection">
+          <div class="input-row">
+            <div style="flex:1">
+              <div class="input-label" style="font-size:13px">مشاريع لنا</div>
+              <div id="projLana"></div>
+            </div>
+            <div style="flex:1">
+              <div class="input-label" style="font-size:13px">مشاريع لهم</div>
+              <div id="projLahum"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="preview-bar" id="advPreview">
+          <span>لنا: <span id="previewLana">0</span></span>
+          <span>لهم: <span id="previewLahum">0</span></span>
+        </div>
+
+        <div style="text-align:center">
+          <button class="btn-primary" style="max-width:200px" onclick="submitAdvanced()">تأكيد</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- New Game / Session Over buttons (shown when game ends) -->
+    <div style="text-align:center;padding:16px;display:none" id="btnNewGame">
+      <button class="btn-primary" onclick="confirmNewGame()">لعبة جديدة</button>
+    </div>
+    <div style="text-align:center;padding:16px;display:none" id="btnSessionOver">
+      <button class="btn-primary" onclick="confirmNewSession()">جلسة جديدة — انتهت الجلسة!</button>
+    </div>
+
+    <div class="saying" id="saying"></div>
+
     <div class="rounds-section">
       <div class="rounds-label">الجولات</div>
       <div class="rounds-list" id="roundsList"></div>
@@ -356,13 +486,6 @@
         <button class="btn-secondary" style="font-size:11px;padding:4px 14px;border-radius:12px"
           onclick="undoRound()">تراجع عن آخر جولة</button>
       </div>
-    </div>
-
-    <div class="saying" id="saying"></div>
-
-    <div class="actions">
-      <button class="btn-primary" id="btnNewRound" onclick="openRoundModal()">جولة جديدة</button>
-      <button class="btn-secondary" id="btnNewGame" onclick="confirmNewGame()" style="display:none">لعبة جديدة</button>
     </div>
 
     <div class="session-bar" id="sessionBar">لنا 0 - 0 لهم</div>
@@ -379,113 +502,6 @@
 
     <div class="bottom-pad"></div>
 
-    <!-- Round Entry Modal -->
-    <div class="modal-overlay" id="roundModal">
-      <div class="modal">
-        <div class="modal-header">
-          <span class="modal-title">جولة جديدة</span>
-          <button class="modal-close" onclick="closeRoundModal()">✕</button>
-        </div>
-
-        <!-- Simple Mode -->
-        <div id="simpleForm">
-          <div class="input-row">
-            <div class="input-group">
-              <label class="input-label">لنا</label>
-              <input type="number" class="input-field" id="simpleLana" min="0" inputmode="numeric">
-            </div>
-            <div class="input-group">
-              <label class="input-label">لهم</label>
-              <input type="number" class="input-field" id="simpleLahum" min="0" inputmode="numeric">
-            </div>
-          </div>
-          <button class="btn-primary" style="width:100%" onclick="submitSimple()">تأكيد</button>
-        </div>
-
-        <!-- Advanced Mode -->
-        <div id="advancedForm" style="display:none">
-          <div class="input-label">نوع اللعب</div>
-          <div class="toggle-group">
-            <button class="toggle-btn active" id="advTypeSun" onclick="setAdvType('sun')">صن</button>
-            <button class="toggle-btn" id="advTypeHokm" onclick="setAdvType('hokm')">حكم</button>
-          </div>
-          <div class="input-label">المشتري</div>
-          <div class="toggle-group">
-            <button class="toggle-btn active" id="advBuyerLana" onclick="setAdvBuyer('lana')">لنا</button>
-            <button class="toggle-btn" id="advBuyerLahum" onclick="setAdvBuyer('lahum')">لهم</button>
-          </div>
-
-          <hr class="section-divider">
-
-          <div class="input-label">المضاعفة</div>
-          <div class="toggle-group" style="flex-wrap:wrap">
-            <button class="toggle-btn active" id="advMultNormal" onclick="setAdvMult('normal')">عادي</button>
-            <button class="toggle-btn" id="advMultDouble" onclick="setAdvMult('double')">دبل</button>
-            <button class="toggle-btn" id="advMultTriple" onclick="setAdvMult('triple')">ثري</button>
-            <button class="toggle-btn" id="advMultFour" onclick="setAdvMult('four')">فور</button>
-            <button class="toggle-btn" id="advMultCoffee" onclick="setAdvMult('coffee')">قهوة</button>
-          </div>
-
-          <hr class="section-divider">
-
-          <div class="kabout-toggle">
-            <span class="kabout-label">كبوت</span>
-            <label class="switch">
-              <input type="checkbox" id="advKabout" onchange="toggleKabout()">
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <div id="kaboutWinnerSection" style="display:none">
-            <div class="input-label">من كبت؟</div>
-            <div class="toggle-group">
-              <button class="toggle-btn active" id="kaboutWinnerLana" onclick="setKaboutWinner('lana')">لنا</button>
-              <button class="toggle-btn" id="kaboutWinnerLahum" onclick="setKaboutWinner('lahum')">لهم</button>
-            </div>
-          </div>
-
-          <div id="cardPointsSection">
-            <div class="input-label">نقاط الورق</div>
-            <div class="input-row">
-              <div class="input-group">
-                <label class="input-label" style="font-size:13px">لنا</label>
-                <input type="number" class="input-field" id="advRawLana" min="0" inputmode="numeric" oninput="syncRawPoints('lana')">
-              </div>
-              <div class="input-group">
-                <label class="input-label" style="font-size:13px">لهم</label>
-                <input type="number" class="input-field" id="advRawLahum" min="0" inputmode="numeric" oninput="syncRawPoints('lahum')">
-              </div>
-            </div>
-            <div class="checkbox-row">
-              <input type="checkbox" id="advLastTrickLana" onchange="if(this.checked) document.getElementById('advLastTrickLahum').checked=false">
-              <span class="checkbox-label">أكلة الأرض - لنا</span>
-            </div>
-            <div class="checkbox-row">
-              <input type="checkbox" id="advLastTrickLahum" onchange="if(this.checked) document.getElementById('advLastTrickLana').checked=false">
-              <span class="checkbox-label">أكلة الأرض - لهم</span>
-            </div>
-          </div>
-
-          <hr class="section-divider">
-
-          <div id="projectsSection">
-            <div class="input-label">مشاريع لنا</div>
-            <div id="projLana"></div>
-            <div class="input-label" style="margin-top:12px">مشاريع لهم</div>
-            <div id="projLahum"></div>
-          </div>
-
-          <hr class="section-divider">
-
-          <div class="preview-bar" id="advPreview">
-            <span>لنا: <span id="previewLana">0</span></span>
-            <span>لهم: <span id="previewLahum">0</span></span>
-          </div>
-
-          <button class="btn-primary" style="width:100%" onclick="submitAdvanced()">تأكيد</button>
-        </div>
-      </div>
-    </div>
     <!-- Room Modal -->
     <div class="modal-overlay" id="roomModal">
       <div class="modal">
@@ -768,15 +784,23 @@
       document.getElementById('btnSimple').classList.toggle('active', settings.mode === 'simple');
       document.getElementById('btnAdvanced').classList.toggle('active', settings.mode === 'advanced');
 
-      const gameOver = session.games.length > 0 &&
+      // Show correct inline form based on mode
+      document.getElementById('simpleForm').style.display = settings.mode === 'simple' ? '' : 'none';
+      document.getElementById('advancedForm').style.display = settings.mode === 'advanced' ? '' : 'none';
+
+      // Show score entry or new game / session over button
+      const gameJustEnded = session.games.length > 0 &&
         currentGame.rounds.length === 0 &&
         session.wins.lana < 2 && session.wins.lahum < 2;
-      document.getElementById('btnNewGame').style.display = gameOver ? '' : 'none';
-      document.getElementById('btnNewRound').style.display = gameOver ? 'none' : '';
+      const sessionOver = session.wins.lana >= 2 || session.wins.lahum >= 2;
 
-      // If connected as player and edit is locked, hide new round button
+      document.getElementById('scoreEntry').style.display = (gameJustEnded || sessionOver) ? 'none' : '';
+      document.getElementById('btnNewGame').style.display = gameJustEnded ? '' : 'none';
+      document.getElementById('btnSessionOver').style.display = sessionOver ? '' : 'none';
+
+      // If connected as player and edit is locked, hide score entry
       if (hostConn && !editUnlocked) {
-        document.getElementById('btnNewRound').style.display = 'none';
+        document.getElementById('scoreEntry').style.display = 'none';
       }
 
       // Auto-scroll to latest round
@@ -786,6 +810,11 @@
 
     function setMode(mode) {
       StateManager.setMode(appState, mode);
+      document.getElementById('simpleForm').style.display = mode === 'simple' ? '' : 'none';
+      document.getElementById('advancedForm').style.display = mode === 'advanced' ? '' : 'none';
+      if (mode === 'advanced') {
+        resetAdvancedForm();
+      }
       render();
     }
 
@@ -818,27 +847,6 @@
 
     let advState = { type: 'sun', buyer: 'lana', multiplier: 'normal', kaboutWinner: 'lana' };
 
-    function openRoundModal() {
-      const modal = document.getElementById('roundModal');
-      modal.classList.add('open');
-
-      const isAdvanced = appState.settings.mode === 'advanced';
-      document.getElementById('simpleForm').style.display = isAdvanced ? 'none' : '';
-      document.getElementById('advancedForm').style.display = isAdvanced ? '' : 'none';
-
-      if (isAdvanced) {
-        advState = { type: 'sun', buyer: 'lana', multiplier: 'normal', kaboutWinner: 'lana' };
-        resetAdvancedForm();
-      } else {
-        document.getElementById('simpleLana').value = '';
-        document.getElementById('simpleLahum').value = '';
-      }
-    }
-
-    function closeRoundModal() {
-      document.getElementById('roundModal').classList.remove('open');
-    }
-
     function submitSimple() {
       const lana = parseInt(document.getElementById('simpleLana').value) || 0;
       const lahum = parseInt(document.getElementById('simpleLahum').value) || 0;
@@ -846,7 +854,8 @@
       if (lana < 0 || lahum < 0) return;
 
       const result = StateManager.addRound(appState, { lana, lahum }, {});
-      closeRoundModal();
+      document.getElementById('simpleLana').value = '';
+      document.getElementById('simpleLahum').value = '';
       render();
       checkSayings(result.gameOver ? 'gameOver' : 'roundEnd');
       if (result.gameOver) showGameOver(result.winner);
@@ -990,7 +999,7 @@
         const buyerWon = confirm(`هل فاز المشتري (${buyerName}) بالجولة؟`);
         const winner = buyerWon ? advState.buyer : (advState.buyer === 'lana' ? 'lahum' : 'lana');
         const result = StateManager.handleCoffee(appState, winner);
-        closeRoundModal();
+        resetAdvancedForm();
         render();
         checkSayings('gameOver');
         showGameOver(result.winner);
@@ -1021,7 +1030,7 @@
 
       const bunt = BalootScoring.calculateRound(roundData);
       const result = StateManager.addRound(appState, { lana: bunt.lana, lahum: bunt.lahum }, roundData);
-      closeRoundModal();
+      resetAdvancedForm();
       render();
       checkSayings(result.gameOver ? 'gameOver' : 'roundEnd');
       if (result.gameOver) showGameOver(result.winner);
@@ -1155,7 +1164,7 @@
               break;
             case 'edit_lock':
               editUnlocked = msg.payload.unlocked;
-              document.getElementById('btnNewRound').style.display = editUnlocked ? '' : 'none';
+              document.getElementById('scoreEntry').style.display = editUnlocked ? '' : 'none';
               break;
           }
         });
@@ -1345,6 +1354,9 @@
     }
 
     // Initial render
+    if (appState.settings.mode === 'advanced') {
+      resetAdvancedForm();
+    }
     render();
   </script>
   <script>
