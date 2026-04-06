@@ -160,6 +160,121 @@
         return result;
       }
     };
+
+    // ── State Manager ───────────────────────────────────────────
+
+    const StateManager = {
+      STORAGE_KEY: 'baloot_state',
+
+      _defaultState() {
+        return {
+          session: {
+            wins: { lana: 0, lahum: 0 },
+            games: []
+          },
+          currentGame: {
+            rounds: [],
+            score: { lana: 0, lahum: 0 }
+          },
+          settings: {
+            mode: 'simple'
+          }
+        };
+      },
+
+      load() {
+        try {
+          const raw = localStorage.getItem(this.STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            const def = this._defaultState();
+            return {
+              session: parsed.session || def.session,
+              currentGame: parsed.currentGame || def.currentGame,
+              settings: parsed.settings || def.settings
+            };
+          }
+        } catch (e) { /* ignore corrupt data */ }
+        return this._defaultState();
+      },
+
+      save(state) {
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(state));
+      },
+
+      addRound(state, bunt, roundMeta) {
+        const round = {
+          ...roundMeta,
+          bunt: { ...bunt },
+          roundNum: state.currentGame.rounds.length + 1
+        };
+        state.currentGame.rounds.push(round);
+        state.currentGame.score.lana += bunt.lana;
+        state.currentGame.score.lahum += bunt.lahum;
+
+        if (state.currentGame.score.lana >= 152 || state.currentGame.score.lahum >= 152) {
+          return this._endGame(state);
+        }
+        this.save(state);
+        return { gameOver: false };
+      },
+
+      handleCoffee(state, winner) {
+        const loser = winner === 'lana' ? 'lahum' : 'lana';
+        state.currentGame.rounds.push({
+          type: 'coffee',
+          bunt: { lana: 0, lahum: 0 },
+          roundNum: state.currentGame.rounds.length + 1,
+          coffeeWinner: winner
+        });
+        return this._endGame(state, winner);
+      },
+
+      _endGame(state, forceWinner) {
+        const winner = forceWinner ||
+          (state.currentGame.score.lana >= 152 ? 'lana' : 'lahum');
+
+        const finishedGame = {
+          rounds: [...state.currentGame.rounds],
+          winner,
+          finalScore: { ...state.currentGame.score }
+        };
+        state.session.games.push(finishedGame);
+        state.session.wins[winner]++;
+
+        const sessionOver = state.session.wins.lana >= 2 || state.session.wins.lahum >= 2;
+
+        state.currentGame = { rounds: [], score: { lana: 0, lahum: 0 } };
+        this.save(state);
+
+        return { gameOver: true, winner, sessionOver };
+      },
+
+      newGame(state) {
+        state.currentGame = { rounds: [], score: { lana: 0, lahum: 0 } };
+        this.save(state);
+      },
+
+      newSession(state) {
+        state.session = { wins: { lana: 0, lahum: 0 }, games: [] };
+        state.currentGame = { rounds: [], score: { lana: 0, lahum: 0 } };
+        this.save(state);
+      },
+
+      setMode(state, mode) {
+        state.settings.mode = mode;
+        this.save(state);
+      },
+
+      undoLastRound(state) {
+        const rounds = state.currentGame.rounds;
+        if (rounds.length === 0) return;
+        const last = rounds.pop();
+        state.currentGame.score.lana -= last.bunt.lana;
+        state.currentGame.score.lahum -= last.bunt.lahum;
+        this.save(state);
+      }
+    };
   </script>
   <script>
     if ('serviceWorker' in navigator) {
