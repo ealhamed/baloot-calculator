@@ -55,19 +55,136 @@
       padding: 12px 16px;
     }
 
-    main {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100dvh;
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--burgundy);
+    /* ── Header ─────────────────────────────── */
+    .header {
+      text-align: center;
+      padding: 16px 16px 8px;
     }
+    .header h1 {
+      color: var(--gold);
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .mode-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      background: var(--navy);
+      border-radius: 20px;
+      padding: 3px;
+      width: fit-content;
+      margin: 8px auto 0;
+    }
+    .mode-toggle button {
+      background: transparent;
+      color: var(--cream);
+      padding: 6px 18px;
+      font-size: 13px;
+      border-radius: 18px;
+      opacity: 0.6;
+    }
+    .mode-toggle button.active {
+      background: var(--burgundy);
+      opacity: 1;
+    }
+    .scoreboard {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 20px 16px 12px;
+    }
+    .team { text-align: center; flex: 1; }
+    .team-label { color: var(--gold); font-size: 18px; font-weight: 700; }
+    .team-score { color: var(--navy); font-size: 52px; font-weight: 700; line-height: 1.1; }
+    .score-divider { color: var(--navy); font-size: 28px; opacity: 0.3; padding: 0 4px; }
+    .progress-wrap { padding: 0 24px 16px; display: flex; gap: 8px; }
+    .progress-bar { flex: 1; height: 6px; background: rgba(26, 39, 68, 0.1); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--burgundy); border-radius: 3px; transition: width 0.4s ease; }
+    .progress-fill.lahum { background: var(--navy); }
+    .rounds-section { padding: 0 16px; }
+    .rounds-label { color: var(--navy); font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+    .rounds-list { display: flex; flex-direction: column; gap: 8px; max-height: 35vh; overflow-y: auto; padding-bottom: 8px; }
+    .round-card { background: var(--cream); border: 1px solid rgba(26, 39, 68, 0.15); border-radius: 20px; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; font-size: 15px; }
+    .round-num { color: var(--navy); font-weight: 700; min-width: 24px; }
+    .round-type { font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 10px; color: var(--cream); }
+    .round-type.sun { background: var(--gold); }
+    .round-type.hokm { background: var(--navy); }
+    .round-scores { font-weight: 600; color: var(--text); }
+    .saying { text-align: center; color: var(--gold); font-size: 18px; font-weight: 700; padding: 12px 16px; min-height: 48px; opacity: 0; transition: opacity 0.5s ease; }
+    .saying.visible { opacity: 1; }
+    .actions { padding: 8px 16px 12px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .btn-primary { width: 100%; max-width: 280px; padding: 14px 28px; font-size: 18px; }
+    .btn-secondary { background: transparent; color: var(--navy); border: 1px solid var(--navy); font-size: 13px; padding: 8px 20px; }
+    .session-bar { text-align: center; padding: 8px 16px; font-size: 15px; font-weight: 700; color: var(--navy); }
+    .room-actions { display: flex; justify-content: center; gap: 8px; padding: 4px 16px 16px; }
+    .room-actions button { font-size: 12px; padding: 8px 16px; background: var(--navy); }
+    .bottom-pad { height: env(safe-area-inset-bottom, 16px); }
+    .suit-accent { color: var(--burgundy); opacity: 0.08; font-size: 120px; position: fixed; pointer-events: none; z-index: 0; }
+    .suit-accent.top-left { top: -20px; right: -20px; }
+    .suit-accent.bottom-right { bottom: -20px; left: -20px; }
   </style>
 </head>
 <body>
-  <main>حاسبة بلوت - الديوانية</main>
+  <!-- Decorative suit accents -->
+  <div class="suit-accent top-left">♠</div>
+  <div class="suit-accent bottom-right">♥</div>
+
+  <main>
+    <div class="header">
+      <h1>حاسبة بلوت</h1>
+      <div class="mode-toggle">
+        <button id="btnSimple" class="active" onclick="setMode('simple')">بسيط</button>
+        <button id="btnAdvanced" onclick="setMode('advanced')">تفصيلي</button>
+      </div>
+    </div>
+
+    <div class="scoreboard">
+      <div class="team">
+        <div class="team-label">لنا</div>
+        <div class="team-score" id="scoreLana">0</div>
+      </div>
+      <div class="score-divider">-</div>
+      <div class="team">
+        <div class="team-label">لهم</div>
+        <div class="team-score" id="scoreLahum">0</div>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progLana" style="width:0%"></div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill lahum" id="progLahum" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="rounds-section">
+      <div class="rounds-label">الجولات</div>
+      <div class="rounds-list" id="roundsList"></div>
+    </div>
+
+    <div class="saying" id="saying"></div>
+
+    <div class="actions">
+      <button class="btn-primary" id="btnNewRound" onclick="openRoundModal()">جولة جديدة</button>
+      <button class="btn-secondary" id="btnNewGame" onclick="confirmNewGame()" style="display:none">لعبة جديدة</button>
+    </div>
+
+    <div class="session-bar" id="sessionBar">لنا 0 - 0 لهم</div>
+
+    <div class="room-actions">
+      <button onclick="createRoom()">غرفة جديدة</button>
+      <button onclick="joinRoom()">انضم لغرفة</button>
+    </div>
+
+    <div class="actions">
+      <button class="btn-secondary" onclick="confirmNewSession()">جلسة جديدة</button>
+    </div>
+
+    <div class="bottom-pad"></div>
+  </main>
 
   <script
     src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"
@@ -275,6 +392,83 @@
         this.save(state);
       }
     };
+
+    // ── UI Renderer ─────────────────────────────────────────────
+
+    let appState = StateManager.load();
+
+    function render() {
+      const { currentGame, session, settings } = appState;
+
+      document.getElementById('scoreLana').textContent = currentGame.score.lana;
+      document.getElementById('scoreLahum').textContent = currentGame.score.lahum;
+
+      const progLana = Math.min((currentGame.score.lana / 152) * 100, 100);
+      const progLahum = Math.min((currentGame.score.lahum / 152) * 100, 100);
+      document.getElementById('progLana').style.width = progLana + '%';
+      document.getElementById('progLahum').style.width = progLahum + '%';
+
+      const list = document.getElementById('roundsList');
+      list.innerHTML = currentGame.rounds.map(r => {
+        if (r.type === 'coffee') {
+          return `<div class="round-card">
+            <span class="round-num">${r.roundNum}</span>
+            <span class="round-type hokm">قهوة</span>
+            <span class="round-scores">${r.coffeeWinner === 'lana' ? 'لنا' : 'لهم'} فاز</span>
+          </div>`;
+        }
+        const typeClass = r.type === 'sun' ? 'sun' : 'hokm';
+        const typeLabel = r.type === 'sun' ? 'صن' : (r.type === 'hokm' ? 'حكم' : '');
+        return `<div class="round-card">
+          <span class="round-num">${r.roundNum}</span>
+          ${typeLabel ? `<span class="round-type ${typeClass}">${typeLabel}</span>` : ''}
+          <span class="round-scores">${r.bunt.lana} - ${r.bunt.lahum}</span>
+        </div>`;
+      }).join('');
+
+      document.getElementById('sessionBar').textContent =
+        `لنا ${session.wins.lana} - ${session.wins.lahum} لهم`;
+
+      document.getElementById('btnSimple').classList.toggle('active', settings.mode === 'simple');
+      document.getElementById('btnAdvanced').classList.toggle('active', settings.mode === 'advanced');
+
+      const gameOver = session.games.length > 0 &&
+        currentGame.rounds.length === 0 &&
+        session.wins.lana < 2 && session.wins.lahum < 2;
+      document.getElementById('btnNewGame').style.display = gameOver ? '' : 'none';
+      document.getElementById('btnNewRound').style.display = gameOver ? 'none' : '';
+    }
+
+    function setMode(mode) {
+      StateManager.setMode(appState, mode);
+      render();
+    }
+
+    function confirmNewGame() {
+      if (confirm('بدء لعبة جديدة؟')) {
+        StateManager.newGame(appState);
+        render();
+        checkSayings('newGame');
+      }
+    }
+
+    function confirmNewSession() {
+      if (confirm('بدء جلسة جديدة؟ سيتم مسح جميع النتائج')) {
+        StateManager.newSession(appState);
+        render();
+        hideSaying();
+      }
+    }
+
+    // Placeholder functions (implemented in later tasks)
+    function openRoundModal() {}
+    function createRoom() {}
+    function joinRoom() {}
+    function checkSayings() {}
+    function hideSaying() {}
+
+    // Initial render
+    render();
   </script>
   <script>
     if ('serviceWorker' in navigator) {
