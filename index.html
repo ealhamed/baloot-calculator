@@ -897,8 +897,105 @@
     function broadcastState() {}
     function createRoom() {}
     function joinRoom() {}
-    function checkSayings() {}
-    function hideSaying() {}
+    // ── Sayings Engine ──────────────────────────────────────────
+
+    const SAYINGS = {
+      gameWin1:     'أنزل ثانية',
+      tied11:       'افصلها!',
+      sweep20:      'نظيفة ✨',
+      deciderWin:   'فصلها! 💪',
+      closeTo152:   'قربت.. حسمها!',
+      neckAndNeck:  'كتف بكتف',
+      comeback:     'رجعوا!',
+      blowout:      'مسح فيهم الأرض 😂'
+    };
+
+    let sayingTimeout = null;
+
+    function showSaying(text) {
+      const el = document.getElementById('saying');
+      el.textContent = text;
+      el.classList.add('visible');
+      clearTimeout(sayingTimeout);
+      sayingTimeout = setTimeout(() => el.classList.remove('visible'), 4000);
+    }
+
+    function hideSaying() {
+      const el = document.getElementById('saying');
+      el.classList.remove('visible');
+      clearTimeout(sayingTimeout);
+    }
+
+    function checkSayings(event) {
+      const { currentGame, session } = appState;
+      const score = currentGame.score;
+
+      if (event === 'gameOver') {
+        const wLana = session.wins.lana;
+        const wLahum = session.wins.lahum;
+
+        // Session sweep (2-0)
+        if ((wLana === 2 && wLahum === 0) || (wLahum === 2 && wLana === 0)) {
+          showSaying(SAYINGS.sweep20);
+          return;
+        }
+        // Decider win (2-1)
+        if ((wLana === 2 && wLahum === 1) || (wLahum === 2 && wLana === 1)) {
+          showSaying(SAYINGS.deciderWin);
+          return;
+        }
+        // Tied 1-1
+        if (wLana === 1 && wLahum === 1) {
+          showSaying(SAYINGS.tied11);
+          return;
+        }
+        // First game won (1-0)
+        const totalGames = wLana + wLahum;
+        if (totalGames === 1) {
+          showSaying(SAYINGS.gameWin1);
+          return;
+        }
+
+        // Blowout check on the last finished game
+        const lastGame = session.games[session.games.length - 1];
+        if (lastGame) {
+          const loserScore = Math.min(lastGame.finalScore.lana, lastGame.finalScore.lahum);
+          if (loserScore < 50) {
+            showSaying(SAYINGS.blowout);
+            return;
+          }
+        }
+        return;
+      }
+
+      if (event === 'roundEnd') {
+        // Comeback: a team that was behind now leads
+        const rounds = currentGame.rounds;
+        if (rounds.length >= 2) {
+          const lastRound = rounds[rounds.length - 1];
+          const prevLana = score.lana - lastRound.bunt.lana;
+          const prevLahum = score.lahum - lastRound.bunt.lahum;
+          const wasLeading = prevLana > prevLahum ? 'lana' : (prevLahum > prevLana ? 'lahum' : null);
+          const nowLeading = score.lana > score.lahum ? 'lana' : (score.lahum > score.lana ? 'lahum' : null);
+          if (wasLeading && nowLeading && wasLeading !== nowLeading) {
+            showSaying(SAYINGS.comeback);
+            return;
+          }
+        }
+
+        // Close to 152
+        if (score.lana >= 130 || score.lahum >= 130) {
+          showSaying(SAYINGS.closeTo152);
+          return;
+        }
+
+        // Neck and neck
+        if (score.lana > 20 && score.lahum > 20 && Math.abs(score.lana - score.lahum) <= 10) {
+          showSaying(SAYINGS.neckAndNeck);
+          return;
+        }
+      }
+    }
 
     // Initial render
     render();
