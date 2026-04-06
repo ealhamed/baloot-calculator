@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#722F37">
+  <title>حاسبة بلوت - الديوانية</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F5F0E6;
+      --burgundy: #722F37;
+      --gold: #C9A227;
+      --navy: #1A2744;
+      --text: #1D1E20;
+      --cream: #F5F0E6;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100dvh;
+      direction: rtl;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    button {
+      font-family: 'Cairo', sans-serif;
+      background: var(--burgundy);
+      color: var(--cream);
+      border: none;
+      border-radius: 28px;
+      padding: 12px 28px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    button:active { opacity: 0.8; }
+
+    .card {
+      background: var(--cream);
+      border: 1px solid var(--navy);
+      border-radius: 20px;
+      padding: 12px 16px;
+    }
+
+    main {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--burgundy);
+    }
+  </style>
+</head>
+<body>
+  <main>حاسبة بلوت - الديوانية</main>
+
+  <script
+    src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"
+    integrity="sha384-nlUQ8ZqCbvStErob+biJNzSgltf6urV3VGqhfIfzhmg9RXmpeRm76ELw0pYnKlTR"
+    crossorigin="anonymous"
+  ></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
