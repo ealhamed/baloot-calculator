@@ -123,6 +123,147 @@
     .suit-accent { color: var(--burgundy); opacity: 0.08; font-size: 120px; position: fixed; pointer-events: none; z-index: 0; }
     .suit-accent.top-left { top: -20px; right: -20px; }
     .suit-accent.bottom-right { bottom: -20px; left: -20px; }
+
+    /* ── Modal ──────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(26, 39, 68, 0.5);
+      z-index: 100;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--bg);
+      border-radius: 24px 24px 0 0;
+      width: 100%;
+      max-width: 430px;
+      padding: 24px 20px env(safe-area-inset-bottom, 20px);
+      animation: slideUp 0.3s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .modal-title {
+      color: var(--navy);
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .modal-close {
+      background: transparent;
+      color: var(--navy);
+      font-size: 24px;
+      padding: 4px 8px;
+      border-radius: 12px;
+    }
+
+    .input-group { margin-bottom: 16px; }
+    .input-label { display: block; color: var(--gold); font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+    .input-field {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid rgba(26, 39, 68, 0.2);
+      border-radius: 16px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      text-align: center;
+      background: white;
+      color: var(--navy);
+      outline: none;
+      -moz-appearance: textfield;
+    }
+    .input-field::-webkit-outer-spin-button,
+    .input-field::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .input-field:focus { border-color: var(--burgundy); }
+
+    .input-row { display: flex; gap: 12px; }
+    .input-row .input-group { flex: 1; }
+
+    .toggle-group { display: flex; gap: 8px; margin-bottom: 16px; }
+    .toggle-btn {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      background: transparent;
+      color: var(--navy);
+      border: 1px solid rgba(26, 39, 68, 0.2);
+      border-radius: 16px;
+      opacity: 0.6;
+    }
+    .toggle-btn.active {
+      background: var(--burgundy);
+      color: var(--cream);
+      border-color: var(--burgundy);
+      opacity: 1;
+    }
+
+    .checkbox-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; }
+    .checkbox-row input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--burgundy); }
+    .checkbox-label { font-size: 14px; color: var(--text); }
+    .checkbox-value { margin-right: auto; font-size: 13px; color: var(--gold); font-weight: 700; }
+
+    .preview-bar {
+      background: var(--navy);
+      color: var(--cream);
+      border-radius: 16px;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-around;
+      margin: 16px 0;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .section-divider { border: none; border-top: 1px solid rgba(26, 39, 68, 0.1); margin: 16px 0; }
+
+    .kabout-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: rgba(114, 47, 55, 0.05);
+      border-radius: 16px;
+      margin-bottom: 16px;
+    }
+    .kabout-label { font-size: 16px; font-weight: 700; color: var(--burgundy); }
+
+    .switch { position: relative; width: 48px; height: 28px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .switch .slider {
+      position: absolute;
+      inset: 0;
+      background: #ccc;
+      border-radius: 28px;
+      transition: 0.3s;
+      cursor: pointer;
+    }
+    .switch .slider:before {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      bottom: 3px;
+      right: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+    .switch input:checked + .slider { background: var(--burgundy); }
+    .switch input:checked + .slider:before { transform: translateX(-20px); }
   </style>
 </head>
 <body>
@@ -184,6 +325,106 @@
     </div>
 
     <div class="bottom-pad"></div>
+
+    <!-- Round Entry Modal -->
+    <div class="modal-overlay" id="roundModal">
+      <div class="modal">
+        <div class="modal-header">
+          <span class="modal-title">جولة جديدة</span>
+          <button class="modal-close" onclick="closeRoundModal()">✕</button>
+        </div>
+
+        <!-- Simple Mode -->
+        <div id="simpleForm">
+          <div class="input-row">
+            <div class="input-group">
+              <label class="input-label">لنا</label>
+              <input type="number" class="input-field" id="simpleLana" min="0" inputmode="numeric">
+            </div>
+            <div class="input-group">
+              <label class="input-label">لهم</label>
+              <input type="number" class="input-field" id="simpleLahum" min="0" inputmode="numeric">
+            </div>
+          </div>
+          <button class="btn-primary" style="width:100%" onclick="submitSimple()">تأكيد</button>
+        </div>
+
+        <!-- Advanced Mode -->
+        <div id="advancedForm" style="display:none">
+          <div class="input-label">نوع اللعب</div>
+          <div class="toggle-group">
+            <button class="toggle-btn active" id="advTypeSun" onclick="setAdvType('sun')">صن</button>
+            <button class="toggle-btn" id="advTypeHokm" onclick="setAdvType('hokm')">حكم</button>
+          </div>
+          <div class="input-label">المشتري</div>
+          <div class="toggle-group">
+            <button class="toggle-btn active" id="advBuyerLana" onclick="setAdvBuyer('lana')">لنا</button>
+            <button class="toggle-btn" id="advBuyerLahum" onclick="setAdvBuyer('lahum')">لهم</button>
+          </div>
+
+          <hr class="section-divider">
+
+          <div class="input-label">المضاعفة</div>
+          <div class="toggle-group" style="flex-wrap:wrap">
+            <button class="toggle-btn active" id="advMultNormal" onclick="setAdvMult('normal')">عادي</button>
+            <button class="toggle-btn" id="advMultDouble" onclick="setAdvMult('double')">دبل</button>
+            <button class="toggle-btn" id="advMultTriple" onclick="setAdvMult('triple')">ثري</button>
+            <button class="toggle-btn" id="advMultFour" onclick="setAdvMult('four')">فور</button>
+            <button class="toggle-btn" id="advMultCoffee" onclick="setAdvMult('coffee')">قهوة</button>
+          </div>
+
+          <hr class="section-divider">
+
+          <div class="kabout-toggle">
+            <span class="kabout-label">كبوت</span>
+            <label class="switch">
+              <input type="checkbox" id="advKabout" onchange="toggleKabout()">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div id="cardPointsSection">
+            <div class="input-label">نقاط الورق</div>
+            <div class="input-row">
+              <div class="input-group">
+                <label class="input-label" style="font-size:13px">لنا</label>
+                <input type="number" class="input-field" id="advRawLana" min="0" inputmode="numeric" oninput="syncRawPoints('lana')">
+              </div>
+              <div class="input-group">
+                <label class="input-label" style="font-size:13px">لهم</label>
+                <input type="number" class="input-field" id="advRawLahum" min="0" inputmode="numeric" oninput="syncRawPoints('lahum')">
+              </div>
+            </div>
+            <div class="checkbox-row">
+              <input type="checkbox" id="advLastTrickLana" onchange="if(this.checked) document.getElementById('advLastTrickLahum').checked=false">
+              <span class="checkbox-label">أكلة الأرض - لنا</span>
+            </div>
+            <div class="checkbox-row">
+              <input type="checkbox" id="advLastTrickLahum" onchange="if(this.checked) document.getElementById('advLastTrickLana').checked=false">
+              <span class="checkbox-label">أكلة الأرض - لهم</span>
+            </div>
+          </div>
+
+          <hr class="section-divider">
+
+          <div id="projectsSection">
+            <div class="input-label">مشاريع لنا</div>
+            <div id="projLana"></div>
+            <div class="input-label" style="margin-top:12px">مشاريع لهم</div>
+            <div id="projLahum"></div>
+          </div>
+
+          <hr class="section-divider">
+
+          <div class="preview-bar" id="advPreview">
+            <span>لنا: <span id="previewLana">0</span></span>
+            <span>لهم: <span id="previewLahum">0</span></span>
+          </div>
+
+          <button class="btn-primary" style="width:100%" onclick="submitAdvanced()">تأكيد</button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script
@@ -460,8 +701,200 @@
       }
     }
 
+    // ── Modal Logic ─────────────────────────────────────────────
+
+    let advState = { type: 'sun', buyer: 'lana', multiplier: 'normal' };
+
+    function openRoundModal() {
+      const modal = document.getElementById('roundModal');
+      modal.classList.add('open');
+
+      const isAdvanced = appState.settings.mode === 'advanced';
+      document.getElementById('simpleForm').style.display = isAdvanced ? 'none' : '';
+      document.getElementById('advancedForm').style.display = isAdvanced ? '' : 'none';
+
+      if (isAdvanced) {
+        advState = { type: 'sun', buyer: 'lana', multiplier: 'normal' };
+        resetAdvancedForm();
+      } else {
+        document.getElementById('simpleLana').value = '';
+        document.getElementById('simpleLahum').value = '';
+      }
+    }
+
+    function closeRoundModal() {
+      document.getElementById('roundModal').classList.remove('open');
+    }
+
+    function submitSimple() {
+      const lana = parseInt(document.getElementById('simpleLana').value) || 0;
+      const lahum = parseInt(document.getElementById('simpleLahum').value) || 0;
+      if (lana === 0 && lahum === 0) return;
+
+      const result = StateManager.addRound(appState, { lana, lahum }, {});
+      closeRoundModal();
+      render();
+      checkSayings(result.gameOver ? 'gameOver' : 'roundEnd');
+      if (result.gameOver) showGameOver(result.winner);
+      broadcastState();
+    }
+
+    function setAdvType(type) {
+      advState.type = type;
+      document.getElementById('advTypeSun').classList.toggle('active', type === 'sun');
+      document.getElementById('advTypeHokm').classList.toggle('active', type === 'hokm');
+      renderProjects();
+      updateAdvPreview();
+    }
+
+    function setAdvBuyer(buyer) {
+      advState.buyer = buyer;
+      document.getElementById('advBuyerLana').classList.toggle('active', buyer === 'lana');
+      document.getElementById('advBuyerLahum').classList.toggle('active', buyer === 'lahum');
+      updateAdvPreview();
+    }
+
+    function setAdvMult(mult) {
+      advState.multiplier = mult;
+      ['Normal', 'Double', 'Triple', 'Four', 'Coffee'].forEach(m => {
+        const key = m.toLowerCase();
+        document.getElementById('advMult' + m).classList.toggle('active', key === mult);
+      });
+      const isCoffee = mult === 'coffee';
+      document.getElementById('cardPointsSection').style.display = isCoffee ? 'none' : '';
+      document.getElementById('projectsSection').style.display = isCoffee ? 'none' : '';
+      document.getElementById('advPreview').style.display = isCoffee ? 'none' : '';
+      updateAdvPreview();
+    }
+
+    function toggleKabout() {
+      const kabout = document.getElementById('advKabout').checked;
+      document.getElementById('cardPointsSection').style.display = kabout ? 'none' : '';
+      updateAdvPreview();
+    }
+
+    function syncRawPoints(team) {
+      const total = BalootScoring.TOTAL_RAW[advState.type];
+      const el = document.getElementById(team === 'lana' ? 'advRawLana' : 'advRawLahum');
+      const otherEl = document.getElementById(team === 'lana' ? 'advRawLahum' : 'advRawLana');
+      const val = parseInt(el.value) || 0;
+      otherEl.value = Math.max(0, total - val);
+      updateAdvPreview();
+    }
+
+    function renderProjects() {
+      const type = advState.type;
+      const projects = [
+        { key: 'sira', label: 'سرا', sun: 4, hokm: 2 },
+        { key: '50', label: 'خمسين', sun: 10, hokm: 5 },
+        { key: '100', label: 'مية', sun: 20, hokm: 10 },
+        { key: '400', label: type === 'sun' ? 'أربعمية' : '٤ إكوات', sun: 40, hokm: 10 },
+        { key: 'baloot', label: 'بلوت', sun: 0, hokm: 2 }
+      ];
+
+      ['Lana', 'Lahum'].forEach(team => {
+        const container = document.getElementById('proj' + team);
+        container.innerHTML = projects
+          .filter(p => p[type] > 0)
+          .map(p => `
+            <div class="checkbox-row">
+              <input type="checkbox" id="proj_${team}_${p.key}" onchange="updateAdvPreview()">
+              <span class="checkbox-label">${p.label}</span>
+              <span class="checkbox-value">${p[type]}</span>
+            </div>
+          `).join('');
+      });
+    }
+
+    function getSelectedProjects(team) {
+      const projects = [];
+      ['sira', '50', '100', '400', 'baloot'].forEach(key => {
+        const cb = document.getElementById(`proj_${team}_${key}`);
+        if (cb && cb.checked) projects.push(key);
+      });
+      return projects;
+    }
+
+    function updateAdvPreview() {
+      if (advState.multiplier === 'coffee') return;
+
+      const kabout = document.getElementById('advKabout').checked;
+      const rawLana = parseInt(document.getElementById('advRawLana').value) || 0;
+      const rawLahum = parseInt(document.getElementById('advRawLahum').value) || 0;
+
+      const roundData = {
+        type: advState.type,
+        buyer: advState.buyer,
+        multiplier: advState.multiplier,
+        kabout,
+        kaboutWinner: advState.buyer,
+        projects: {
+          lana: getSelectedProjects('Lana'),
+          lahum: getSelectedProjects('Lahum')
+        },
+        rawPoints: { lana: rawLana, lahum: rawLahum }
+      };
+
+      const result = BalootScoring.calculateRound(roundData);
+      document.getElementById('previewLana').textContent = result.lana;
+      document.getElementById('previewLahum').textContent = result.lahum;
+    }
+
+    function resetAdvancedForm() {
+      setAdvType('sun');
+      setAdvBuyer('lana');
+      setAdvMult('normal');
+      document.getElementById('advKabout').checked = false;
+      document.getElementById('cardPointsSection').style.display = '';
+      document.getElementById('advRawLana').value = '';
+      document.getElementById('advRawLahum').value = '';
+      document.getElementById('advLastTrickLana').checked = false;
+      document.getElementById('advLastTrickLahum').checked = false;
+      renderProjects();
+      updateAdvPreview();
+    }
+
+    function submitAdvanced() {
+      if (advState.multiplier === 'coffee') {
+        const winner = advState.buyer === 'lana' ? 'lahum' : 'lana';
+        const result = StateManager.handleCoffee(appState, winner);
+        closeRoundModal();
+        render();
+        checkSayings('gameOver');
+        showGameOver(result.winner);
+        broadcastState();
+        return;
+      }
+
+      const kabout = document.getElementById('advKabout').checked;
+      const rawLana = parseInt(document.getElementById('advRawLana').value) || 0;
+      const rawLahum = parseInt(document.getElementById('advRawLahum').value) || 0;
+
+      const roundData = {
+        type: advState.type,
+        buyer: advState.buyer,
+        multiplier: advState.multiplier,
+        kabout,
+        kaboutWinner: advState.buyer,
+        projects: {
+          lana: getSelectedProjects('Lana'),
+          lahum: getSelectedProjects('Lahum')
+        },
+        rawPoints: { lana: rawLana, lahum: rawLahum }
+      };
+
+      const bunt = BalootScoring.calculateRound(roundData);
+      const result = StateManager.addRound(appState, { lana: bunt.lana, lahum: bunt.lahum }, roundData);
+      closeRoundModal();
+      render();
+      checkSayings(result.gameOver ? 'gameOver' : 'roundEnd');
+      if (result.gameOver) showGameOver(result.winner);
+      broadcastState();
+    }
+
     // Placeholder functions (implemented in later tasks)
-    function openRoundModal() {}
+    function showGameOver(winner) {}
+    function broadcastState() {}
     function createRoom() {}
     function joinRoom() {}
     function checkSayings() {}
