@@ -217,6 +217,16 @@
     .checkbox-label { font-size: 14px; color: var(--text); }
     .checkbox-value { margin-right: auto; font-size: 13px; color: var(--gold); font-weight: 700; }
 
+    .stepper-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; }
+    .stepper-label { font-size: 13px; color: var(--text); }
+    .stepper-controls { display: flex; align-items: center; gap: 8px; }
+    .stepper-btn {
+      width: 28px; height: 28px; border-radius: 50%; padding: 0;
+      font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center;
+      background: var(--navy); color: var(--cream);
+    }
+    .stepper-count { font-size: 16px; font-weight: 700; color: var(--navy); min-width: 20px; text-align: center; }
+
     .preview-bar {
       background: var(--navy);
       color: var(--cream);
@@ -419,26 +429,16 @@
           </div>
         </div>
 
-        <!-- Card Points (hidden if kabout or coffee) -->
+        <!-- Bunt Points (hidden if kabout or coffee) -->
         <div id="cardPointsSection">
           <div class="input-row">
             <div class="input-group">
-              <label class="input-label" style="font-size:13px">نقاط لنا</label>
-              <input type="number" class="input-field" id="advRawLana" min="0" inputmode="numeric" oninput="syncRawPoints('lana')">
+              <label class="input-label" style="font-size:13px">بنط لنا</label>
+              <input type="number" class="input-field" id="advBuntLana" min="0" inputmode="numeric" oninput="syncBunt('lana')">
             </div>
             <div class="input-group">
-              <label class="input-label" style="font-size:13px">نقاط لهم</label>
-              <input type="number" class="input-field" id="advRawLahum" min="0" inputmode="numeric" oninput="syncRawPoints('lahum')">
-            </div>
-          </div>
-          <div class="input-row">
-            <div class="checkbox-row" style="flex:1">
-              <input type="checkbox" id="advLastTrickLana" onchange="if(this.checked) document.getElementById('advLastTrickLahum').checked=false; updateAdvPreview()">
-              <span class="checkbox-label" style="font-size:12px">أكلة الأرض</span>
-            </div>
-            <div class="checkbox-row" style="flex:1">
-              <input type="checkbox" id="advLastTrickLahum" onchange="if(this.checked) document.getElementById('advLastTrickLana').checked=false; updateAdvPreview()">
-              <span class="checkbox-label" style="font-size:12px">أكلة الأرض</span>
+              <label class="input-label" style="font-size:13px">بنط لهم</label>
+              <input type="number" class="input-field" id="advBuntLahum" min="0" inputmode="numeric" oninput="syncBunt('lahum')">
             </div>
           </div>
         </div>
@@ -579,12 +579,17 @@
 
       calcProjects(projects, type, multiplier) {
         let total = 0;
-        for (const p of projects) {
-          const val = this.PROJECT_VALUES[p]?.[type] || 0;
-          if (p === 'baloot') {
-            total += val; // baloot is never multiplied
-          } else {
-            total += val * multiplier;
+        // projects can be an array of keys ['sira','50'] or an object with counts {sira:2, '50':1}
+        if (Array.isArray(projects)) {
+          for (const p of projects) {
+            const val = this.PROJECT_VALUES[p]?.[type] || 0;
+            total += (p === 'baloot') ? val : val * multiplier;
+          }
+        } else {
+          for (const [p, count] of Object.entries(projects)) {
+            const val = this.PROJECT_VALUES[p]?.[type] || 0;
+            const c = count || 0;
+            total += (p === 'baloot') ? val * c : val * multiplier * c;
           }
         }
         return total;
@@ -904,10 +909,10 @@
       updateAdvPreview();
     }
 
-    function syncRawPoints(team) {
-      const total = BalootScoring.TOTAL_RAW[advState.type];
-      const el = document.getElementById(team === 'lana' ? 'advRawLana' : 'advRawLahum');
-      const otherEl = document.getElementById(team === 'lana' ? 'advRawLahum' : 'advRawLana');
+    function syncBunt(team) {
+      const total = BalootScoring.TOTAL_BUNT[advState.type];
+      const el = document.getElementById(team === 'lana' ? 'advBuntLana' : 'advBuntLahum');
+      const otherEl = document.getElementById(team === 'lana' ? 'advBuntLahum' : 'advBuntLana');
       const val = parseInt(el.value) || 0;
       otherEl.value = Math.max(0, total - val);
       updateAdvPreview();
@@ -928,51 +933,77 @@
         container.innerHTML = projects
           .filter(p => p[type] > 0)
           .map(p => `
-            <div class="checkbox-row">
-              <input type="checkbox" id="proj_${team}_${p.key}" onchange="updateAdvPreview()">
-              <span class="checkbox-label">${p.label}</span>
-              <span class="checkbox-value">${p[type]}</span>
+            <div class="stepper-row">
+              <span class="stepper-label">${p.label} <span class="checkbox-value">${p[type]}</span></span>
+              <div class="stepper-controls">
+                <button class="stepper-btn" onclick="stepProject('${team}','${p.key}',-1)">−</button>
+                <span class="stepper-count" id="proj_${team}_${p.key}">0</span>
+                <button class="stepper-btn" onclick="stepProject('${team}','${p.key}',1)">+</button>
+              </div>
             </div>
           `).join('');
       });
     }
 
-    function getSelectedProjects(team) {
-      const projects = [];
+    function stepProject(team, key, delta) {
+      const el = document.getElementById(`proj_${team}_${key}`);
+      const current = parseInt(el.textContent) || 0;
+      const newVal = Math.max(0, current + delta);
+      el.textContent = newVal;
+      updateAdvPreview();
+    }
+
+    function getProjectCounts(team) {
+      const counts = {};
       ['sira', '50', '100', '400', 'baloot'].forEach(key => {
-        const cb = document.getElementById(`proj_${team}_${key}`);
-        if (cb && cb.checked) projects.push(key);
+        const el = document.getElementById(`proj_${team}_${key}`);
+        if (el) {
+          const count = parseInt(el.textContent) || 0;
+          if (count > 0) counts[key] = count;
+        }
       });
-      return projects;
+      return counts;
     }
 
     function updateAdvPreview() {
       if (advState.multiplier === 'coffee') return;
 
       const kabout = document.getElementById('advKabout').checked;
-      let rawLana = parseInt(document.getElementById('advRawLana').value) || 0;
-      let rawLahum = parseInt(document.getElementById('advRawLahum').value) || 0;
+      const mult = { normal: 1, double: 2, triple: 3, four: 4 }[advState.multiplier] || 1;
+      const type = advState.type;
 
-      // Add last trick bonus
-      if (document.getElementById('advLastTrickLana').checked) rawLana += 10;
-      if (document.getElementById('advLastTrickLahum').checked) rawLahum += 10;
+      if (kabout) {
+        const winner = advState.kaboutWinner || advState.buyer;
+        const loser = winner === 'lana' ? 'lahum' : 'lana';
+        const winnerTeam = winner === 'lana' ? 'Lana' : 'Lahum';
+        const kaboutBunt = BalootScoring.KABOUT_BUNT[type] * mult;
+        const projBunt = BalootScoring.calcProjects(getProjectCounts(winnerTeam), type, mult);
+        document.getElementById('previewLana').textContent = winner === 'lana' ? kaboutBunt + projBunt : 0;
+        document.getElementById('previewLahum').textContent = winner === 'lahum' ? kaboutBunt + projBunt : 0;
+        return;
+      }
 
-      const roundData = {
-        type: advState.type,
-        buyer: advState.buyer,
-        multiplier: advState.multiplier,
-        kabout,
-        kaboutWinner: advState.kaboutWinner || advState.buyer,
-        projects: {
-          lana: getSelectedProjects('Lana'),
-          lahum: getSelectedProjects('Lahum')
-        },
-        rawPoints: { lana: rawLana, lahum: rawLahum }
-      };
+      const buntLana = parseInt(document.getElementById('advBuntLana').value) || 0;
+      const buntLahum = parseInt(document.getElementById('advBuntLahum').value) || 0;
+      const projLana = BalootScoring.calcProjects(getProjectCounts('Lana'), type, mult);
+      const projLahum = BalootScoring.calcProjects(getProjectCounts('Lahum'), type, mult);
 
-      const result = BalootScoring.calculateRound(roundData);
-      document.getElementById('previewLana').textContent = result.lana;
-      document.getElementById('previewLahum').textContent = result.lahum;
+      // Check buyer failure
+      const buyer = advState.buyer;
+      const opponent = buyer === 'lana' ? 'lahum' : 'lana';
+      const buyerBunt = buyer === 'lana' ? buntLana : buntLahum;
+      const halfBunt = Math.ceil(BalootScoring.TOTAL_BUNT[type] / 2);
+
+      if (buyerBunt < halfBunt && (buntLana > 0 || buntLahum > 0)) {
+        // Buyer failed — all bunt to opponent
+        const allBunt = BalootScoring.TOTAL_BUNT[type] * mult;
+        const oppProj = opponent === 'lana' ? projLana : projLahum;
+        document.getElementById('previewLana').textContent = opponent === 'lana' ? allBunt + oppProj : 0;
+        document.getElementById('previewLahum').textContent = opponent === 'lahum' ? allBunt + oppProj : 0;
+      } else {
+        document.getElementById('previewLana').textContent = (buntLana * mult) + projLana;
+        document.getElementById('previewLahum').textContent = (buntLahum * mult) + projLahum;
+      }
     }
 
     function resetAdvancedForm() {
@@ -981,10 +1012,8 @@
       setAdvMult('normal');
       document.getElementById('advKabout').checked = false;
       document.getElementById('cardPointsSection').style.display = '';
-      document.getElementById('advRawLana').value = '';
-      document.getElementById('advRawLahum').value = '';
-      document.getElementById('advLastTrickLana').checked = false;
-      document.getElementById('advLastTrickLahum').checked = false;
+      document.getElementById('advBuntLana').value = '';
+      document.getElementById('advBuntLahum').value = '';
       advState.kaboutWinner = 'lana';
       document.getElementById('kaboutWinnerSection').style.display = 'none';
       renderProjects();
@@ -1008,28 +1037,48 @@
       }
 
       const kabout = document.getElementById('advKabout').checked;
-      let rawLana = parseInt(document.getElementById('advRawLana').value) || 0;
-      let rawLahum = parseInt(document.getElementById('advRawLahum').value) || 0;
+      const mult = { normal: 1, double: 2, triple: 3, four: 4 }[advState.multiplier] || 1;
+      const type = advState.type;
+      let lana = 0, lahum = 0;
 
-      // Add last trick bonus
-      if (document.getElementById('advLastTrickLana').checked) rawLana += 10;
-      if (document.getElementById('advLastTrickLahum').checked) rawLahum += 10;
+      if (kabout) {
+        const winner = advState.kaboutWinner || advState.buyer;
+        const winnerTeam = winner === 'lana' ? 'Lana' : 'Lahum';
+        const kaboutBunt = BalootScoring.KABOUT_BUNT[type] * mult;
+        const projBunt = BalootScoring.calcProjects(getProjectCounts(winnerTeam), type, mult);
+        if (winner === 'lana') { lana = kaboutBunt + projBunt; } else { lahum = kaboutBunt + projBunt; }
+      } else {
+        const buntLana = parseInt(document.getElementById('advBuntLana').value) || 0;
+        const buntLahum = parseInt(document.getElementById('advBuntLahum').value) || 0;
+        const projLana = BalootScoring.calcProjects(getProjectCounts('Lana'), type, mult);
+        const projLahum = BalootScoring.calcProjects(getProjectCounts('Lahum'), type, mult);
 
-      const roundData = {
+        const buyer = advState.buyer;
+        const opponent = buyer === 'lana' ? 'lahum' : 'lana';
+        const buyerBunt = buyer === 'lana' ? buntLana : buntLahum;
+        const halfBunt = Math.ceil(BalootScoring.TOTAL_BUNT[type] / 2);
+
+        if (buyerBunt < halfBunt && (buntLana > 0 || buntLahum > 0)) {
+          const allBunt = BalootScoring.TOTAL_BUNT[type] * mult;
+          const oppProj = opponent === 'lana' ? projLana : projLahum;
+          if (opponent === 'lana') { lana = allBunt + oppProj; } else { lahum = allBunt + oppProj; }
+        } else {
+          lana = (buntLana * mult) + projLana;
+          lahum = (buntLahum * mult) + projLahum;
+        }
+      }
+
+      if (lana === 0 && lahum === 0) return;
+
+      const roundMeta = {
         type: advState.type,
         buyer: advState.buyer,
         multiplier: advState.multiplier,
         kabout,
-        kaboutWinner: advState.kaboutWinner || advState.buyer,
-        projects: {
-          lana: getSelectedProjects('Lana'),
-          lahum: getSelectedProjects('Lahum')
-        },
-        rawPoints: { lana: rawLana, lahum: rawLahum }
+        projects: { lana: getProjectCounts('Lana'), lahum: getProjectCounts('Lahum') }
       };
 
-      const bunt = BalootScoring.calculateRound(roundData);
-      const result = StateManager.addRound(appState, { lana: bunt.lana, lahum: bunt.lahum }, roundData);
+      const result = StateManager.addRound(appState, { lana, lahum }, roundMeta);
       resetAdvancedForm();
       render();
       checkSayings(result.gameOver ? 'gameOver' : 'roundEnd');
