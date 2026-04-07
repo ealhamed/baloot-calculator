@@ -1421,24 +1421,29 @@
         return;
       }
 
-      // Auto-assign projects to the team with the higher score
-      const projTeam = pendingBunt.lana >= pendingBunt.lahum ? 'lana' : 'lahum';
+      function askTeamThenFinish(combo) {
+        askQuestion('لمن المشاريع؟', [
+          { label: 'لنا', value: 'lana' },
+          { label: 'لهم', value: 'lahum' }
+        ], (team) => {
+          pendingMeta.projects = { [team]: comboToObj(combo) };
+          finishSimple();
+        });
+      }
 
       if (combos.length === 1) {
-        // Only one possibility — auto-assign, no question needed
-        pendingMeta.projects = { [projTeam]: comboToObj(combos[0]) };
-        finishSimple();
+        askTeamThenFinish(combos[0]);
         return;
       }
 
-      // Multiple possibilities — ask which (max 4 options)
+      // Multiple possibilities — ask which, then ask team
       const options = combos.slice(0, 4).map((combo, i) => {
         const desc = combo.map(p => (p.count > 1 ? p.count + '× ' : '') + p.label).join(' + ');
         return { label: desc, value: i };
       });
 
       askQuestion('أي مشاريع؟', options, (answer) => {
-        pendingMeta.projects = { [projTeam]: comboToObj(combos[answer]) };
+        askTeamThenFinish(combos[answer]);
         finishSimple();
       });
     }
