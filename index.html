@@ -127,6 +127,7 @@
     .round-type.sun { background: var(--gold); }
     .round-type.hokm { background: var(--navy); }
     .round-scores { font-weight: 600; color: var(--text); }
+    .rs-label { font-size: 10px; font-weight: 600; opacity: 0.4; }
     .saying { text-align: center; color: var(--gold-text); font-size: 16px; font-weight: 700; padding: 4px 16px; min-height: 0; opacity: 0; transition: opacity 0.5s ease; }
     .saying.visible { min-height: 32px; }
     .saying.visible { opacity: 1; }
@@ -408,7 +409,10 @@
       border-color: var(--input-border);
     }
     [data-theme="dark"] .progress-bar {
-      background: rgba(232, 228, 220, 0.1);
+      background: rgba(232, 228, 220, 0.15);
+    }
+    [data-theme="dark"] .progress-fill.lahum {
+      background: #6B8EC4;
     }
     [data-theme="dark"] .kabout-toggle {
       background: rgba(168, 68, 80, 0.1);
@@ -612,16 +616,20 @@
 
     <hr class="footer-divider">
 
-    <div class="room-actions">
-      <button onclick="createRoom()">غرفة جديدة</button>
-      <button onclick="joinRoom()">انضم لغرفة</button>
+    <div style="text-align:center;padding:4px">
+      <button class="btn-secondary" style="font-size:11px;padding:4px 12px;opacity:0.4" onclick="document.getElementById('moreActions').style.display = document.getElementById('moreActions').style.display === 'none' ? '' : 'none'">المزيد ⋯</button>
+    </div>
+    <div id="moreActions" style="display:none">
+      <div class="room-actions">
+        <button onclick="createRoom()">غرفة جديدة</button>
+        <button onclick="joinRoom()">انضم لغرفة</button>
+      </div>
+      <div class="actions">
+        <button class="btn-secondary" onclick="confirmNewSession()">جلسة جديدة</button>
+      </div>
     </div>
 
-    <div class="actions">
-      <button class="btn-secondary" onclick="confirmNewSession()">جلسة جديدة</button>
-    </div>
-
-    <div style="text-align:center;padding:16px 16px 4px;font-size:11px;color:var(--navy);opacity:0.3">With warm regards from ESH</div>
+    <div style="text-align:center;padding:8px 16px 4px;font-size:11px;color:var(--navy);opacity:0.3">With warm regards from ESH</div>
     <div class="bottom-pad"></div>
 
     <!-- Room Modal -->
@@ -917,7 +925,7 @@
         return `<div class="round-card">
           <span class="round-num">${r.roundNum}</span>
           ${typeLabel ? `<span class="round-type ${typeClass}">${typeLabel}</span>` : ''}
-          <span class="round-scores">${r.bunt.lana} - ${r.bunt.lahum}</span>
+          <span class="round-scores"><span class="rs-label">لنا</span> ${r.bunt.lana} - ${r.bunt.lahum} <span class="rs-label">لهم</span></span>
         </div>`;
       }).join('');
 
@@ -948,10 +956,14 @@
       const hasRounds = currentGame.rounds.length > 0;
       document.getElementById('roundsSection').style.display = hasRounds ? '' : 'none';
 
-      // Show hint when no rounds yet
-      if (currentGame.rounds.length === 0 && !document.getElementById('saying').classList.contains('visible')) {
-        document.getElementById('saying').textContent = 'أدخل نتيجة أول جولة';
-        document.getElementById('saying').style.opacity = '0.3';
+      // Show hint only when no rounds exist, clear it when rounds appear
+      const sayingEl = document.getElementById('saying');
+      if (currentGame.rounds.length === 0 && !sayingEl.classList.contains('visible')) {
+        sayingEl.textContent = 'أدخل نتيجة أول جولة';
+        sayingEl.style.opacity = '0.3';
+      } else if (currentGame.rounds.length > 0 && !sayingEl.classList.contains('visible')) {
+        sayingEl.textContent = '';
+        sayingEl.style.opacity = '0';
       }
 
       // Hide session bar until at least one game is complete
