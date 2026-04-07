@@ -403,6 +403,14 @@
       background: rgba(0, 0, 0, 0.85);
     }
 
+    .logo-wrap { text-align: center; margin: 0 auto 4px; }
+    [data-theme="dark"] .logo-wrap {
+      background: #F5F0E6;
+      border-radius: 14px;
+      padding: 4px 12px;
+      display: inline-block;
+    }
+
     /* ── Reduced Motion ────────────────────── */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -420,7 +428,7 @@
       <span id="roomStatusText"></span>
     </div>
     <div class="header">
-      <img src="logo.png" alt="الديوانية" style="height:48px;margin:0 auto 4px;display:block">
+      <div class="logo-wrap"><img src="logo.png" alt="الديوانية" style="height:48px"></div>
       <h1>حاسبة بلوت</h1>
       <div class="mode-toggle">
         <button id="btnSimple" class="active" onclick="setMode('simple')">بسيط</button>
