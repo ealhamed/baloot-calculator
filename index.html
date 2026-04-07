@@ -1256,29 +1256,14 @@
         return;
       }
 
-      // Ambiguous: could be sun or hokm with projects
-      if (total > 16 && total <= 26) {
-        // Could be حكم with projects OR صن without
-        // Check if the excess over 16 matches any project combo in hokm
+      // Total 17-25: can only be حكم with projects (صن base is always 26)
+      if (total > 16 && total < 26) {
+        pendingMeta.type = 'hokm';
         const hokmExcess = total - 16;
         const hokmProjects = decomposeProjects(hokmExcess, 'hokm');
-
         if (hokmProjects.length > 0) {
-          // Ambiguous — ask
-          askQuestion('صن أو حكم؟', [
-            { label: 'صن', value: 'sun' },
-            { label: 'حكم', value: 'hokm' }
-          ], (answer) => {
-            pendingMeta.type = answer;
-            if (answer === 'sun') {
-              finishSimple();
-            } else {
-              resolveProjects(hokmExcess, 'hokm');
-            }
-          });
+          resolveProjects(hokmExcess, 'hokm');
         } else {
-          // Only makes sense as sun
-          pendingMeta.type = 'sun';
           finishSimple();
         }
         return;
@@ -1317,7 +1302,12 @@
         return;
       }
 
-      // Total < 16: unusual, just record
+      // Total < 16: must be حكم without projects (or partial)
+      if (total < 16) {
+        pendingMeta.type = 'hokm';
+        finishSimple();
+        return;
+      }
       finishSimple();
     }
 
