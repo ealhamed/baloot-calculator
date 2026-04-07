@@ -242,6 +242,17 @@
     }
     .stepper-count { font-size: 16px; font-weight: 700; color: var(--navy); min-width: 20px; text-align: center; }
 
+    .clarify-btn {
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      background: var(--navy);
+      color: var(--cream);
+      border-radius: 14px;
+      min-width: 80px;
+    }
+    .clarify-btn:active { opacity: 0.7; }
+
     .bunt-stepper {
       display: flex;
       align-items: center;
@@ -620,6 +631,11 @@
         </div>
         <div style="text-align:center;padding-top:8px">
           <button class="btn-primary" style="max-width:200px" onclick="submitSimple()">تأكيد</button>
+        </div>
+        <!-- Clarification MCQ area -->
+        <div id="clarifyArea" style="display:none">
+          <div id="clarifyQuestion" style="text-align:center;font-size:14px;font-weight:700;color:var(--navy);padding:8px 0"></div>
+          <div id="clarifyOptions" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:4px 0"></div>
         </div>
       </div>
 
@@ -1169,17 +1185,269 @@
 
     let advState = { type: 'sun', buyer: 'lana', multiplier: 'normal', kaboutWinner: 'lana' };
 
+    // ── Smart Score Interpreter ────────────────────────────────
+
+    let pendingBunt = null; // { lana, lahum } waiting for clarification
+    let pendingMeta = {};   // accumulated metadata from MCQ answers
+
     function submitSimple() {
       const lana = parseInt(document.getElementById('simpleLana').value) || 0;
       const lahum = parseInt(document.getElementById('simpleLahum').value) || 0;
       if (lana === 0 && lahum === 0) return;
       if (lana < 0 || lahum < 0) return;
 
-      const result = StateManager.addRound(appState, { lana, lahum }, {});
+      pendingBunt = { lana, lahum };
+      pendingMeta = {};
+
+      // Start interpreting
+      interpretScore(lana, lahum);
+    }
+
+    function interpretScore(lana, lahum) {
+      const total = lana + lahum;
+
+      // Kabout detection
+      if ((lana === 44 && lahum === 0) || (lahum === 44 && lana === 0)) {
+        pendingMeta = { type: 'sun', kabout: true, buyer: lana === 44 ? 'lana' : 'lahum' };
+        finishSimple();
+        return;
+      }
+      if ((lana === 25 && lahum === 0) || (lahum === 25 && lana === 0)) {
+        pendingMeta = { type: 'hokm', kabout: true, buyer: lana === 25 ? 'lana' : 'lahum' };
+        finishSimple();
+        return;
+      }
+
+      // Buyer failure: one team got 0, other got full total
+      if (lana === 0 && (lahum === 26 || lahum === 16)) {
+        pendingMeta.type = lahum === 26 ? 'sun' : 'hokm';
+        pendingMeta.buyerFailed = true;
+        askQuestion('من اشترى؟', [
+          { label: 'لنا', value: 'lana' },
+          { label: 'لهم', value: 'lahum' }
+        ], (answer) => {
+          pendingMeta.buyer = answer;
+          finishSimple();
+        });
+        return;
+      }
+      if (lahum === 0 && (lana === 26 || lana === 16)) {
+        pendingMeta.type = lana === 26 ? 'sun' : 'hokm';
+        pendingMeta.buyerFailed = true;
+        askQuestion('من اشترى؟', [
+          { label: 'لنا', value: 'lana' },
+          { label: 'لهم', value: 'lahum' }
+        ], (answer) => {
+          pendingMeta.buyer = answer;
+          finishSimple();
+        });
+        return;
+      }
+
+      // Exact match: no projects
+      if (total === 26) {
+        pendingMeta.type = 'sun';
+        finishSimple();
+        return;
+      }
+      if (total === 16) {
+        pendingMeta.type = 'hokm';
+        finishSimple();
+        return;
+      }
+
+      // Ambiguous: could be sun or hokm with projects
+      if (total > 16 && total <= 26) {
+        // Could be حكم with projects OR صن without
+        // Check if the excess over 16 matches any project combo in hokm
+        const hokmExcess = total - 16;
+        const hokmProjects = decomposeProjects(hokmExcess, 'hokm');
+
+        if (hokmProjects.length > 0) {
+          // Ambiguous — ask
+          askQuestion('صن أو حكم؟', [
+            { label: 'صن', value: 'sun' },
+            { label: 'حكم', value: 'hokm' }
+          ], (answer) => {
+            pendingMeta.type = answer;
+            if (answer === 'sun') {
+              finishSimple();
+            } else {
+              resolveProjects(hokmExcess, 'hokm');
+            }
+          });
+        } else {
+          // Only makes sense as sun
+          pendingMeta.type = 'sun';
+          finishSimple();
+        }
+        return;
+      }
+
+      // Total > 26: must have projects
+      if (total > 26) {
+        // Try sun first
+        const sunExcess = total - 26;
+        const sunProjects = decomposeProjects(sunExcess, 'sun');
+
+        // Try hokm
+        const hokmExcess = total - 16;
+        const hokmProjects = decomposeProjects(hokmExcess, 'hokm');
+
+        if (sunProjects.length > 0 && hokmProjects.length > 0) {
+          // Could be either — ask type first
+          askQuestion('صن أو حكم؟', [
+            { label: 'صن', value: 'sun' },
+            { label: 'حكم', value: 'hokm' }
+          ], (answer) => {
+            pendingMeta.type = answer;
+            const excess = answer === 'sun' ? sunExcess : hokmExcess;
+            resolveProjects(excess, answer);
+          });
+        } else if (sunProjects.length > 0) {
+          pendingMeta.type = 'sun';
+          resolveProjects(sunExcess, 'sun');
+        } else if (hokmProjects.length > 0) {
+          pendingMeta.type = 'hokm';
+          resolveProjects(hokmExcess, 'hokm');
+        } else {
+          // Can't decompose — just record as-is
+          finishSimple();
+        }
+        return;
+      }
+
+      // Total < 16: unusual, just record
+      finishSimple();
+    }
+
+    function decomposeProjects(excess, type) {
+      // Find all possible project combinations that sum to the excess
+      const vals = [];
+      const projectDefs = [
+        { key: 'sira', sun: 4, hokm: 2 },
+        { key: '50', sun: 10, hokm: 5 },
+        { key: '100', sun: 20, hokm: 10 },
+        { key: '400', sun: 40, hokm: 10 },
+        { key: 'baloot', sun: 0, hokm: 2 }
+      ];
+      const available = projectDefs.filter(p => p[type] > 0);
+
+      const results = [];
+      // Simple brute force with max 4 of each project
+      function findCombos(remaining, startIdx, current) {
+        if (remaining === 0) {
+          results.push([...current]);
+          return;
+        }
+        if (remaining < 0 || startIdx >= available.length) return;
+        for (let count = 0; count <= 4; count++) {
+          const used = available[startIdx][type] * count;
+          if (used > remaining) break;
+          if (count > 0) current.push({ key: available[startIdx].key, count, label: getProjectLabel(available[startIdx].key, type) });
+          findCombos(remaining - used, startIdx + 1, current);
+          if (count > 0) current.pop();
+        }
+        // Also try skipping this project
+        if (results.length === 0 || current.length === 0) {
+          findCombos(remaining, startIdx + 1, current);
+        }
+      }
+      findCombos(excess, 0, []);
+      return results;
+    }
+
+    function getProjectLabel(key, type) {
+      const labels = { sira: 'سرا', '50': 'خمسين', '100': 'مية', '400': type === 'sun' ? 'أربعمية' : '٤ إكوات', baloot: 'بلوت' };
+      return labels[key] || key;
+    }
+
+    function resolveProjects(excess, type) {
+      const combos = decomposeProjects(excess, type);
+
+      if (combos.length === 0) {
+        finishSimple();
+        return;
+      }
+
+      if (combos.length === 1) {
+        // Only one possibility — auto-assign
+        // Need to ask which team has the projects
+        const combo = combos[0];
+        const desc = combo.map(p => (p.count > 1 ? p.count + '× ' : '') + p.label).join(' + ');
+        askQuestion(`مشاريع: ${desc} — لمن؟`, [
+          { label: 'لنا', value: 'lana' },
+          { label: 'لهم', value: 'lahum' },
+          { label: 'مشتركة', value: 'split' }
+        ], (answer) => {
+          if (answer === 'split') {
+            // Ask per project — too complex, just record the combo for the leading team
+            const leading = pendingBunt.lana >= pendingBunt.lahum ? 'lana' : 'lahum';
+            pendingMeta.projects = { [leading]: comboToObj(combo) };
+          } else {
+            pendingMeta.projects = { [answer]: comboToObj(combo) };
+          }
+          finishSimple();
+        });
+        return;
+      }
+
+      // Multiple possibilities — ask which
+      const options = combos.slice(0, 4).map((combo, i) => {
+        const desc = combo.map(p => (p.count > 1 ? p.count + '× ' : '') + p.label).join(' + ');
+        return { label: desc, value: i };
+      });
+
+      askQuestion('أي مشاريع؟', options, (answer) => {
+        const combo = combos[answer];
+        // Ask which team
+        const desc = combo.map(p => (p.count > 1 ? p.count + '× ' : '') + p.label).join(' + ');
+        askQuestion(`${desc} — لمن؟`, [
+          { label: 'لنا', value: 'lana' },
+          { label: 'لهم', value: 'lahum' }
+        ], (team) => {
+          pendingMeta.projects = { [team]: comboToObj(combo) };
+          finishSimple();
+        });
+      });
+    }
+
+    function comboToObj(combo) {
+      const obj = {};
+      for (const p of combo) obj[p.key] = (obj[p.key] || 0) + p.count;
+      return obj;
+    }
+
+    function askQuestion(question, options, callback) {
+      const area = document.getElementById('clarifyArea');
+      const qEl = document.getElementById('clarifyQuestion');
+      const oEl = document.getElementById('clarifyOptions');
+
+      qEl.textContent = question;
+      oEl.innerHTML = options.map((opt, i) =>
+        `<button class="clarify-btn" data-idx="${i}">${opt.label}</button>`
+      ).join('');
+
+      area.style.display = '';
+
+      oEl.onclick = (e) => {
+        const btn = e.target.closest('.clarify-btn');
+        if (!btn) return;
+        const idx = parseInt(btn.dataset.idx);
+        area.style.display = 'none';
+        callback(options[idx].value);
+      };
+    }
+
+    function finishSimple() {
+      document.getElementById('clarifyArea').style.display = 'none';
+      const result = StateManager.addRound(appState, pendingBunt, pendingMeta);
       document.querySelector('#simpleForm .btn-primary').classList.add('btn-flash');
       setTimeout(() => document.querySelector('#simpleForm .btn-primary').classList.remove('btn-flash'), 300);
       document.getElementById('simpleLana').value = '';
       document.getElementById('simpleLahum').value = '';
+      pendingBunt = null;
+      pendingMeta = {};
       render();
       checkSayings(result.gameOver ? 'gameOver' : 'roundEnd');
       if (result.gameOver) showGameOver(result.winner);
