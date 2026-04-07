@@ -23,6 +23,7 @@
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html.no-scroll, html.no-scroll body { overflow: hidden; height: 100%; }
 
     body {
       font-family: 'Cairo', sans-serif;
@@ -940,6 +941,9 @@
       document.getElementById('btnNewGame').style.display = gameJustEnded ? '' : 'none';
       document.getElementById('btnSessionOver').style.display = sessionOver ? '' : 'none';
 
+      // Update scroll lock
+      updateScrollLock(settings.mode);
+
       // Hide rounds section when empty
       const hasRounds = currentGame.rounds.length > 0;
       document.getElementById('roundsSection').style.display = hasRounds ? '' : 'none';
@@ -971,7 +975,18 @@
       if (mode === 'advanced') {
         resetAdvancedForm();
       }
+      updateScrollLock(mode);
       render();
+    }
+
+    function updateScrollLock(mode) {
+      const hasRounds = appState.currentGame.rounds.length > 0;
+      // Lock scroll in simple mode with no rounds (fresh state fits in one screen)
+      if (mode === 'simple' && !hasRounds) {
+        document.documentElement.classList.add('no-scroll');
+      } else {
+        document.documentElement.classList.remove('no-scroll');
+      }
     }
 
     function confirmNewGame() {
@@ -1794,6 +1809,7 @@
     if (appState.settings.mode === 'advanced') {
       resetAdvancedForm();
     }
+    updateScrollLock(appState.settings.mode);
     render();
 
     // Auto-join room from URL parameter
