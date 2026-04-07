@@ -754,9 +754,11 @@
     <div class="rounds-section" id="roundsSection" style="display:none">
       <div class="rounds-label">الجولات</div>
       <div class="rounds-list" id="roundsList"></div>
-      <div style="text-align:center;padding:4px 0" id="undoBtn">
+      <div style="display:flex;justify-content:center;gap:8px;padding:6px 0" id="undoBtn">
         <button class="btn-secondary" style="font-size:11px;padding:4px 14px;border-radius:12px"
           onclick="undoRound()">تراجع</button>
+        <button class="btn-secondary" style="font-size:11px;padding:4px 14px;border-radius:12px"
+          onclick="confirmNewSession()">صكة جديدة</button>
       </div>
     </div>
 
@@ -776,11 +778,6 @@
         <div class="menu-section-title">الغرفة</div>
         <button class="menu-item" onclick="closeMenu();createRoom()">غرفة جديدة</button>
         <button class="menu-item" onclick="closeMenu();joinRoom()">انضم لغرفة</button>
-      </div>
-
-      <div class="menu-section">
-        <div class="menu-section-title">الجلسة</div>
-        <button class="menu-item" onclick="closeMenu();confirmNewSession()">صكة جديدة</button>
       </div>
 
       <div class="menu-section">
