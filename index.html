@@ -128,6 +128,9 @@
     .round-type.hokm { background: var(--navy); }
     .round-scores { font-weight: 600; color: var(--text); }
     .rs-label { font-size: 10px; font-weight: 600; opacity: 0.4; }
+    .round-card.has-details { flex-direction: column; align-items: stretch; }
+    .round-main { display: flex; align-items: center; justify-content: space-between; }
+    .round-details { font-size: 11px; color: var(--navy); opacity: 0.55; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(26,39,68,0.06); }
     .saying { text-align: center; color: var(--gold-text); font-size: 16px; font-weight: 700; padding: 4px 16px; min-height: 0; opacity: 0; transition: opacity 0.5s ease; }
     .saying.visible { min-height: 32px; }
     .saying.visible { opacity: 1; }
@@ -1073,6 +1076,40 @@
       document.getElementById('progLahum').style.width = progLahum + '%';
       document.querySelector('.progress-wrap').classList.toggle('empty', currentGame.score.lana === 0 && currentGame.score.lahum === 0);
 
+      function buildRoundDetails(r) {
+        const parts = [];
+        // Buyer
+        if (r.buyer) parts.push('اشترى: ' + (r.buyer === 'lana' ? 'لنا' : 'لهم'));
+        // Multiplier
+        if (r.multiplier && r.multiplier !== 'normal') {
+          const multLabels = { double: 'دبل', triple: 'ثري', four: 'فور' };
+          if (multLabels[r.multiplier]) parts.push(multLabels[r.multiplier]);
+        }
+        // Kabout
+        if (r.kabout) parts.push('كبوت');
+        // Buyer failed
+        if (r.buyerFailed) parts.push('خسر المشتري');
+        // Projects
+        if (r.projects) {
+          for (const team of ['lana', 'lahum']) {
+            const proj = r.projects[team];
+            if (!proj) continue;
+            const teamName = team === 'lana' ? 'لنا' : 'لهم';
+            const projLabels = { sira: 'سرا', '50': 'خمسين', '100': 'مية', '400': 'أربعمية', baloot: 'بلوت' };
+            const items = [];
+            if (Array.isArray(proj)) {
+              proj.forEach(p => items.push(projLabels[p] || p));
+            } else {
+              for (const [key, count] of Object.entries(proj)) {
+                if (count > 0) items.push((count > 1 ? count + '× ' : '') + (projLabels[key] || key));
+              }
+            }
+            if (items.length > 0) parts.push(teamName + ': ' + items.join(' + '));
+          }
+        }
+        return parts.length > 0 ? parts.join(' • ') : '';
+      }
+
       const list = document.getElementById('roundsList');
       list.innerHTML = currentGame.rounds.map(r => {
         if (r.type === 'coffee') {
@@ -1084,10 +1121,14 @@
         }
         const typeClass = r.type === 'sun' ? 'sun' : 'hokm';
         const typeLabel = r.type === 'sun' ? 'صن' : (r.type === 'hokm' ? 'حكم' : '');
-        return `<div class="round-card">
-          <span class="round-num">${r.roundNum}</span>
-          ${typeLabel ? `<span class="round-type ${typeClass}">${typeLabel}</span>` : ''}
-          <span class="round-scores"><span class="rs-label">لنا</span> ${r.bunt.lana} - ${r.bunt.lahum} <span class="rs-label">لهم</span></span>
+        const details = buildRoundDetails(r);
+        return `<div class="round-card${details ? ' has-details' : ''}">
+          <div class="round-main">
+            <span class="round-num">${r.roundNum}</span>
+            ${typeLabel ? `<span class="round-type ${typeClass}">${typeLabel}</span>` : ''}
+            <span class="round-scores"><span class="rs-label">لنا</span> ${r.bunt.lana} - ${r.bunt.lahum} <span class="rs-label">لهم</span></span>
+          </div>
+          ${details ? `<div class="round-details">${details}</div>` : ''}
         </div>`;
       }).join('');
 
