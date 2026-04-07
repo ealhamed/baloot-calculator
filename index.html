@@ -657,7 +657,7 @@
         </div>
 
         <div id="roomJoinView" style="display:none">
-          <div style="text-align:center;font-size:13px;color:var(--navy);opacity:0.5;margin-bottom:12px">أدخل الرمز من المضيف</div>
+          <div style="text-align:center;font-size:13px;color:var(--navy);opacity:0.5;margin-bottom:12px">أدخل الرمز من المعزّب</div>
           <div class="input-group">
             <label class="input-label">رمز الغرفة</label>
             <input type="text" class="input-field" id="joinCodeInput" maxlength="4"
@@ -1449,7 +1449,7 @@
 
       peer.on('open', () => {
         document.getElementById('connectedCount').textContent = 'جاهز • ٠ متصلين';
-        showRoomStatus('غرفة ' + roomCode + ' • مضيف • ٠ متصلين');
+        showRoomStatus('غرفة ' + roomCode + ' • معزّب • ٠ متصلين');
       });
 
       peer.on('connection', conn => {
@@ -1590,7 +1590,7 @@
       const count = connections.filter(c => c.open).length;
       const arabic = count.toLocaleString('ar-SA');
       document.getElementById('connectedCount').textContent = arabic + ' متصلين';
-      showRoomStatus('غرفة ' + roomCode + ' • مضيف • ' + arabic + ' متصلين');
+      showRoomStatus('غرفة ' + roomCode + ' • معزّب • ' + arabic + ' متصلين');
     }
 
     function showRoomStatus(text) {
