@@ -606,13 +606,20 @@
 
         <div id="roomCreateView">
           <div style="text-align:center;padding:12px 0">
+            <div style="font-size:13px;color:var(--navy);opacity:0.5;margin-bottom:4px">رمز الغرفة</div>
             <div style="font-size:48px;font-weight:700;color:var(--navy);letter-spacing:12px" id="roomCodeDisplay"></div>
             <div id="qrBox" style="margin:12px auto;width:160px;height:160px"></div>
-            <div id="roomLink" style="font-size:11px;color:var(--navy);opacity:0.5;word-break:break-all;padding:0 8px;cursor:pointer" onclick="copyRoomLink()"></div>
-            <div id="copyMsg" style="font-size:11px;color:var(--burgundy);margin-top:4px;opacity:0;transition:opacity 0.3s"></div>
+            <div style="text-align:center;font-size:13px;color:var(--navy);opacity:0.6;margin-bottom:8px" id="connectedCount"></div>
           </div>
-          <div style="text-align:center;font-size:13px;color:var(--navy);opacity:0.6" id="connectedCount"></div>
-          <div class="kabout-toggle" style="margin-top:12px">
+
+          <!-- Share actions -->
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <button class="btn-primary" style="flex:1;font-size:14px;padding:10px" onclick="shareRoom()">مشاركة الرابط</button>
+            <button class="btn-secondary" style="flex:1;font-size:14px;padding:10px;opacity:1;border-color:var(--navy)" onclick="copyRoomLink()">نسخ الرابط</button>
+          </div>
+          <div id="copyMsg" style="font-size:12px;color:var(--burgundy);text-align:center;margin-bottom:8px;opacity:0;transition:opacity 0.3s"></div>
+
+          <div class="kabout-toggle" style="margin-top:4px">
             <span class="kabout-label" style="font-size:14px">السماح بالتعديل</span>
             <label class="switch">
               <input type="checkbox" id="editLockToggle" onchange="toggleEditLock()">
@@ -622,6 +629,7 @@
         </div>
 
         <div id="roomJoinView" style="display:none">
+          <div style="text-align:center;font-size:13px;color:var(--navy);opacity:0.5;margin-bottom:12px">أدخل الرمز من المضيف</div>
           <div class="input-group">
             <label class="input-label">رمز الغرفة</label>
             <input type="text" class="input-field" id="joinCodeInput" maxlength="4"
@@ -1302,7 +1310,7 @@
 
       peer.on('error', err => {
         console.error('Peer error:', err);
-        document.getElementById('connectedCount').textContent = 'خطأ في الاتصال';
+        document.getElementById('connectedCount').textContent = 'لم يتم الاتصال، تأكد من الإنترنت';
       });
     }
 
@@ -1362,7 +1370,7 @@
 
         setTimeout(() => {
           if (!hostConn || !hostConn.open) {
-            document.getElementById('joinError').textContent = 'لم يتم العثور على الغرفة';
+            document.getElementById('joinError').textContent = 'لم يتم العثور على الغرفة، تأكد من الرمز والإنترنت';
             if (peer) peer.destroy();
           }
         }, 10000);
@@ -1373,14 +1381,34 @@
       document.getElementById('roomModal').classList.remove('open');
     }
 
+    function getJoinUrl() {
+      return window.location.href.split('?')[0] + '?room=' + roomCode;
+    }
+
     function copyRoomLink() {
-      const joinUrl = window.location.href.split('?')[0] + '?room=' + roomCode;
-      navigator.clipboard.writeText(joinUrl).then(() => {
+      navigator.clipboard.writeText(getJoinUrl()).then(() => {
         const msg = document.getElementById('copyMsg');
-        msg.textContent = 'تم النسخ!';
+        msg.textContent = 'تم نسخ الرابط!';
         msg.style.opacity = '1';
         setTimeout(() => msg.style.opacity = '0', 1500);
       });
+    }
+
+    function shareRoom() {
+      const joinUrl = getJoinUrl();
+      if (navigator.share) {
+        navigator.share({
+          title: 'حاسبة بلوت - الديوانية',
+          text: 'تعال انضم للغرفة! الرمز: ' + roomCode,
+          url: joinUrl
+        }).catch(() => {
+          // User cancelled share, fall back to copy
+          copyRoomLink();
+        });
+      } else {
+        // Web Share not supported, fall back to copy
+        copyRoomLink();
+      }
     }
 
     function toggleEditLock() {
