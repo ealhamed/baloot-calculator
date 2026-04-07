@@ -660,7 +660,7 @@
         </div>
 
         <!-- Row 2: Multiplier -->
-        <div class="input-label" style="font-size:13px">المضاعفة</div>
+        <div class="input-label" style="font-size:13px">تدبيل</div>
         <div class="toggle-group" style="flex-wrap:wrap">
           <button class="toggle-btn active" id="advMultNormal" onclick="setAdvMult('normal')">عادي</button>
           <button class="toggle-btn" id="advMultDouble" onclick="setAdvMult('double')">دبل</button>
@@ -1244,12 +1244,7 @@
         return;
       }
 
-      // Exact match: no projects
-      if (total === 26) {
-        pendingMeta.type = 'sun';
-        finishSimple();
-        return;
-      }
+      // Exact 16: can only be حكم, no projects
       if (total === 16) {
         pendingMeta.type = 'hokm';
         finishSimple();
@@ -1277,30 +1272,40 @@
         return;
       }
 
-      // Total > 26: must have projects
-      if (total > 26) {
-        // Try sun first
+      // Total >= 26: could be صن (with or without projects) OR حكم with projects
+      if (total >= 26) {
         const sunExcess = total - 26;
-        const sunProjects = decomposeProjects(sunExcess, 'sun');
-
-        // Try hokm
         const hokmExcess = total - 16;
         const hokmProjects = decomposeProjects(hokmExcess, 'hokm');
+        // Sun is valid if excess >= 0, hokm is valid if projects decompose
+        const sunValid = sunExcess >= 0;
+        const hokmValid = hokmProjects.length > 0;
 
-        if (sunProjects.length > 0 && hokmProjects.length > 0) {
-          // Could be either — ask type first
+        if (sunValid && hokmValid) {
+          // Ambiguous — ask type first
           askQuestion('صن أو حكم؟', [
             { label: 'صن', value: 'sun' },
             { label: 'حكم', value: 'hokm' }
           ], (answer) => {
             pendingMeta.type = answer;
-            const excess = answer === 'sun' ? sunExcess : hokmExcess;
-            resolveProjects(excess, answer);
+            if (answer === 'sun') {
+              if (sunExcess === 0) {
+                finishSimple(); // صن, no projects
+              } else {
+                resolveProjects(sunExcess, 'sun');
+              }
+            } else {
+              resolveProjects(hokmExcess, 'hokm');
+            }
           });
-        } else if (sunProjects.length > 0) {
+        } else if (sunValid) {
           pendingMeta.type = 'sun';
-          resolveProjects(sunExcess, 'sun');
-        } else if (hokmProjects.length > 0) {
+          if (sunExcess === 0) {
+            finishSimple();
+          } else {
+            resolveProjects(sunExcess, 'sun');
+          }
+        } else if (hokmValid) {
           pendingMeta.type = 'hokm';
           resolveProjects(hokmExcess, 'hokm');
         } else {
@@ -1362,45 +1367,25 @@
         return;
       }
 
+      // Auto-assign projects to the team with the higher score
+      const projTeam = pendingBunt.lana >= pendingBunt.lahum ? 'lana' : 'lahum';
+
       if (combos.length === 1) {
-        // Only one possibility — auto-assign
-        // Need to ask which team has the projects
-        const combo = combos[0];
-        const desc = combo.map(p => (p.count > 1 ? p.count + '× ' : '') + p.label).join(' + ');
-        askQuestion(`مشاريع: ${desc} — لمن؟`, [
-          { label: 'لنا', value: 'lana' },
-          { label: 'لهم', value: 'lahum' },
-          { label: 'مشتركة', value: 'split' }
-        ], (answer) => {
-          if (answer === 'split') {
-            // Ask per project — too complex, just record the combo for the leading team
-            const leading = pendingBunt.lana >= pendingBunt.lahum ? 'lana' : 'lahum';
-            pendingMeta.projects = { [leading]: comboToObj(combo) };
-          } else {
-            pendingMeta.projects = { [answer]: comboToObj(combo) };
-          }
-          finishSimple();
-        });
+        // Only one possibility — auto-assign, no question needed
+        pendingMeta.projects = { [projTeam]: comboToObj(combos[0]) };
+        finishSimple();
         return;
       }
 
-      // Multiple possibilities — ask which
+      // Multiple possibilities — ask which (max 4 options)
       const options = combos.slice(0, 4).map((combo, i) => {
         const desc = combo.map(p => (p.count > 1 ? p.count + '× ' : '') + p.label).join(' + ');
         return { label: desc, value: i };
       });
 
       askQuestion('أي مشاريع؟', options, (answer) => {
-        const combo = combos[answer];
-        // Ask which team
-        const desc = combo.map(p => (p.count > 1 ? p.count + '× ' : '') + p.label).join(' + ');
-        askQuestion(`${desc} — لمن؟`, [
-          { label: 'لنا', value: 'lana' },
-          { label: 'لهم', value: 'lahum' }
-        ], (team) => {
-          pendingMeta.projects = { [team]: comboToObj(combo) };
-          finishSimple();
-        });
+        pendingMeta.projects = { [projTeam]: comboToObj(combos[answer]) };
+        finishSimple();
       });
     }
 
