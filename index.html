@@ -326,8 +326,28 @@
     .game-over-overlay .winner-text {
       font-size: 48px;
       font-weight: 700;
-      margin-bottom: 24px;
+      margin-bottom: 8px;
     }
+    .stats-card {
+      background: rgba(245,240,230,0.1);
+      border-radius: 16px;
+      padding: 12px 16px;
+      width: 100%;
+      max-width: 300px;
+      backdrop-filter: blur(4px);
+    }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      font-size: 13px;
+      color: var(--cream);
+      border-bottom: 1px solid rgba(245,240,230,0.08);
+    }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-row span:first-child { opacity: 0.6; }
+    .stat-row span:last-child { font-weight: 700; }
     /* ── Button Flash ──────────────────────── */
     .btn-flash {
       animation: flash 0.3s ease;
@@ -421,12 +441,13 @@
   <!-- Decorative suit accents -->
 
   <main>
-    <div id="roomStatus" style="display:none;background:var(--navy);padding:6px 12px;display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-        <span id="roomStatusText" style="font-size:12px;color:var(--cream);font-weight:600"></span>
-        <div style="display:flex;gap:6px">
-          <button style="font-size:10px;padding:4px 10px;background:var(--burgundy);border-radius:12px" onclick="shareRoom()">مشاركة</button>
-          <button style="font-size:10px;padding:4px 10px;background:transparent;border:1px solid rgba(245,240,230,0.3);color:var(--cream);border-radius:12px" onclick="leaveRoom()">خروج</button>
+    <div id="roomStatus" style="display:none;background:var(--navy);padding:6px 12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
+        <span id="roomStatusText" style="font-size:11px;color:var(--cream);font-weight:600"></span>
+        <div style="display:flex;gap:4px;align-items:center">
+          <button id="editToggleBar" style="font-size:9px;padding:3px 8px;background:transparent;border:1px solid rgba(245,240,230,0.3);color:var(--cream);border-radius:10px;display:none" onclick="toggleEditFromBar()">تعديل: مقفل</button>
+          <button style="font-size:10px;padding:3px 8px;background:var(--burgundy);border-radius:10px" onclick="shareRoom()">مشاركة</button>
+          <button style="font-size:10px;padding:3px 8px;background:transparent;border:1px solid rgba(245,240,230,0.3);color:var(--cream);border-radius:10px" onclick="leaveRoom()">خروج</button>
         </div>
       </div>
     </div>
@@ -1225,13 +1246,140 @@
       broadcastState();
     }
 
+    function calcGameStats(game) {
+      const rounds = game.rounds || [];
+      const stats = {
+        totalRounds: rounds.length,
+        buyCount: { lana: 0, lahum: 0 },
+        sunCount: 0,
+        hokmCount: 0,
+        kaboutCount: { lana: 0, lahum: 0 },
+        projectCount: { lana: 0, lahum: 0 },
+        biggestRound: { team: '', score: 0 },
+        closestRound: { diff: 999, lana: 0, lahum: 0 },
+        doubleCount: 0
+      };
+
+      for (const r of rounds) {
+        if (r.type === 'coffee') continue;
+
+        // Buyer count
+        if (r.buyer) stats.buyCount[r.buyer]++;
+
+        // Type count
+        if (r.type === 'sun') stats.sunCount++;
+        if (r.type === 'hokm') stats.hokmCount++;
+
+        // Kabout
+        if (r.kabout) {
+          const kw = r.kaboutWinner || r.buyer || 'lana';
+          stats.kaboutCount[kw]++;
+        }
+
+        // Projects
+        if (r.projects) {
+          for (const team of ['lana', 'lahum']) {
+            const proj = r.projects[team];
+            if (proj) {
+              if (typeof proj === 'object' && !Array.isArray(proj)) {
+                stats.projectCount[team] += Object.values(proj).reduce((a, b) => a + b, 0);
+              } else if (Array.isArray(proj)) {
+                stats.projectCount[team] += proj.length;
+              }
+            }
+          }
+        }
+
+        // Multiplier
+        if (r.multiplier && r.multiplier !== 'normal') stats.doubleCount++;
+
+        // Biggest round
+        if (r.bunt) {
+          if (r.bunt.lana > stats.biggestRound.score) {
+            stats.biggestRound = { team: 'lana', score: r.bunt.lana };
+          }
+          if (r.bunt.lahum > stats.biggestRound.score) {
+            stats.biggestRound = { team: 'lahum', score: r.bunt.lahum };
+          }
+
+          // Closest round
+          const diff = Math.abs(r.bunt.lana - r.bunt.lahum);
+          if (diff < stats.closestRound.diff && diff > 0) {
+            stats.closestRound = { diff, lana: r.bunt.lana, lahum: r.bunt.lahum };
+          }
+        }
+      }
+
+      return stats;
+    }
+
+    function buildStatsHTML(stats, finalScore) {
+      const rows = [];
+
+      // Total rounds
+      rows.push(`<div class="stat-row"><span>عدد الجولات</span><span>${stats.totalRounds}</span></div>`);
+
+      // Sun vs Hokm
+      if (stats.sunCount > 0 || stats.hokmCount > 0) {
+        rows.push(`<div class="stat-row"><span>صن / حكم</span><span>${stats.sunCount} / ${stats.hokmCount}</span></div>`);
+      }
+
+      // Who bought more
+      if (stats.buyCount.lana > 0 || stats.buyCount.lahum > 0) {
+        const moreBuyer = stats.buyCount.lana >= stats.buyCount.lahum ? 'لنا' : 'لهم';
+        rows.push(`<div class="stat-row"><span>أكثر فريق اشترى</span><span>${moreBuyer} (${Math.max(stats.buyCount.lana, stats.buyCount.lahum)})</span></div>`);
+      }
+
+      // Who had more projects
+      if (stats.projectCount.lana > 0 || stats.projectCount.lahum > 0) {
+        const moreProj = stats.projectCount.lana >= stats.projectCount.lahum ? 'لنا' : 'لهم';
+        rows.push(`<div class="stat-row"><span>أكثر فريق مشاريع</span><span>${moreProj} (${Math.max(stats.projectCount.lana, stats.projectCount.lahum)})</span></div>`);
+      }
+
+      // Kabout
+      const totalKabout = stats.kaboutCount.lana + stats.kaboutCount.lahum;
+      if (totalKabout > 0) {
+        rows.push(`<div class="stat-row"><span>كبوت</span><span>لنا ${stats.kaboutCount.lana} • لهم ${stats.kaboutCount.lahum}</span></div>`);
+      }
+
+      // Doubles
+      if (stats.doubleCount > 0) {
+        rows.push(`<div class="stat-row"><span>جولات مضاعفة</span><span>${stats.doubleCount}</span></div>`);
+      }
+
+      // Biggest round
+      if (stats.biggestRound.score > 0) {
+        const team = stats.biggestRound.team === 'lana' ? 'لنا' : 'لهم';
+        rows.push(`<div class="stat-row"><span>أعلى جولة</span><span>${team} — ${stats.biggestRound.score}</span></div>`);
+      }
+
+      // Closest round
+      if (stats.closestRound.diff < 999) {
+        rows.push(`<div class="stat-row"><span>أقرب جولة</span><span>${stats.closestRound.lana} - ${stats.closestRound.lahum}</span></div>`);
+      }
+
+      return rows.join('');
+    }
+
     function showGameOver(winner) {
+      // Get the last finished game's stats
+      const lastGame = appState.session.games[appState.session.games.length - 1];
+      const stats = lastGame ? calcGameStats(lastGame) : null;
+      const finalScore = lastGame ? lastGame.finalScore : { lana: 0, lahum: 0 };
+
       const overlay = document.createElement('div');
       overlay.className = 'game-over-overlay';
       overlay.innerHTML = `
         <h2>انتهت اللعبة!</h2>
         <div class="winner-text">${winner === 'lana' ? 'لنا' : 'لهم'} فاز</div>
-        <button onclick="this.parentElement.remove()" style="font-size:16px">متابعة</button>
+        <div style="font-size:18px;margin-bottom:16px;opacity:0.7">${finalScore.lana} - ${finalScore.lahum}</div>
+        ${stats ? `
+          <div class="stats-card">
+            <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:8px;text-align:center">إحصائيات اللعبة</div>
+            ${buildStatsHTML(stats, finalScore)}
+          </div>
+        ` : ''}
+        <button onclick="this.parentElement.remove()" style="font-size:16px;margin-top:16px">متابعة</button>
       `;
       document.body.appendChild(overlay);
     }
@@ -1433,6 +1581,25 @@
     function showRoomStatus(text) {
       document.getElementById('roomStatus').style.display = '';
       document.getElementById('roomStatusText').textContent = text;
+      // Show edit toggle only for host
+      const editBtn = document.getElementById('editToggleBar');
+      if (isHost) {
+        editBtn.style.display = '';
+        editBtn.textContent = editUnlocked ? 'تعديل: مفتوح' : 'تعديل: مقفل';
+        editBtn.style.background = editUnlocked ? 'rgba(114,47,55,0.6)' : 'transparent';
+      } else {
+        editBtn.style.display = 'none';
+      }
+    }
+
+    function toggleEditFromBar() {
+      editUnlocked = !editUnlocked;
+      document.getElementById('editLockToggle').checked = editUnlocked;
+      toggleEditLock();
+      // Update button text
+      const editBtn = document.getElementById('editToggleBar');
+      editBtn.textContent = editUnlocked ? 'تعديل: مفتوح' : 'تعديل: مقفل';
+      editBtn.style.background = editUnlocked ? 'rgba(114,47,55,0.6)' : 'transparent';
     }
 
     function hideRoomStatus() {
