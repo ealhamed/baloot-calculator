@@ -1371,29 +1371,27 @@
     }
 
     function decomposeProjects(excess, type) {
-      // Find all possible project combinations that sum to the excess
-      const vals = [];
       const projectDefs = [
-        { key: 'sira', sun: 4, hokm: 2 },
-        { key: '50', sun: 10, hokm: 5 },
-        { key: '100', sun: 20, hokm: 10 },
-        { key: '400', sun: 40, hokm: 10 },
-        { key: 'baloot', sun: 0, hokm: 2 }
+        { key: 'sira', sun: 4, hokm: 2, max: 4 },
+        { key: '50', sun: 10, hokm: 5, max: 4 },
+        { key: '100', sun: 20, hokm: 10, max: 4 },
+        { key: '400', sun: 40, hokm: 10, max: 1 },
+        { key: 'baloot', sun: 0, hokm: 2, max: 1 }  // max 1 بلوت per round
       ];
       const available = projectDefs.filter(p => p[type] > 0);
 
       const results = [];
-      // Simple brute force with max 4 of each project
       function findCombos(remaining, startIdx, current) {
-        if (remaining === 0) {
+        if (remaining === 0 && current.length > 0) {
           results.push([...current]);
           return;
         }
-        if (remaining < 0 || startIdx >= available.length) return;
-        for (let count = 0; count <= 4; count++) {
-          const used = available[startIdx][type] * count;
-          if (used > remaining) break;
-          if (count > 0) current.push({ key: available[startIdx].key, count, label: getProjectLabel(available[startIdx].key, type) });
+        if (remaining < 0 || startIdx >= available.length || results.length >= 6) return;
+        const p = available[startIdx];
+        const maxCount = Math.min(p.max, Math.floor(remaining / p[type]));
+        for (let count = 0; count <= maxCount; count++) {
+          const used = p[type] * count;
+          if (count > 0) current.push({ key: p.key, count, label: getProjectLabel(p.key, type) });
           findCombos(remaining - used, startIdx + 1, current);
           if (count > 0) current.pop();
         }
@@ -1403,7 +1401,14 @@
         }
       }
       findCombos(excess, 0, []);
-      return results;
+      // Deduplicate by label string
+      const seen = new Set();
+      return results.filter(combo => {
+        const key = combo.map(p => p.key + ':' + p.count).join(',');
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
     }
 
     function getProjectLabel(key, type) {
