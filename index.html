@@ -1256,6 +1256,14 @@
         return;
       }
 
+      // Total below 16: invalid
+      if (total < 16) {
+        askQuestion('المجموع أقل من ١٦ — تأكد من الأرقام', [
+          { label: 'حسناً', value: 'ok' }
+        ], () => { pendingBunt = null; pendingMeta = {}; });
+        return;
+      }
+
       // Total 17-25: can only be حكم with projects (صن base is always 26)
       if (total > 16 && total < 26) {
         pendingMeta.type = 'hokm';
@@ -1302,12 +1310,6 @@
         return;
       }
 
-      // Total < 16: must be حكم without projects (or partial)
-      if (total < 16) {
-        pendingMeta.type = 'hokm';
-        finishSimple();
-        return;
-      }
       finishSimple();
     }
 
