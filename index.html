@@ -361,6 +361,95 @@
     }
 
     /* ── Theme Toggle ──────────────────────── */
+    /* ── Burger Menu ─────────────────────────── */
+    .burger-btn {
+      position: absolute;
+      left: 16px;
+      top: 12px;
+      background: rgba(26,39,68,0.08);
+      font-size: 20px;
+      padding: 4px;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--navy);
+      line-height: 1;
+    }
+    .menu-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(26, 39, 68, 0.5);
+      z-index: 150;
+      display: none;
+    }
+    .menu-overlay.open { display: block; }
+    .side-menu {
+      position: fixed;
+      top: 0;
+      right: -280px;
+      width: 280px;
+      height: 100%;
+      background: var(--bg);
+      z-index: 151;
+      transition: right 0.3s ease;
+      padding: 24px 20px;
+      overflow-y: auto;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+    }
+    .side-menu.open { right: 0; }
+    .menu-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .menu-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .menu-section {
+      margin-bottom: 20px;
+    }
+    .menu-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gold-text);
+      margin-bottom: 8px;
+      opacity: 0.7;
+    }
+    .menu-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(26,39,68,0.06);
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--navy);
+      background: none;
+      border-radius: 0;
+      width: 100%;
+      text-align: right;
+    }
+    .menu-item:active { opacity: 0.6; }
+    .menu-footer {
+      margin-top: auto;
+      text-align: center;
+      font-size: 11px;
+      color: var(--navy);
+      opacity: 0.3;
+      padding-top: 16px;
+    }
+    [data-theme="dark"] .side-menu {
+      box-shadow: -4px 0 20px rgba(0,0,0,0.4);
+    }
     .theme-toggle {
       position: absolute;
       left: 16px;
@@ -371,7 +460,7 @@
       border-radius: 50%;
       width: 36px;
       height: 36px;
-      display: flex;
+      display: none; /* hidden - moved to menu */
       align-items: center;
       justify-content: center;
     }
@@ -463,6 +552,7 @@
         <button id="btnSimple" class="active" onclick="setMode('simple')">بسيط</button>
         <button id="btnAdvanced" onclick="setMode('advanced')">تفصيلي</button>
       </div>
+      <button class="burger-btn" onclick="openMenu()" aria-label="القائمة">☰</button>
       <button class="theme-toggle" onclick="toggleTheme()" aria-label="تغيير المظهر" id="themeToggle">🌙</button>
     </div>
 
@@ -614,23 +704,37 @@
 
     <div class="session-bar" id="sessionBar">لنا 0 - 0 لهم</div>
 
-    <hr class="footer-divider">
-
-    <div style="text-align:center;padding:4px">
-      <button class="btn-secondary" style="font-size:11px;padding:4px 12px;opacity:0.4" onclick="document.getElementById('moreActions').style.display = document.getElementById('moreActions').style.display === 'none' ? '' : 'none'">المزيد ⋯</button>
-    </div>
-    <div id="moreActions" style="display:none">
-      <div class="room-actions">
-        <button onclick="createRoom()">غرفة جديدة</button>
-        <button onclick="joinRoom()">انضم لغرفة</button>
-      </div>
-      <div class="actions">
-        <button class="btn-secondary" onclick="confirmNewSession()">جلسة جديدة</button>
-      </div>
-    </div>
-
-    <div style="text-align:center;padding:8px 16px 4px;font-size:11px;color:var(--navy);opacity:0.3">With warm regards from ESH</div>
     <div class="bottom-pad"></div>
+
+    <!-- Side Menu -->
+    <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+    <div class="side-menu" id="sideMenu">
+      <div class="menu-header">
+        <span class="menu-title">القائمة</span>
+        <button class="modal-close" onclick="closeMenu()" aria-label="إغلاق">✕</button>
+      </div>
+
+      <div class="menu-section">
+        <div class="menu-section-title">الغرفة</div>
+        <button class="menu-item" onclick="closeMenu();createRoom()">غرفة جديدة</button>
+        <button class="menu-item" onclick="closeMenu();joinRoom()">انضم لغرفة</button>
+      </div>
+
+      <div class="menu-section">
+        <div class="menu-section-title">الجلسة</div>
+        <button class="menu-item" onclick="closeMenu();confirmNewSession()">جلسة جديدة</button>
+      </div>
+
+      <div class="menu-section">
+        <div class="menu-section-title">المظهر</div>
+        <button class="menu-item" onclick="toggleTheme()">
+          <span>الوضع الداكن</span>
+          <span id="themeLabel">🌙</span>
+        </button>
+      </div>
+
+      <div class="menu-footer">With warm regards from ESH</div>
+    </div>
 
     <!-- Room Modal -->
     <div class="modal-overlay" id="roomModal">
@@ -1803,8 +1907,9 @@
     function applyTheme(theme) {
       document.documentElement.setAttribute('data-theme', theme);
       document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
+      const themeLabel = document.getElementById('themeLabel');
+      if (themeLabel) themeLabel.textContent = theme === 'dark' ? '☀️' : '🌙';
       localStorage.setItem('baloot_theme', theme);
-      // Update meta theme-color
       const meta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
       if (meta) meta.content = theme === 'dark' ? '#1A1A2E' : '#722F37';
     }
@@ -1812,6 +1917,16 @@
     function toggleTheme() {
       const current = document.documentElement.getAttribute('data-theme') || 'light';
       applyTheme(current === 'dark' ? 'light' : 'dark');
+    }
+
+    function openMenu() {
+      document.getElementById('menuOverlay').classList.add('open');
+      document.getElementById('sideMenu').classList.add('open');
+    }
+
+    function closeMenu() {
+      document.getElementById('menuOverlay').classList.remove('open');
+      document.getElementById('sideMenu').classList.remove('open');
     }
 
     // Apply theme on load
