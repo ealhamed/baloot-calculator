@@ -785,7 +785,7 @@
           <span id="smartLabel" style="font-size:12px;opacity:0.5">مطفي</span>
         </button>
         <button class="menu-item" onclick="toggleTheme()">
-          <span>الوضع الداكن</span>
+          <span id="themeName">الوضع الداكن</span>
           <span id="themeLabel">🌙</span>
         </button>
       </div>
@@ -2200,6 +2200,8 @@
       document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
       const themeLabel = document.getElementById('themeLabel');
       if (themeLabel) themeLabel.textContent = theme === 'dark' ? '☀️' : '🌙';
+      const themeName = document.getElementById('themeName');
+      if (themeName) themeName.textContent = theme === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن';
       localStorage.setItem('baloot_theme', theme);
       const meta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
       if (meta) meta.content = theme === 'dark' ? '#1A1A2E' : '#722F37';
