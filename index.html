@@ -688,7 +688,7 @@
       <button class="btn-primary" onclick="confirmNewGame()">لعبة جديدة</button>
     </div>
     <div style="text-align:center;padding:16px;display:none" id="btnSessionOver">
-      <button class="btn-primary" onclick="confirmNewSession()">جلسة جديدة — انتهت الجلسة!</button>
+      <button class="btn-primary" onclick="confirmNewSession()">صكة جديدة — انتهت الجلسة!</button>
     </div>
 
     <div class="saying" id="saying"></div>
@@ -722,7 +722,7 @@
 
       <div class="menu-section">
         <div class="menu-section-title">الجلسة</div>
-        <button class="menu-item" onclick="closeMenu();confirmNewSession()">جلسة جديدة</button>
+        <button class="menu-item" onclick="closeMenu();confirmNewSession()">صكة جديدة</button>
       </div>
 
       <div class="menu-section">
@@ -1114,7 +1114,7 @@
     }
 
     function confirmNewSession() {
-      if (confirm('بدء جلسة جديدة؟ سيتم مسح جميع النتائج')) {
+      if (confirm('بدء صكة جديدة؟ سيتم مسح جميع النتائج')) {
         StateManager.newSession(appState);
         render();
         hideSaying();
