@@ -1252,7 +1252,6 @@
       document.getElementById('roomCodeDisplay').textContent = roomCode;
       // Generate join URL and QR code
       const joinUrl = window.location.href.split('?')[0] + '?room=' + roomCode;
-      document.getElementById('roomLink').textContent = joinUrl;
       const qrBox = document.getElementById('qrBox');
       qrBox.innerHTML = '';
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
