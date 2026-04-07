@@ -779,7 +779,11 @@
       </div>
 
       <div class="menu-section">
-        <div class="menu-section-title">المظهر</div>
+        <div class="menu-section-title">الإعدادات</div>
+        <button class="menu-item" onclick="toggleSmartMode()">
+          <span>تحليل النتيجة</span>
+          <span id="smartLabel" style="font-size:12px;opacity:0.5">مطفي</span>
+        </button>
         <button class="menu-item" onclick="toggleTheme()">
           <span>الوضع الداكن</span>
           <span id="themeLabel">🌙</span>
@@ -953,7 +957,8 @@
             score: { lana: 0, lahum: 0 }
           },
           settings: {
-            mode: 'simple'
+            mode: 'simple',
+            smartMode: false
           }
         };
       },
@@ -1201,8 +1206,12 @@
       pendingBunt = { lana, lahum };
       pendingMeta = {};
 
-      // Start interpreting
-      interpretScore(lana, lahum);
+      // Smart mode: interpret score with MCQs. Otherwise just record.
+      if (appState.settings.smartMode) {
+        interpretScore(lana, lahum);
+      } else {
+        finishSimple();
+      }
     }
 
     function interpretScore(lana, lahum) {
@@ -2201,7 +2210,19 @@
       applyTheme(current === 'dark' ? 'light' : 'dark');
     }
 
+    function toggleSmartMode() {
+      appState.settings.smartMode = !appState.settings.smartMode;
+      StateManager.save(appState);
+      updateSmartLabel();
+    }
+
+    function updateSmartLabel() {
+      const el = document.getElementById('smartLabel');
+      if (el) el.textContent = appState.settings.smartMode ? 'شغّال' : 'مطفي';
+    }
+
     function openMenu() {
+      updateSmartLabel();
       document.getElementById('menuOverlay').classList.add('open');
       document.getElementById('sideMenu').classList.add('open');
     }
