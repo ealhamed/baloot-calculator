@@ -1044,7 +1044,7 @@
           .filter(p => p[type] > 0)
           .map(p => `
             <div class="stepper-row">
-              <span class="stepper-label">${p.label} <span class="checkbox-value">${p[type]}</span></span>
+              <span class="stepper-label">${p.label}</span>
               <div class="stepper-controls">
                 <button class="stepper-btn" onclick="stepProject('${team}','${p.key}',-1)" aria-label="أقل ${p.label}">−</button>
                 <span class="stepper-count" id="proj_${team}_${p.key}">0</span>
