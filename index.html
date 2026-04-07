@@ -421,8 +421,14 @@
   <!-- Decorative suit accents -->
 
   <main>
-    <div id="roomStatus" style="display:none;text-align:center;padding:4px;font-size:12px;color:var(--cream);background:var(--navy)">
-      <span id="roomStatusText"></span>
+    <div id="roomStatus" style="display:none;background:var(--navy);padding:6px 12px;display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <span id="roomStatusText" style="font-size:12px;color:var(--cream);font-weight:600"></span>
+        <div style="display:flex;gap:6px">
+          <button style="font-size:10px;padding:4px 10px;background:var(--burgundy);border-radius:12px" onclick="shareRoom()">مشاركة</button>
+          <button style="font-size:10px;padding:4px 10px;background:transparent;border:1px solid rgba(245,240,230,0.3);color:var(--cream);border-radius:12px" onclick="leaveRoom()">خروج</button>
+        </div>
+      </div>
     </div>
     <div class="header">
       <div class="logo-wrap"><img src="logo.png" alt="الديوانية" style="height:72px"></div>
@@ -1280,7 +1286,9 @@
 
       peer.on('open', () => {
         document.getElementById('connectedCount').textContent = '٠ متصلين';
-        showRoomStatus('غرفة ' + roomCode + ' • مضيف');
+        showRoomStatus('غرفة ' + roomCode + ' • مضيف • ٠ متصلين');
+        // Auto-close modal after successful connection
+        setTimeout(() => closeRoomModal(), 800);
       });
 
       peer.on('connection', conn => {
@@ -1421,11 +1429,27 @@
       const count = connections.filter(c => c.open).length;
       const arabic = count.toLocaleString('ar-SA');
       document.getElementById('connectedCount').textContent = arabic + ' متصلين';
+      showRoomStatus('غرفة ' + roomCode + ' • مضيف • ' + arabic + ' متصلين');
     }
 
     function showRoomStatus(text) {
       document.getElementById('roomStatus').style.display = '';
       document.getElementById('roomStatusText').textContent = text;
+    }
+
+    function hideRoomStatus() {
+      document.getElementById('roomStatus').style.display = 'none';
+    }
+
+    function leaveRoom() {
+      if (peer) { peer.destroy(); peer = null; }
+      connections = [];
+      hostConn = null;
+      isHost = false;
+      roomCode = '';
+      editUnlocked = false;
+      hideRoomStatus();
+      render();
     }
 
     function getStatePayload() {
