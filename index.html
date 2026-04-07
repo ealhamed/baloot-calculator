@@ -242,6 +242,33 @@
     }
     .stepper-count { font-size: 16px; font-weight: 700; color: var(--navy); min-width: 20px; text-align: center; }
 
+    .bunt-stepper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    .bunt-step-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      padding: 0;
+      font-size: 22px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--navy);
+      color: var(--cream);
+    }
+    .bunt-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--navy);
+      min-width: 40px;
+      text-align: center;
+    }
+
     .preview-bar {
       background: var(--navy);
       color: var(--cream);
@@ -645,14 +672,22 @@
 
         <!-- Bunt Points (hidden if kabout or coffee) -->
         <div id="cardPointsSection">
-          <div class="input-row">
-            <div class="input-group">
-              <label class="input-label" style="font-size:13px">بنط لنا</label>
-              <input type="number" class="input-field" id="advBuntLana" min="0" inputmode="numeric" oninput="syncBunt('lana')">
+          <div class="input-row" style="align-items:center">
+            <div style="flex:1;text-align:center">
+              <div class="input-label" style="font-size:13px;margin-bottom:8px">بنط لنا</div>
+              <div class="bunt-stepper">
+                <button class="bunt-step-btn" onclick="stepBunt('lana',-1)" aria-label="أقل">−</button>
+                <span class="bunt-value" id="advBuntLana">0</span>
+                <button class="bunt-step-btn" onclick="stepBunt('lana',1)" aria-label="أكثر">+</button>
+              </div>
             </div>
-            <div class="input-group">
-              <label class="input-label" style="font-size:13px">بنط لهم</label>
-              <input type="number" class="input-field" id="advBuntLahum" min="0" inputmode="numeric" oninput="syncBunt('lahum')">
+            <div style="flex:1;text-align:center">
+              <div class="input-label" style="font-size:13px;margin-bottom:8px">بنط لهم</div>
+              <div class="bunt-stepper">
+                <button class="bunt-step-btn" onclick="stepBunt('lahum',-1)" aria-label="أقل">−</button>
+                <span class="bunt-value" id="advBuntLahum">0</span>
+                <button class="bunt-step-btn" onclick="stepBunt('lahum',1)" aria-label="أكثر">+</button>
+              </div>
             </div>
           </div>
         </div>
@@ -1155,11 +1190,9 @@
       advState.type = type;
       document.getElementById('advTypeSun').classList.toggle('active', type === 'sun');
       document.getElementById('advTypeHokm').classList.toggle('active', type === 'hokm');
-      // Recalculate bunt if a value is already entered
-      const lanaVal = document.getElementById('advBuntLana').value;
-      const lahumVal = document.getElementById('advBuntLahum').value;
-      if (lanaVal) syncBunt('lana');
-      else if (lahumVal) syncBunt('lahum');
+      // Recalculate bunt on type change
+      const lanaVal = parseInt(document.getElementById('advBuntLana').textContent) || 0;
+      if (lanaVal > 0) stepBunt('lana', 0);
       renderProjects();
       updateAdvPreview();
     }
@@ -1198,12 +1231,14 @@
       updateAdvPreview();
     }
 
-    function syncBunt(team) {
+    function stepBunt(team, delta) {
       const total = BalootScoring.TOTAL_BUNT[advState.type];
       const el = document.getElementById(team === 'lana' ? 'advBuntLana' : 'advBuntLahum');
       const otherEl = document.getElementById(team === 'lana' ? 'advBuntLahum' : 'advBuntLana');
-      const val = parseInt(el.value) || 0;
-      otherEl.value = Math.max(0, total - val);
+      const current = parseInt(el.textContent) || 0;
+      const newVal = Math.max(0, Math.min(total, current + delta));
+      el.textContent = newVal;
+      otherEl.textContent = Math.max(0, total - newVal);
       updateAdvPreview();
     }
 
@@ -1272,8 +1307,8 @@
         return;
       }
 
-      const buntLana = parseInt(document.getElementById('advBuntLana').value) || 0;
-      const buntLahum = parseInt(document.getElementById('advBuntLahum').value) || 0;
+      const buntLana = parseInt(document.getElementById('advBuntLana').textContent) || 0;
+      const buntLahum = parseInt(document.getElementById('advBuntLahum').textContent) || 0;
       const projLana = BalootScoring.calcProjects(getProjectCounts('Lana'), type, mult);
       const projLahum = BalootScoring.calcProjects(getProjectCounts('Lahum'), type, mult);
 
@@ -1301,8 +1336,8 @@
       setAdvMult('normal');
       document.getElementById('advKabout').checked = false;
       document.getElementById('cardPointsSection').style.display = '';
-      document.getElementById('advBuntLana').value = '';
-      document.getElementById('advBuntLahum').value = '';
+      document.getElementById('advBuntLana').textContent = '0';
+      document.getElementById('advBuntLahum').textContent = '0';
       advState.kaboutWinner = 'lana';
       document.getElementById('kaboutWinnerSection').style.display = 'none';
       renderProjects();
@@ -1337,8 +1372,8 @@
         const projBunt = BalootScoring.calcProjects(getProjectCounts(winnerTeam), type, mult);
         if (winner === 'lana') { lana = kaboutBunt + projBunt; } else { lahum = kaboutBunt + projBunt; }
       } else {
-        const buntLana = parseInt(document.getElementById('advBuntLana').value) || 0;
-        const buntLahum = parseInt(document.getElementById('advBuntLahum').value) || 0;
+        const buntLana = parseInt(document.getElementById('advBuntLana').textContent) || 0;
+        const buntLahum = parseInt(document.getElementById('advBuntLahum').textContent) || 0;
         const projLana = BalootScoring.calcProjects(getProjectCounts('Lana'), type, mult);
         const projLahum = BalootScoring.calcProjects(getProjectCounts('Lahum'), type, mult);
 
