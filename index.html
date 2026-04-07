@@ -976,6 +976,11 @@
       advState.type = type;
       document.getElementById('advTypeSun').classList.toggle('active', type === 'sun');
       document.getElementById('advTypeHokm').classList.toggle('active', type === 'hokm');
+      // Recalculate bunt if a value is already entered
+      const lanaVal = document.getElementById('advBuntLana').value;
+      const lahumVal = document.getElementById('advBuntLahum').value;
+      if (lanaVal) syncBunt('lana');
+      else if (lahumVal) syncBunt('lahum');
       renderProjects();
       updateAdvPreview();
     }
