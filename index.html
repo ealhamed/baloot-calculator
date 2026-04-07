@@ -1285,10 +1285,8 @@
       });
 
       peer.on('open', () => {
-        document.getElementById('connectedCount').textContent = '٠ متصلين';
+        document.getElementById('connectedCount').textContent = 'جاهز • ٠ متصلين';
         showRoomStatus('غرفة ' + roomCode + ' • مضيف • ٠ متصلين');
-        // Auto-close modal after successful connection
-        setTimeout(() => closeRoomModal(), 800);
       });
 
       peer.on('connection', conn => {
