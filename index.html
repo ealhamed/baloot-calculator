@@ -1817,9 +1817,10 @@
       if (total >= 26) {
         const sunExcess = total - 26;
         const hokmExcess = total - 16;
+        const sunProjects = sunExcess > 0 ? decomposeProjects(sunExcess, 'sun') : [];
         const hokmProjects = decomposeProjects(hokmExcess, 'hokm');
-        // Sun is valid if excess >= 0, hokm is valid if projects decompose
-        const sunValid = sunExcess >= 0;
+        // Valid = exact base (excess 0) OR excess decomposes into real projects
+        const sunValid = sunExcess === 0 || sunProjects.length > 0;
         const hokmValid = hokmProjects.length > 0;
 
         if (sunValid && hokmValid) {
@@ -1913,13 +1914,26 @@
         return;
       }
 
+      function assignProjectsAndFinish(combo, team) {
+        pendingMeta.projects = { [team]: comboToObj(combo) };
+        finishSimple();
+      }
+
       function askTeamThenFinish(combo) {
+        // If one team has 0, projects obviously belong to the team with points
+        if (pendingBunt.lahum === 0 && pendingBunt.lana > 0) {
+          assignProjectsAndFinish(combo, 'lana');
+          return;
+        }
+        if (pendingBunt.lana === 0 && pendingBunt.lahum > 0) {
+          assignProjectsAndFinish(combo, 'lahum');
+          return;
+        }
         askQuestion('لمن المشاريع؟', [
           { label: 'لنا', value: 'lana' },
           { label: 'لهم', value: 'lahum' }
         ], (team) => {
-          pendingMeta.projects = { [team]: comboToObj(combo) };
-          finishSimple();
+          assignProjectsAndFinish(combo, team);
         });
       }
 
