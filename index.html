@@ -1725,8 +1725,6 @@
 
     // ── Smart Score Interpreter ────────────────────────────────
 
-    let pendingBunt = null; // { lana, lahum } waiting for clarification
-    let pendingMeta = {};   // accumulated metadata from MCQ answers
 
 
     let submitLocked = false;
@@ -1737,140 +1735,160 @@
       if (lana === 0 && lahum === 0) return;
       if (lana < 0 || lahum < 0) return;
 
-      pendingBunt = { lana, lahum };
-      pendingMeta = {};
+      // Dismiss any pending clarification from previous round
+      document.getElementById('clarifyArea').style.display = 'none';
 
-      // Always interpret score — deduce type, buyer, projects from bunt
-      interpretScore(lana, lahum);
+      // Deduce certain metadata and record immediately
+      const meta = deduceCertainMeta(lana, lahum);
+
+      // Total < 16 is invalid — block, don't record
+      if (meta._invalid) {
+        showClarification('المجموع أقل من ١٦ — تأكد من الأرقام', [
+          { label: 'حسناً', value: 'ok' }
+        ], () => {});
+        return;
+      }
+
+      // Record the round NOW with whatever we're sure of
+      const bunt = { lana, lahum };
+      if (!meta.buyer) meta.buyer = lahum > lana ? 'lahum' : 'lana';
+      if (!meta.multiplier) meta.multiplier = 'normal';
+      const result = StateManager.addRound(appState, bunt, meta);
+
+      if (navigator.vibrate) navigator.vibrate(15);
+      submitLocked = true;
+      setTimeout(function() { submitLocked = false; }, 400);
+      document.querySelector('#simpleForm .btn-primary').classList.add('btn-flash');
+      setTimeout(() => document.querySelector('#simpleForm .btn-primary').classList.remove('btn-flash'), 300);
+      document.getElementById('simpleLana').value = '';
+      document.getElementById('simpleLahum').value = '';
+      render();
+      checkSayings(result.gameOver ? 'gameOver' : 'roundEnd');
+      if (result.gameOver) showGameOver(result.winner);
+      broadcastState();
+
+      // Now ask non-blocking questions for uncertain metadata
+      askUncertainMeta(lana, lahum, meta);
     }
 
-    function interpretScore(lana, lahum) {
+    // Returns metadata we're 100% sure of from the score
+    function deduceCertainMeta(lana, lahum) {
       const total = lana + lahum;
 
-      // Kabout detection
-      if ((lana === 44 && lahum === 0) || (lahum === 44 && lana === 0)) {
-        pendingMeta = { type: 'sun', kabout: true, buyer: lana === 44 ? 'lana' : 'lahum' };
-        finishSimple();
-        return;
-      }
-      if ((lana === 25 && lahum === 0) || (lahum === 25 && lana === 0)) {
-        pendingMeta = { type: 'hokm', kabout: true, buyer: lana === 25 ? 'lana' : 'lahum' };
-        finishSimple();
-        return;
-      }
+      // Invalid
+      if (total < 16) return { _invalid: true };
 
-      // Buyer failure: one team got 0, other got full total
-      if (lana === 0 && (lahum === 26 || lahum === 16)) {
-        pendingMeta.type = lahum === 26 ? 'sun' : 'hokm';
-        pendingMeta.buyerFailed = true;
-        askQuestion('من اشترى؟', [
+      // Kabout
+      if ((lana === 44 && lahum === 0) || (lahum === 44 && lana === 0))
+        return { type: 'sun', kabout: true, buyer: lana === 44 ? 'lana' : 'lahum' };
+      if ((lana === 25 && lahum === 0) || (lahum === 25 && lana === 0))
+        return { type: 'hokm', kabout: true, buyer: lana === 25 ? 'lana' : 'lahum' };
+
+      // Buyer failure (one=0, other=full base) — type is certain, buyer isn't
+      if (lana === 0 && (lahum === 26 || lahum === 16))
+        return { type: lahum === 26 ? 'sun' : 'hokm', buyerFailed: true };
+      if (lahum === 0 && (lana === 26 || lana === 16))
+        return { type: lana === 26 ? 'sun' : 'hokm', buyerFailed: true };
+
+      // Exact 16
+      if (total === 16) return { type: 'hokm' };
+
+      // 17-25: certainly حكم
+      if (total < 26) return { type: 'hokm' };
+
+      // >= 26: check if only one type is valid
+      const sunExcess = total - 26;
+      const hokmExcess = total - 16;
+      const sunProjects = sunExcess > 0 ? decomposeProjects(sunExcess, 'sun') : [];
+      const hokmProjects = decomposeProjects(hokmExcess, 'hokm');
+      const sunValid = sunExcess === 0 || sunProjects.length > 0;
+      const hokmValid = hokmProjects.length > 0;
+
+      if (sunValid && !hokmValid) return { type: 'sun' };
+      if (hokmValid && !sunValid) return { type: 'hokm' };
+      // Both valid or neither — type uncertain, record without it
+      return {};
+    }
+
+    // Show non-blocking questions for uncertain parts, answers update last round
+    function askUncertainMeta(lana, lahum, meta) {
+      const total = lana + lahum;
+
+      // Buyer failure — ask who bought
+      if (meta.buyerFailed) {
+        showClarification('من اشترى؟', [
           { label: 'لنا', value: 'lana' },
           { label: 'لهم', value: 'lahum' }
-        ], (answer) => {
-          pendingMeta.buyer = answer;
-          finishSimple();
-        });
-        return;
-      }
-      if (lahum === 0 && (lana === 26 || lana === 16)) {
-        pendingMeta.type = lana === 26 ? 'sun' : 'hokm';
-        pendingMeta.buyerFailed = true;
-        askQuestion('من اشترى؟', [
-          { label: 'لنا', value: 'lana' },
-          { label: 'لهم', value: 'lahum' }
-        ], (answer) => {
-          pendingMeta.buyer = answer;
-          finishSimple();
-        });
+        ], (answer) => { patchLastRound({ buyer: answer }); });
         return;
       }
 
-      // Exact 16: can only be حكم, no projects
-      if (total === 16) {
-        pendingMeta.type = 'hokm';
-        finishSimple();
-        return;
-      }
-
-      // Total below 16: invalid
-      if (total < 16) {
-        askQuestion('المجموع أقل من ١٦ — تأكد من الأرقام', [
-          { label: 'حسناً', value: 'ok' }
-        ], () => { pendingBunt = null; pendingMeta = {}; }, { skipable: false });
-        return;
-      }
-
-      // Total 17-25: can only be حكم with projects (صن base is always 26)
-      if (total > 16 && total < 26) {
-        pendingMeta.type = 'hokm';
-        const hokmExcess = total - 16;
-        const hokmProjects = decomposeProjects(hokmExcess, 'hokm');
-        if (hokmProjects.length > 0) {
-          resolveProjects(hokmExcess, 'hokm');
-        } else {
-          // Excess doesn't match any project combination (e.g. 17, 19)
-          askQuestion('المجموع ' + total + ' غير مألوف للحكم — تأكد من الأرقام', [
-            { label: 'تسجيل كذا', value: 'keep' },
-            { label: 'تعديل', value: 'cancel' }
-          ], (answer) => {
-            if (answer === 'keep') finishSimple();
-            else { pendingBunt = null; pendingMeta = {}; }
-          }, { skipable: false });
-        }
-        return;
-      }
-
-      // Total >= 26: could be صن (with or without projects) OR حكم with projects
-      if (total >= 26) {
+      // Type ambiguous (total >= 26, both صن and حكم valid)
+      if (total >= 26 && !meta.type) {
         const sunExcess = total - 26;
         const hokmExcess = total - 16;
-        const sunProjects = sunExcess > 0 ? decomposeProjects(sunExcess, 'sun') : [];
-        const hokmProjects = decomposeProjects(hokmExcess, 'hokm');
-        // Valid = exact base (excess 0) OR excess decomposes into real projects
-        const sunValid = sunExcess === 0 || sunProjects.length > 0;
-        const hokmValid = hokmProjects.length > 0;
-
-        if (sunValid && hokmValid) {
-          // Ambiguous — ask type first
-          askQuestion('صن أو حكم؟', [
-            { label: 'صن', value: 'sun' },
-            { label: 'حكم', value: 'hokm' }
-          ], (answer) => {
-            pendingMeta.type = answer;
-            if (answer === 'sun') {
-              if (sunExcess === 0) {
-                finishSimple(); // صن, no projects
-              } else {
-                resolveProjects(sunExcess, 'sun');
-              }
-            } else {
-              resolveProjects(hokmExcess, 'hokm');
-            }
-          });
-        } else if (sunValid) {
-          pendingMeta.type = 'sun';
-          if (sunExcess === 0) {
-            finishSimple();
-          } else {
-            resolveProjects(sunExcess, 'sun');
-          }
-        } else if (hokmValid) {
-          pendingMeta.type = 'hokm';
-          resolveProjects(hokmExcess, 'hokm');
-        } else {
-          // Neither صن nor حكم decompose cleanly
-          askQuestion('المجموع ' + total + ' غير مألوف — تأكد من الأرقام', [
-            { label: 'تسجيل كذا', value: 'keep' },
-            { label: 'تعديل', value: 'cancel' }
-          ], (answer) => {
-            if (answer === 'keep') finishSimple();
-            else { pendingBunt = null; pendingMeta = {}; }
-          }, { skipable: false });
-        }
+        showClarification('صن أو حكم؟', [
+          { label: 'صن', value: 'sun' },
+          { label: 'حكم', value: 'hokm' }
+        ], (answer) => {
+          patchLastRound({ type: answer });
+          // Now ask about projects for the chosen type
+          const excess = answer === 'sun' ? sunExcess : hokmExcess;
+          if (excess > 0) askProjectClarification(lana, lahum, excess, answer);
+        });
         return;
       }
 
-      finishSimple();
+      // Type known — check for projects
+      if (meta.type) {
+        const base = meta.type === 'sun' ? 26 : 16;
+        const excess = total - base;
+        if (excess > 0) {
+          askProjectClarification(lana, lahum, excess, meta.type);
+        }
+      }
+    }
+
+    function askProjectClarification(lana, lahum, excess, type) {
+      const combos = decomposeProjects(excess, type);
+      if (combos.length === 0) return; // unusual total, no valid projects
+
+      function applyProjects(combo, team) {
+        patchLastRound({ projects: { [team]: comboToObj(combo) } });
+      }
+
+      function askTeamThenApply(combo) {
+        // If one team has 0, auto-assign
+        if (lahum === 0 && lana > 0) { applyProjects(combo, 'lana'); return; }
+        if (lana === 0 && lahum > 0) { applyProjects(combo, 'lahum'); return; }
+        showClarification('لمن المشاريع؟', [
+          { label: 'لنا', value: 'lana' },
+          { label: 'لهم', value: 'lahum' }
+        ], (team) => { applyProjects(combo, team); });
+      }
+
+      if (combos.length === 1) {
+        askTeamThenApply(combos[0]);
+        return;
+      }
+
+      const options = combos.slice(0, 4).map((combo, i) => {
+        const desc = combo.map(p => (p.count > 1 ? p.count + '× ' : '') + p.label).join(' + ');
+        return { label: desc, value: i };
+      });
+      showClarification('أي مشاريع؟', options, (answer) => {
+        askTeamThenApply(combos[answer]);
+      });
+    }
+
+    // Update the last recorded round's metadata
+    function patchLastRound(updates) {
+      const rounds = appState.currentGame.rounds;
+      if (rounds.length === 0) return;
+      Object.assign(rounds[rounds.length - 1], updates);
+      StateManager.save(appState);
+      render();
+      broadcastState();
     }
 
     function decomposeProjects(excess, type) {
@@ -1879,7 +1897,7 @@
         { key: '50', sun: 10, hokm: 5, max: 4 },
         { key: '100', sun: 20, hokm: 10, max: 4 },
         { key: '400', sun: 40, hokm: 0, max: 1 },
-        { key: 'baloot', sun: 0, hokm: 2, max: 1 }  // max 1 بلوت per round
+        { key: 'baloot', sun: 0, hokm: 2, max: 1 }
       ];
       const available = projectDefs.filter(p => p[type] > 0);
 
@@ -1898,13 +1916,11 @@
           findCombos(remaining - used, startIdx + 1, current);
           if (count > 0) current.pop();
         }
-        // Also try skipping this project
         if (results.length === 0 || current.length === 0) {
           findCombos(remaining, startIdx + 1, current);
         }
       }
       findCombos(excess, 0, []);
-      // Deduplicate by label string
       const seen = new Set();
       return results.filter(combo => {
         const key = combo.map(p => p.key + ':' + p.count).join(',');
@@ -1919,69 +1935,22 @@
       return labels[key] || key;
     }
 
-    function resolveProjects(excess, type) {
-      const combos = decomposeProjects(excess, type);
-
-      if (combos.length === 0) {
-        finishSimple();
-        return;
-      }
-
-      function assignProjectsAndFinish(combo, team) {
-        pendingMeta.projects = { [team]: comboToObj(combo) };
-        finishSimple();
-      }
-
-      function askTeamThenFinish(combo) {
-        // If one team has 0, projects obviously belong to the team with points
-        if (pendingBunt.lahum === 0 && pendingBunt.lana > 0) {
-          assignProjectsAndFinish(combo, 'lana');
-          return;
-        }
-        if (pendingBunt.lana === 0 && pendingBunt.lahum > 0) {
-          assignProjectsAndFinish(combo, 'lahum');
-          return;
-        }
-        askQuestion('لمن المشاريع؟', [
-          { label: 'لنا', value: 'lana' },
-          { label: 'لهم', value: 'lahum' }
-        ], (team) => {
-          assignProjectsAndFinish(combo, team);
-        });
-      }
-
-      if (combos.length === 1) {
-        askTeamThenFinish(combos[0]);
-        return;
-      }
-
-      // Multiple possibilities — ask which, then ask team
-      const options = combos.slice(0, 4).map((combo, i) => {
-        const desc = combo.map(p => (p.count > 1 ? p.count + '× ' : '') + p.label).join(' + ');
-        return { label: desc, value: i };
-      });
-
-      askQuestion('أي مشاريع؟', options, (answer) => {
-        askTeamThenFinish(combos[answer]);
-      });
-    }
-
     function comboToObj(combo) {
       const obj = {};
       for (const p of combo) obj[p.key] = (obj[p.key] || 0) + p.count;
       return obj;
     }
 
-    function askQuestion(question, options, callback, opts) {
+    // Non-blocking clarification — dismissed automatically on next submitSimple
+    function showClarification(question, options, callback) {
       const area = document.getElementById('clarifyArea');
       const qEl = document.getElementById('clarifyQuestion');
       const oEl = document.getElementById('clarifyOptions');
 
       qEl.textContent = question;
-      const skipable = !opts || opts.skipable !== false;
       oEl.innerHTML = options.map((opt, i) =>
         `<button class="clarify-btn" data-idx="${i}">${opt.label}</button>`
-      ).join('') + (skipable ? '<button class="clarify-btn clarify-skip" data-skip="1" style="opacity:0.45;font-size:11px">تخطي</button>' : '');
+      ).join('');
 
       area.style.display = '';
 
@@ -1989,37 +1958,9 @@
         const btn = e.target.closest('.clarify-btn');
         if (!btn) return;
         area.style.display = 'none';
-        if (btn.dataset.skip) {
-          finishSimple();
-          return;
-        }
         const idx = parseInt(btn.dataset.idx);
         callback(options[idx].value);
       };
-    }
-
-    function finishSimple() {
-      document.getElementById('clarifyArea').style.display = 'none';
-      submitLocked = true;
-      // Deduce buyer if not set: higher score = buyer won, if equal default to lana
-      if (!pendingMeta.buyer) {
-        pendingMeta.buyer = (pendingBunt.lahum > pendingBunt.lana) ? 'lahum' : 'lana';
-      }
-      // Default multiplier to normal (simple mode doesn't distinguish)
-      if (!pendingMeta.multiplier) pendingMeta.multiplier = 'normal';
-      const result = StateManager.addRound(appState, pendingBunt, pendingMeta);
-      if (navigator.vibrate) navigator.vibrate(15);
-      setTimeout(function() { submitLocked = false; }, 400);
-      document.querySelector('#simpleForm .btn-primary').classList.add('btn-flash');
-      setTimeout(() => document.querySelector('#simpleForm .btn-primary').classList.remove('btn-flash'), 300);
-      document.getElementById('simpleLana').value = '';
-      document.getElementById('simpleLahum').value = '';
-      pendingBunt = null;
-      pendingMeta = {};
-      render();
-      checkSayings(result.gameOver ? 'gameOver' : 'roundEnd');
-      if (result.gameOver) showGameOver(result.winner);
-      broadcastState();
     }
 
     function setAdvType(type) {
