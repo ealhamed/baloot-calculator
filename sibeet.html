@@ -568,7 +568,7 @@
 
       var isPreset = [100,150,200].indexOf(s.target) !== -1;
       document.querySelectorAll('.sibeet-target-btn').forEach(function(btn) {
-        var val = parseInt(btn.textContent.replace(/[^\d]/g, ''));
+        var val = parseInt(btn.textContent.replace(/[٠-٩]/g, function(d) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); }).replace(/[^\d]/g, ''));
         btn.classList.toggle('active', val === s.target);
       });
       var ci = document.getElementById('sibeetCustomTarget');
