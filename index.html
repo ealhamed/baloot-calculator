@@ -935,7 +935,7 @@
         <div class="team-label">لنا</div>
         <div class="team-score" id="scoreLana">0</div>
       </div>
-      <div class="score-divider">-</div>
+      <div class="score-divider" onclick="toggleSwap()" style="cursor:pointer;padding:8px;border-radius:50%;transition:transform 0.3s" id="swapArrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg></div>
       <div class="team">
         <div class="team-label">لهم</div>
         <div class="team-score" id="scoreLahum">0</div>
@@ -2383,6 +2383,22 @@
       return Math.random().toString(36).substring(2, 6).toUpperCase();
     }
 
+    function saveRoomSession(role, code) {
+      sessionStorage.setItem('baloot_room', JSON.stringify({ role, code }));
+    }
+    function clearRoomSession() {
+      sessionStorage.removeItem('baloot_room');
+    }
+
+    function handleHostMessage(conn, msg) {
+      if (msg.type === 'round_added' && editUnlocked) {
+        const result = StateManager.addRound(appState, msg.payload.bunt, msg.payload.meta || {});
+        render();
+        checkSayings(result.gameOver ? 'gameOver' : 'roundEnd');
+        broadcastState();
+      }
+    }
+
     function createRoom() {
       roomCode = genRoomCode();
       document.getElementById('roomModalTitle').textContent = 'غرفة جديدة';
@@ -2421,26 +2437,14 @@
       peer.on('open', () => {
         document.getElementById('connectedCount').textContent = 'جاهز • ٠ متصلين';
         showRoomStatus('غرفة ' + roomCode + ' • معزّب • ٠ متصلين');
+        saveRoomSession('host', roomCode);
       });
 
       peer.on('connection', conn => {
         connections.push(conn);
         updateConnCount();
-
-        conn.on('data', msg => {
-          if (msg.type === 'round_added' && editUnlocked) {
-            const result = StateManager.addRound(appState, msg.payload.bunt, msg.payload.meta || {});
-            render();
-            checkSayings(result.gameOver ? 'gameOver' : 'roundEnd');
-            broadcastState();
-          }
-        });
-
-        conn.on('close', () => {
-          connections = connections.filter(c => c !== conn);
-          updateConnCount();
-        });
-
+        conn.on('data', msg => handleHostMessage(conn, msg));
+        conn.on('close', () => { connections = connections.filter(c => c !== conn); updateConnCount(); });
         conn.on('open', () => {
           conn.send({ type: 'state_sync', payload: getStatePayload() });
           conn.send({ type: 'edit_lock', payload: { unlocked: editUnlocked } });
@@ -2490,6 +2494,7 @@
           document.getElementById('joinSpinner').style.display = 'none';
           closeRoomModal();
           showRoomStatus('غرفة ' + code + ' • متصل');
+          saveRoomSession('joiner', code);
         });
 
         hostConn.on('data', msg => {
@@ -2508,6 +2513,7 @@
         hostConn.on('close', () => {
           showRoomStatus('انقطع الاتصال');
           hostConn = null;
+          clearRoomSession();
         });
 
         setTimeout(() => {
@@ -2609,6 +2615,7 @@
       isHost = false;
       roomCode = '';
       editUnlocked = false;
+      clearRoomSession();
       hideRoomStatus();
       render();
     }
@@ -2834,19 +2841,61 @@
 
 
 
-    // Auto-join room from URL parameter
+    // Auto-join room from URL parameter or reconnect from sessionStorage
     (function() {
       const params = new URLSearchParams(window.location.search);
       const roomParam = params.get('room');
       if (roomParam && roomParam.length === 4) {
-        // Clean URL without reloading
         window.history.replaceState({}, '', window.location.pathname);
-        // Auto-join after a short delay for PeerJS to load
         setTimeout(() => {
           document.getElementById('joinCodeInput').value = roomParam.toUpperCase();
           doJoinRoom();
         }, 500);
+        return;
       }
+      // Reconnect to previous room after refresh
+      try {
+        const saved = JSON.parse(sessionStorage.getItem('baloot_room'));
+        if (saved && saved.code && saved.code.length === 4) {
+          setTimeout(() => {
+            if (saved.role === 'host') {
+              createRoom();
+              // Override the random code with the saved one — destroy and recreate
+              if (peer) peer.destroy();
+              roomCode = saved.code;
+              document.getElementById('roomCodeDisplay').textContent = roomCode;
+              const joinUrl = window.location.href.split('?')[0] + '?room=' + roomCode;
+              const qrBox = document.getElementById('qrBox');
+              qrBox.innerHTML = '';
+              const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+              new QRCode(qrBox, { text: joinUrl, width: 160, height: 160, colorDark: isDark ? '#E8E4DC' : '#1A2744', colorLight: isDark ? '#1A1A2E' : '#F5F0E6', correctLevel: QRCode.CorrectLevel.M });
+              isHost = true;
+              peer = new Peer(PEER_PREFIX + roomCode.toLowerCase(), {
+                config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] }
+              });
+              peer.on('open', () => {
+                document.getElementById('connectedCount').textContent = 'جاهز • ٠ متصلين';
+                showRoomStatus('غرفة ' + roomCode + ' • معزّب • ٠ متصلين');
+              });
+              peer.on('connection', conn => {
+                connections.push(conn);
+                updateConnCount();
+                conn.on('data', msg => handleHostMessage(conn, msg));
+                conn.on('close', () => { connections = connections.filter(c => c !== conn); updateConnCount(); });
+                conn.on('open', () => {
+                  conn.send({ type: 'state_sync', payload: getStatePayload() });
+                  conn.send({ type: 'edit_lock', payload: { unlocked: editUnlocked } });
+                });
+              });
+              peer.on('error', err => { console.error('Peer error:', err); clearRoomSession(); });
+              closeRoomModal();
+            } else {
+              document.getElementById('joinCodeInput').value = saved.code;
+              doJoinRoom();
+            }
+          }, 500);
+        }
+      } catch(e) {}
     })();
   </script>
   <script>
