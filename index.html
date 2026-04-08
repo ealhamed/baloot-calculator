@@ -1832,20 +1832,51 @@
           { label: 'حكم', value: 'hokm' }
         ], (answer) => {
           patchLastRound({ type: answer });
-          // Now ask about projects for the chosen type
-          const excess = answer === 'sun' ? sunExcess : hokmExcess;
-          if (excess > 0) askProjectClarification(lana, lahum, excess, answer);
+          checkKaboutThenProjects(lana, lahum, answer);
         });
         return;
       }
 
-      // Type known — check for projects
+      // Type known — check كبوت possibility, then projects
       if (meta.type) {
-        const base = meta.type === 'sun' ? 26 : 16;
-        const excess = total - base;
-        if (excess > 0) {
-          askProjectClarification(lana, lahum, excess, meta.type);
+        checkKaboutThenProjects(lana, lahum, meta.type);
+      }
+    }
+
+    function checkKaboutThenProjects(lana, lahum, type) {
+      const total = lana + lahum;
+      const oneZero = lana === 0 || lahum === 0;
+      const kaboutBunt = type === 'sun' ? 44 : 25;
+      const base = type === 'sun' ? 26 : 16;
+
+      // When one side=0 and score > kabout base, could be كبوت + projects
+      if (oneZero && total > kaboutBunt) {
+        const kaboutExcess = total - kaboutBunt;
+        const normalExcess = total - base;
+        const kaboutCombos = decomposeProjects(kaboutExcess, type);
+        const normalCombos = normalExcess > 0 ? decomposeProjects(normalExcess, type) : [];
+
+        if (kaboutCombos.length > 0) {
+          // Both كبوت+projects and normal+projects are possible — ask
+          showClarification('كبوت؟', [
+            { label: 'أيوا', value: 'yes' },
+            { label: 'لا', value: 'no' }
+          ], (answer) => {
+            if (answer === 'yes') {
+              patchLastRound({ kabout: true });
+              if (kaboutExcess > 0) askProjectClarification(lana, lahum, kaboutExcess, type);
+            } else {
+              if (normalExcess > 0) askProjectClarification(lana, lahum, normalExcess, type);
+            }
+          });
+          return;
         }
+      }
+
+      // No كبوت possibility — just projects
+      const excess = total - base;
+      if (excess > 0) {
+        askProjectClarification(lana, lahum, excess, type);
       }
     }
 
