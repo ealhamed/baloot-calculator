@@ -671,10 +671,10 @@
         var el = document.getElementById('sibPTotal'+i);
         if (isMaseera(i)) {
           if (raw === 0) {
-            el.textContent = '−10';
+            el.textContent = '−30';
             el.style.color = 'var(--gold)';
           } else {
-            el.textContent = '+' + (raw * 2) + ' (×2)';
+            el.textContent = '+' + (30 + raw);
             el.style.color = 'var(--burgundy)';
           }
           el.style.opacity = '1';
@@ -720,7 +720,7 @@
       } else {
         // Apply إعلان إفلاس rules
         for (var i = 0; i < 4; i++) {
-          if (isMaseera(i)) scores[i] = scores[i] === 0 ? -10 : scores[i] * 2;
+          if (isMaseera(i)) scores[i] = scores[i] === 0 ? -30 : 30 + scores[i];
         }
       }
 
