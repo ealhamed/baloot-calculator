@@ -155,6 +155,8 @@
       line-height: 1;
       text-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
+    .scoreboard.swapped { flex-direction: row-reverse; }
+    .scoreboard.swapped + .progress-wrap { flex-direction: row-reverse; }
     .score-divider {
       color: var(--gold);
       font-size: 28px;
@@ -1107,6 +1109,10 @@
           <span>صكة جديدة</span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
         </button>
+        <button class="menu-item" onclick="closeMenu();toggleSwap()">
+          <span id="swapLabel">عكس لنا / لهم</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+        </button>
         <button class="menu-item" onclick="toggleTheme()">
           <span id="themeName">الوضع الداكن</span>
           <span id="themeLabel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
@@ -1436,12 +1442,27 @@
     // ── UI Renderer ─────────────────────────────────────────────
 
     let appState = StateManager.load();
+    let teamsSwapped = localStorage.getItem('baloot_swapped') === 'true';
+
+    function tl(key) { return teamsSwapped ? (key === 'lana' ? 'لهم' : 'لنا') : (key === 'lana' ? 'لنا' : 'لهم'); }
+
+    function toggleSwap() {
+      teamsSwapped = !teamsSwapped;
+      localStorage.setItem('baloot_swapped', teamsSwapped);
+      document.getElementById('swapLabel').textContent = teamsSwapped ? 'إرجاع لنا / لهم' : 'عكس لنا / لهم';
+      render();
+    }
 
     function render() {
       const { currentGame, session, settings } = appState;
 
       document.getElementById('scoreLana').textContent = currentGame.score.lana;
       document.getElementById('scoreLahum').textContent = currentGame.score.lahum;
+      document.querySelector('.scoreboard').classList.toggle('swapped', teamsSwapped);
+      document.querySelectorAll('.team-label')[0].textContent = tl('lana');
+      document.querySelectorAll('.team-label')[1].textContent = tl('lahum');
+      document.querySelectorAll('.input-label')[0].textContent = tl('lana');
+      document.querySelectorAll('.input-label')[1].textContent = tl('lahum');
 
       const progLana = Math.min((currentGame.score.lana / 152) * 100, 100);
       const progLahum = Math.min((currentGame.score.lahum / 152) * 100, 100);
@@ -1454,7 +1475,7 @@
         const projLabels = { sira: 'سرا', '50': 'خمسين', '100': 'مية', '400': 'أربعمية', baloot: 'بلوت' };
         // Buyer
         if (r.buyer) {
-          const bLabel = r.buyer === 'lana' ? 'لنا' : 'لهم';
+          const bLabel = tl(r.buyer);
           tags.push(`<span class="round-tag mult" style="opacity:0.5">${bLabel}</span>`);
         }
         // Multiplier
@@ -1478,7 +1499,7 @@
               }
             }
             if (items.length > 0) {
-              const tn = team === 'lana' ? 'لنا' : 'لهم';
+              const tn = tl(team);
               tags.push(`<span class="round-tag proj">${items.join('+')} ${tn}</span>`);
             }
           }
@@ -1492,7 +1513,7 @@
           return `<div class="round-card">
             <span class="round-num">${r.roundNum}</span>
             <span class="round-type hokm">قهوة</span>
-            <span class="round-scores">${r.coffeeWinner === 'lana' ? 'لنا' : 'لهم'} فاز</span>
+            <span class="round-scores">${tl(r.coffeeWinner)} فاز</span>
           </div>`;
         }
         const typeClass = r.type === 'sun' ? 'sun' : (r.type === 'hokm' ? 'hokm' : '');
@@ -1504,12 +1525,12 @@
             ${typeLabel ? `<span class="round-type ${typeClass}">${typeLabel}</span>` : ''}
             ${tags}
           </div>
-          <span class="round-scores"><span class="rs-label">لنا</span> ${r.bunt.lana} - ${r.bunt.lahum} <span class="rs-label">لهم</span></span>
+          <span class="round-scores"><span class="rs-label">${tl('lana')}</span> ${r.bunt.lana} - ${r.bunt.lahum} <span class="rs-label">${tl('lahum')}</span></span>
         </div>`;
       }).join('');
 
       document.getElementById('sessionBar').textContent =
-        `لنا ${session.wins.lana} - ${session.wins.lahum} لهم`;
+        `${tl('lana')} ${session.wins.lana} - ${session.wins.lahum} ${tl('lahum')}`;
 
       document.getElementById('btnSimple').classList.toggle('active', settings.mode === 'simple');
       document.getElementById('btnAdvanced').classList.toggle('active', settings.mode === 'advanced');
@@ -2146,7 +2167,7 @@
     async function submitAdvanced() {
       if (advState.multiplier === 'coffee') {
         // Ask who won the coffee round
-        const buyerName = advState.buyer === 'lana' ? 'لنا' : 'لهم';
+        const buyerName = tl(advState.buyer);
         const buyerWon = await appConfirm(`هل فاز المشتري (${buyerName}) بالجولة؟`);
         const winner = buyerWon ? advState.buyer : (advState.buyer === 'lana' ? 'lahum' : 'lana');
         const result = StateManager.handleCoffee(appState, winner);
@@ -2290,20 +2311,20 @@
 
       // Who bought more
       if (stats.buyCount.lana > 0 || stats.buyCount.lahum > 0) {
-        const moreBuyer = stats.buyCount.lana >= stats.buyCount.lahum ? 'لنا' : 'لهم';
+        const moreBuyer = tl(stats.buyCount.lana >= stats.buyCount.lahum ? 'lana' : 'lahum');
         rows.push(`<div class="stat-row"><span>أكثر فريق اشترى</span><span>${moreBuyer} (${Math.max(stats.buyCount.lana, stats.buyCount.lahum)})</span></div>`);
       }
 
       // Who had more projects
       if (stats.projectCount.lana > 0 || stats.projectCount.lahum > 0) {
-        const moreProj = stats.projectCount.lana >= stats.projectCount.lahum ? 'لنا' : 'لهم';
+        const moreProj = tl(stats.projectCount.lana >= stats.projectCount.lahum ? 'lana' : 'lahum');
         rows.push(`<div class="stat-row"><span>أكثر فريق مشاريع</span><span>${moreProj} (${Math.max(stats.projectCount.lana, stats.projectCount.lahum)})</span></div>`);
       }
 
       // Kabout
       const totalKabout = stats.kaboutCount.lana + stats.kaboutCount.lahum;
       if (totalKabout > 0) {
-        rows.push(`<div class="stat-row"><span>كبوت</span><span>لنا ${stats.kaboutCount.lana} • لهم ${stats.kaboutCount.lahum}</span></div>`);
+        rows.push(`<div class="stat-row"><span>كبوت</span><span>${tl('lana')} ${stats.kaboutCount.lana} • ${tl('lahum')} ${stats.kaboutCount.lahum}</span></div>`);
       }
 
       // Doubles
@@ -2313,7 +2334,7 @@
 
       // Biggest round
       if (stats.biggestRound.score > 0) {
-        const team = stats.biggestRound.team === 'lana' ? 'لنا' : 'لهم';
+        const team = tl(stats.biggestRound.team);
         rows.push(`<div class="stat-row"><span>أعلى جولة</span><span>${team} — ${stats.biggestRound.score}</span></div>`);
       }
 
@@ -2335,7 +2356,7 @@
       overlay.className = 'game-over-overlay';
       overlay.innerHTML = `
         <h2>انتهت اللعبة!</h2>
-        <div class="winner-text">${winner === 'lana' ? 'لنا' : 'لهم'} فاز</div>
+        <div class="winner-text">${tl(winner)} فاز</div>
         <div style="font-size:18px;margin-bottom:16px;opacity:0.7">${finalScore.lana} - ${finalScore.lahum}</div>
         ${stats ? `
           <div class="stats-card">
@@ -2807,6 +2828,7 @@
     if (appState.settings.mode === 'advanced') {
       resetAdvancedForm();
     }
+    if (teamsSwapped) document.getElementById('swapLabel').textContent = 'إرجاع لنا / لهم';
     updateScrollLock(appState.settings.mode);
     render();
 
