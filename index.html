@@ -138,7 +138,7 @@
     .saying.visible { opacity: 1; }
     .actions { padding: 8px 16px 12px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
     .btn-primary { width: 100%; max-width: 200px; padding: 10px 24px; font-size: 16px; }
-    .btn-secondary { background: transparent; color: var(--navy); border: 1px solid rgba(26,39,68,0.2); font-size: 12px; padding: 6px 16px; opacity: 0.6; }
+    .btn-secondary { background: transparent; color: var(--navy); border: 1px solid rgba(26,39,68,0.2); font-size: 13px; padding: 10px 20px; min-height: 44px; opacity: 0.7; cursor: pointer; }
     .session-bar { text-align: center; padding: 6px 16px; font-size: 13px; font-weight: 600; color: var(--navy); opacity: 0.5; }
     .room-actions { display: flex; justify-content: center; gap: 6px; padding: 2px 16px 8px; }
     .room-actions button { font-size: 11px; padding: 6px 12px; background: var(--navy); opacity: 0.7; }
@@ -241,9 +241,9 @@
     .stepper-label { font-size: 13px; color: var(--text); }
     .stepper-controls { display: flex; align-items: center; gap: 8px; }
     .stepper-btn {
-      width: 36px; height: 36px; border-radius: 50%; padding: 0;
-      font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center;
-      background: var(--navy); color: var(--cream);
+      width: 44px; height: 44px; border-radius: 50%; padding: 0;
+      font-size: 20px; line-height: 1; display: flex; align-items: center; justify-content: center;
+      background: var(--navy); color: var(--cream); cursor: pointer;
     }
     .stepper-count { font-size: 16px; font-weight: 700; color: var(--navy); min-width: 20px; text-align: center; }
 
@@ -288,21 +288,24 @@
     .bunt-presets {
       display: grid;
       grid-template-columns: repeat(9, 1fr);
-      gap: 4px;
+      gap: 6px;
     }
     .bp-btn {
       background: rgba(26,39,68,0.06);
       color: var(--navy);
-      border-radius: 10px;
-      padding: 9px 0;
-      font-size: 14px;
+      border-radius: 12px;
+      padding: 12px 0;
+      font-size: 15px;
       font-weight: 700;
       text-align: center;
       transition: all 0.12s;
+      min-height: 44px;
+      cursor: pointer;
     }
-    .bp-btn:active { transform: scale(0.9); }
+    .bp-btn:active { transform: scale(0.92); }
     .bp-btn.lana-pick { background: var(--burgundy); color: var(--cream); }
     .bp-btn.lahum-pick { background: var(--navy); color: var(--cream); }
+    .bp-btn.bp-disabled { opacity: 0.2; pointer-events: none; }
     [data-theme="dark"] .bp-btn { background: rgba(232,228,220,0.08); }
 
     .preview-bar {
@@ -383,6 +386,7 @@
       animation: fadeIn 0.3s ease;
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
     .game-over-overlay h2 {
       font-size: 28px;
       color: var(--gold);
@@ -724,13 +728,14 @@
       align-items: center;
       justify-content: center;
       gap: 4px;
-      padding: 6px 4px;
-      border-radius: 10px;
-      font-size: 11px;
+      padding: 8px 4px;
+      border-radius: 12px;
+      font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.12s;
       text-align: center;
+      min-height: 44px;
     }
     .sibeet-card-item.toggle-item {
       background: rgba(26,39,68,0.06);
@@ -746,12 +751,12 @@
       gap: 2px;
     }
     .sibeet-hearts-btn {
-      width: 28px;
-      height: 28px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       background: var(--navy);
       color: var(--cream);
-      font-size: 16px;
+      font-size: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -793,6 +798,74 @@
     [data-theme="dark"] .sibeet-pcard { background: rgba(232,228,220,0.04); border-color: rgba(232,228,220,0.08); }
     [data-theme="dark"] .sibeet-double-btn { background: rgba(232,228,220,0.08); }
 
+    /* ── In-App Confirm/Prompt Modal ─────── */
+    .app-dialog-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(26, 39, 68, 0.5);
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.2s ease;
+      padding: 24px;
+    }
+    .app-dialog {
+      background: var(--bg);
+      border-radius: 20px;
+      padding: 24px 20px;
+      width: 100%;
+      max-width: 320px;
+      text-align: center;
+      animation: slideUp 0.25s ease;
+    }
+    .app-dialog-msg {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .app-dialog-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid rgba(26, 39, 68, 0.2);
+      border-radius: 14px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+      background: white;
+      color: var(--navy);
+      outline: none;
+      margin-bottom: 16px;
+    }
+    [data-theme="dark"] .app-dialog-input {
+      background: var(--input-bg);
+      border-color: var(--input-border);
+      color: var(--text);
+    }
+    .app-dialog-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .app-dialog-actions button {
+      flex: 1;
+      padding: 12px;
+      font-size: 15px;
+      border-radius: 14px;
+      min-height: 48px;
+    }
+    .app-dialog-actions .dlg-cancel {
+      background: transparent;
+      color: var(--navy);
+      border: 1px solid rgba(26,39,68,0.2);
+    }
+    .app-dialog-actions .dlg-confirm {
+      background: var(--burgundy);
+      color: var(--cream);
+    }
+
     /* ── Reduced Motion ────────────────────── */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -810,21 +883,21 @@
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
         <span id="roomStatusText" style="font-size:11px;color:var(--cream);font-weight:600"></span>
         <div style="display:flex;gap:4px;align-items:center">
-          <button id="editToggleBar" style="font-size:9px;padding:3px 8px;background:transparent;border:1px solid rgba(245,240,230,0.3);color:var(--cream);border-radius:10px;display:none" onclick="toggleEditFromBar()">تعديل: مقفل</button>
-          <button style="font-size:10px;padding:3px 8px;background:var(--burgundy);border-radius:10px" onclick="shareRoom()">مشاركة</button>
-          <button style="font-size:10px;padding:3px 8px;background:transparent;border:1px solid rgba(245,240,230,0.3);color:var(--cream);border-radius:10px" onclick="leaveRoom()">خروج</button>
+          <button id="editToggleBar" style="font-size:11px;padding:8px 12px;min-height:36px;background:transparent;border:1px solid rgba(245,240,230,0.3);color:var(--cream);border-radius:10px;display:none" onclick="toggleEditFromBar()">تعديل: مقفل</button>
+          <button style="font-size:11px;padding:8px 12px;min-height:36px;background:var(--burgundy);border-radius:10px" onclick="shareRoom()">مشاركة</button>
+          <button style="font-size:11px;padding:8px 12px;min-height:36px;background:transparent;border:1px solid rgba(245,240,230,0.3);color:var(--cream);border-radius:10px" onclick="leaveRoom()">خروج</button>
         </div>
       </div>
     </div>
     <div class="header">
       <div class="logo-wrap"><img src="logo.png" alt="الديوانية" style="height:72px"></div>
       <h1>حاسبة بلوت</h1>
-      <div class="mode-toggle">
-        <button id="btnSimple" class="active" onclick="setMode('simple')">بسيط</button>
-        <button id="btnAdvanced" onclick="setMode('advanced')">تفصيلي</button>
+      <div class="mode-toggle" role="radiogroup" aria-label="وضع الإدخال">
+        <button id="btnSimple" class="active" onclick="setMode('simple')" role="radio" aria-checked="true">بسيط</button>
+        <button id="btnAdvanced" onclick="setMode('advanced')" role="radio" aria-checked="false">تفصيلي</button>
       </div>
-      <button class="burger-btn" onclick="openMenu()" aria-label="القائمة">☰</button>
-      <button class="theme-toggle" onclick="toggleTheme()" aria-label="تغيير المظهر" id="themeToggle">🌙</button>
+      <button class="burger-btn" onclick="openMenu()" aria-label="القائمة"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="تغيير المظهر" id="themeToggle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
     </div>
 
     <div id="balootView">
@@ -856,11 +929,11 @@
         <div class="input-row">
           <div class="input-group">
             <label class="input-label">لنا</label>
-            <input type="number" class="input-field" id="simpleLana" min="0" inputmode="numeric" placeholder="٠">
+            <input type="number" class="input-field" id="simpleLana" min="0" inputmode="numeric" placeholder="بنط">
           </div>
           <div class="input-group">
             <label class="input-label">لهم</label>
-            <input type="number" class="input-field" id="simpleLahum" min="0" inputmode="numeric" placeholder="٠">
+            <input type="number" class="input-field" id="simpleLahum" min="0" inputmode="numeric" placeholder="بنط">
           </div>
         </div>
         <div style="text-align:center;padding-top:8px">
@@ -873,19 +946,17 @@
         </div>
       </div>
 
-      <!-- Advanced Mode Form -->
+      <!-- Advanced Mode Form (single view) -->
       <div id="advancedForm" style="display:none">
-        <!-- Row 1: Type & Buyer -->
-        <div class="input-row" style="margin-bottom:12px">
+        <!-- Row 1: Type & Buyer side by side -->
+        <div class="input-row" style="margin-bottom:10px">
           <div class="input-group" style="margin-bottom:0">
-            <label class="input-label" style="font-size:13px">نوع اللعب</label>
             <div class="toggle-group" style="margin-bottom:0">
               <button class="toggle-btn active" id="advTypeSun" onclick="setAdvType('sun')">صن</button>
               <button class="toggle-btn" id="advTypeHokm" onclick="setAdvType('hokm')">حكم</button>
             </div>
           </div>
           <div class="input-group" style="margin-bottom:0">
-            <label class="input-label" style="font-size:13px">المشتري</label>
             <div class="toggle-group" style="margin-bottom:0">
               <button class="toggle-btn active" id="advBuyerLana" onclick="setAdvBuyer('lana')">لنا</button>
               <button class="toggle-btn" id="advBuyerLahum" onclick="setAdvBuyer('lahum')">لهم</button>
@@ -893,45 +964,46 @@
           </div>
         </div>
 
-        <!-- Row 2: Multiplier -->
-        <div class="input-label" style="font-size:13px">تدبيل</div>
-        <div class="toggle-group" style="flex-wrap:wrap">
-          <button class="toggle-btn active" id="advMultNormal" onclick="setAdvMult('normal')">عادي</button>
-          <button class="toggle-btn" id="advMultDouble" onclick="setAdvMult('double')">دبل</button>
-          <button class="toggle-btn" id="advMultTriple" onclick="setAdvMult('triple')">ثري</button>
-          <button class="toggle-btn" id="advMultFour" onclick="setAdvMult('four')">فور</button>
-          <button class="toggle-btn" id="advMultCoffee" onclick="setAdvMult('coffee')">قهوة</button>
-        </div>
-
-        <!-- Kabout -->
-        <div class="kabout-toggle">
-          <span class="kabout-label">كبوت</span>
-          <label class="switch">
-            <input type="checkbox" id="advKabout" onchange="toggleKabout()">
-            <span class="slider"></span>
-          </label>
-        </div>
-
-        <div id="kaboutWinnerSection" style="display:none">
-          <div class="input-label" style="font-size:13px">من كبت؟</div>
-          <div class="toggle-group">
-            <button class="toggle-btn active" id="kaboutWinnerLana" onclick="setKaboutWinner('lana')">لنا</button>
-            <button class="toggle-btn" id="kaboutWinnerLahum" onclick="setKaboutWinner('lahum')">لهم</button>
+        <!-- Row 2: Multiplier (compact) + Kabout inline -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <div class="toggle-group" style="flex:1;flex-wrap:wrap;margin-bottom:0;gap:4px">
+            <button class="toggle-btn active" id="advMultNormal" onclick="setAdvMult('normal')" style="padding:8px 6px;font-size:13px">عادي</button>
+            <button class="toggle-btn" id="advMultDouble" onclick="setAdvMult('double')" style="padding:8px 6px;font-size:13px">دبل</button>
+            <button class="toggle-btn" id="advMultTriple" onclick="setAdvMult('triple')" style="padding:8px 6px;font-size:13px">ثري</button>
+            <button class="toggle-btn" id="advMultFour" onclick="setAdvMult('four')" style="padding:8px 6px;font-size:13px">فور</button>
+            <button class="toggle-btn" id="advMultCoffee" onclick="setAdvMult('coffee')" style="padding:8px 6px;font-size:13px">قهوة</button>
+          </div>
+          <div class="kabout-toggle" style="margin-bottom:0;padding:8px 12px;min-width:fit-content">
+            <span class="kabout-label" style="font-size:13px;margin-left:8px">كبوت</span>
+            <label class="switch">
+              <input type="checkbox" id="advKabout" onchange="toggleKabout()">
+              <span class="slider"></span>
+            </label>
           </div>
         </div>
 
-        <!-- Bunt Points (hidden if kabout or coffee) -->
+        <div id="kaboutWinnerSection" style="display:none;margin-bottom:8px">
+          <div class="toggle-group">
+            <button class="toggle-btn active" id="kaboutWinnerLana" onclick="setKaboutWinner('lana')">لنا كبت</button>
+            <button class="toggle-btn" id="kaboutWinnerLahum" onclick="setKaboutWinner('lahum')">لهم كبت</button>
+          </div>
+        </div>
+
+        <!-- Bunt Points -->
         <div id="cardPointsSection">
           <div class="bunt-preset-score">
             <div><span class="bps-label">لنا</span> <span class="bps-num lana-color" id="advBuntLana">-</span></div>
             <div><span class="bps-label">لهم</span> <span class="bps-num lahum-color" id="advBuntLahum">-</span></div>
           </div>
-          <div class="bunt-preset-hint">بنط لنا — اضغط مرتين لعكس</div>
+          <div id="buntTeamToggle" style="display:flex;justify-content:center;gap:6px;margin-bottom:6px">
+            <button class="toggle-btn active" id="buntForLana" onclick="setBuntTeam('lana')" style="padding:5px 16px;font-size:12px;border-radius:12px">بنط لنا</button>
+            <button class="toggle-btn" id="buntForLahum" onclick="setBuntTeam('lahum')" style="padding:5px 16px;font-size:12px;border-radius:12px">بنط لهم</button>
+          </div>
           <div class="bunt-presets" id="buntPresetGrid"></div>
         </div>
 
         <!-- Projects -->
-        <div id="projectsSection">
+        <div id="projectsSection" style="margin-top:10px">
           <div class="proj-header">
             <span class="proj-col-label">لنا</span>
             <span class="proj-col-label">المشاريع</span>
@@ -940,14 +1012,14 @@
           <div id="projRows"></div>
         </div>
 
-        <!-- Preview -->
+        <!-- Preview + Confirm -->
         <div class="preview-bar" id="advPreview">
           <span>لنا: <span id="previewLana">0</span></span>
           <span>لهم: <span id="previewLahum">0</span></span>
         </div>
 
         <div style="text-align:center">
-          <button class="btn-primary" style="max-width:200px" onclick="submitAdvanced()">تأكيد</button>
+          <button class="btn-primary" style="max-width:220px;font-size:17px;padding:12px 28px" onclick="submitAdvanced()">تأكيد</button>
         </div>
       </div>
     </div>
@@ -965,11 +1037,9 @@
     <div class="rounds-section" id="roundsSection" style="display:none">
       <div class="rounds-label">الجولات</div>
       <div class="rounds-list" id="roundsList"></div>
-      <div style="display:flex;justify-content:center;gap:8px;padding:6px 0" id="undoBtn">
-        <button class="btn-secondary" style="font-size:11px;padding:4px 14px;border-radius:12px"
-          onclick="undoRound()">تراجع</button>
-        <button class="btn-secondary" style="font-size:11px;padding:4px 14px;border-radius:12px"
-          onclick="confirmNewSession()">صكة جديدة</button>
+      <div style="display:flex;justify-content:center;gap:8px;padding:8px 0" id="undoBtn">
+        <button class="btn-secondary" onclick="undoRound()">تراجع</button>
+        <button class="btn-secondary" onclick="confirmNewSession()">صكة جديدة</button>
       </div>
     </div>
 
@@ -1020,9 +1090,9 @@
       </div>
 
       <!-- Actions -->
-      <div id="sibeetActions" style="display:none;justify-content:center;gap:8px;padding:8px 0">
-        <button class="btn-secondary" style="font-size:11px;padding:4px 14px;border-radius:12px" onclick="undoSibeetRound()">تراجع</button>
-        <button class="btn-secondary" style="font-size:11px;padding:4px 14px;border-radius:12px" onclick="newSibeetGame()">لعبة جديدة</button>
+      <div id="sibeetActions" style="display:none;justify-content:center;gap:8px;padding:8px 16px">
+        <button class="btn-secondary" onclick="undoSibeetRound()">تراجع</button>
+        <button class="btn-secondary" onclick="newSibeetGame()">لعبة جديدة</button>
       </div>
     </div><!-- /sibeetsView -->
 
@@ -1031,14 +1101,14 @@
     <div class="side-menu" id="sideMenu">
       <div class="menu-header">
         <span class="menu-title">القائمة</span>
-        <button class="modal-close" onclick="closeMenu()" aria-label="إغلاق">✕</button>
+        <button class="modal-close" onclick="closeMenu()" aria-label="إغلاق"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
 
       <div class="menu-section">
         <div class="menu-section-title">الألعاب</div>
         <button class="menu-item" onclick="switchGame('baloot')">
           <span>حاسبة بلوت</span>
-          <span id="checkBaloot">✓</span>
+          <span id="checkBaloot"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
         </button>
         <button class="menu-item" onclick="switchGame('sibeet')">
           <span>بنت السبيت</span>
@@ -1060,7 +1130,7 @@
         </button>
         <button class="menu-item" onclick="toggleTheme()">
           <span id="themeName">الوضع الداكن</span>
-          <span id="themeLabel">🌙</span>
+          <span id="themeLabel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
         </button>
       </div>
 
@@ -1072,7 +1142,7 @@
       <div class="modal">
         <div class="modal-header">
           <span class="modal-title" id="roomModalTitle">غرفة جديدة</span>
-          <button class="modal-close" onclick="closeRoomModal()" aria-label="إغلاق">✕</button>
+          <button class="modal-close" onclick="closeRoomModal()" aria-label="إغلاق"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
 
         <div id="roomCreateView">
@@ -1101,6 +1171,10 @@
 
         <div id="roomJoinView" style="display:none">
           <div style="text-align:center;font-size:13px;color:var(--navy);opacity:0.5;margin-bottom:12px">أدخل الرمز من المعزّب</div>
+          <div id="joinSpinner" style="display:none;text-align:center;padding:16px 0">
+            <div style="width:32px;height:32px;border:3px solid rgba(26,39,68,0.15);border-top-color:var(--burgundy);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto"></div>
+            <div style="font-size:12px;color:var(--navy);opacity:0.5;margin-top:8px">جاري الاتصال...</div>
+          </div>
           <div class="input-group">
             <label class="input-label">رمز الغرفة</label>
             <input type="text" class="input-field" id="joinCodeInput" maxlength="4"
@@ -1124,6 +1198,55 @@
     crossorigin="anonymous"
   ></script>
   <script>
+    // ── In-App Dialog (replaces native confirm/prompt) ────────
+    function appConfirm(message) {
+      return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.className = 'app-dialog-overlay';
+        overlay.innerHTML = `
+          <div class="app-dialog">
+            <div class="app-dialog-msg">${message}</div>
+            <div class="app-dialog-actions">
+              <button class="dlg-confirm" data-action="yes">نعم</button>
+              <button class="dlg-cancel" data-action="no">لا</button>
+            </div>
+          </div>`;
+        overlay.addEventListener('click', e => {
+          const action = e.target.dataset?.action;
+          if (action === 'yes') { overlay.remove(); resolve(true); }
+          else if (action === 'no') { overlay.remove(); resolve(false); }
+        });
+        document.body.appendChild(overlay);
+      });
+    }
+
+    function appPrompt(message, defaultValue) {
+      return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.className = 'app-dialog-overlay';
+        overlay.innerHTML = `
+          <div class="app-dialog">
+            <div class="app-dialog-msg">${message}</div>
+            <input class="app-dialog-input" type="text" value="${defaultValue || ''}" autofocus>
+            <div class="app-dialog-actions">
+              <button class="dlg-confirm" data-action="ok">تأكيد</button>
+              <button class="dlg-cancel" data-action="cancel">إلغاء</button>
+            </div>
+          </div>`;
+        const input = overlay.querySelector('input');
+        setTimeout(() => input.focus(), 50);
+        input.addEventListener('keydown', e => {
+          if (e.key === 'Enter') { overlay.remove(); resolve(input.value.trim() || null); }
+        });
+        overlay.addEventListener('click', e => {
+          const action = e.target.dataset?.action;
+          if (action === 'ok') { overlay.remove(); resolve(input.value.trim() || null); }
+          else if (action === 'cancel') { overlay.remove(); resolve(null); }
+        });
+        document.body.appendChild(overlay);
+      });
+    }
+
     // ── Scoring Engine ──────────────────────────────────────────
 
     const BalootScoring = {
@@ -1197,7 +1320,8 @@
         const buntLana = this.rawToBunt(rawPoints.lana, type);
         const buntLahum = this.rawToBunt(rawPoints.lahum, type);
 
-        const buyerFailed = rawPoints[buyer] < this.FAIL_THRESHOLD[type];
+        // Buyer fails if opponent has more raw points
+        const buyerFailed = rawPoints[opponent] > rawPoints[buyer];
 
         let result = { lana: 0, lahum: 0, gameOver: false };
 
@@ -1406,6 +1530,8 @@
 
       document.getElementById('btnSimple').classList.toggle('active', settings.mode === 'simple');
       document.getElementById('btnAdvanced').classList.toggle('active', settings.mode === 'advanced');
+      document.getElementById('btnSimple').setAttribute('aria-checked', settings.mode === 'simple');
+      document.getElementById('btnAdvanced').setAttribute('aria-checked', settings.mode === 'advanced');
 
       // Show correct inline form based on mode
       document.getElementById('simpleForm').style.display = settings.mode === 'simple' ? '' : 'none';
@@ -1473,25 +1599,25 @@
       }
     }
 
-    function confirmNewGame() {
-      if (confirm('بدء لعبة جديدة؟')) {
+    async function confirmNewGame() {
+      if (await appConfirm('بدء لعبة جديدة؟')) {
         StateManager.newGame(appState);
         render();
         checkSayings('newGame');
       }
     }
 
-    function confirmNewSession() {
-      if (confirm('بدء صكة جديدة؟ سيتم مسح جميع النتائج')) {
+    async function confirmNewSession() {
+      if (await appConfirm('بدء صكة جديدة؟ سيتم مسح جميع النتائج')) {
         StateManager.newSession(appState);
         render();
         hideSaying();
       }
     }
 
-    function undoRound() {
+    async function undoRound() {
       if (appState.currentGame.rounds.length === 0) return;
-      if (!confirm('تراجع عن آخر جولة؟')) return;
+      if (!(await appConfirm('تراجع عن آخر جولة؟'))) return;
       StateManager.undoLastRound(appState);
       render();
       hideSaying();
@@ -1750,6 +1876,7 @@
     function finishSimple() {
       document.getElementById('clarifyArea').style.display = 'none';
       const result = StateManager.addRound(appState, pendingBunt, pendingMeta);
+      if (navigator.vibrate) navigator.vibrate(15);
       document.querySelector('#simpleForm .btn-primary').classList.add('btn-flash');
       setTimeout(() => document.querySelector('#simpleForm .btn-primary').classList.remove('btn-flash'), 300);
       document.getElementById('simpleLana').value = '';
@@ -1766,6 +1893,20 @@
       advState.type = type;
       document.getElementById('advTypeSun').classList.toggle('active', type === 'sun');
       document.getElementById('advTypeHokm').classList.toggle('active', type === 'hokm');
+      document.getElementById('advTypeSun').setAttribute('aria-pressed', type === 'sun');
+      document.getElementById('advTypeHokm').setAttribute('aria-pressed', type === 'hokm');
+      // صن only allows عادي and دبل — grey out ثري/فور/قهوة
+      const isSun = type === 'sun';
+      ['Triple', 'Four', 'Coffee'].forEach(m => {
+        const btn = document.getElementById('advMult' + m);
+        btn.disabled = isSun;
+        btn.style.opacity = isSun ? '0.25' : '';
+        btn.style.pointerEvents = isSun ? 'none' : '';
+      });
+      // If switching to صن while a disabled multiplier is selected, reset to normal
+      if (isSun && ['triple', 'four', 'coffee'].includes(advState.multiplier)) {
+        setAdvMult('normal');
+      }
       // Rebuild presets for new type total
       buildBuntPresets();
       renderProjects();
@@ -1776,6 +1917,8 @@
       advState.buyer = buyer;
       document.getElementById('advBuyerLana').classList.toggle('active', buyer === 'lana');
       document.getElementById('advBuyerLahum').classList.toggle('active', buyer === 'lahum');
+      document.getElementById('advBuyerLana').setAttribute('aria-pressed', buyer === 'lana');
+      document.getElementById('advBuyerLahum').setAttribute('aria-pressed', buyer === 'lahum');
       updateAdvPreview();
     }
 
@@ -1794,8 +1937,8 @@
 
     function toggleKabout() {
       const kabout = document.getElementById('advKabout').checked;
-      document.getElementById('cardPointsSection').style.display = kabout ? 'none' : '';
       document.getElementById('kaboutWinnerSection').style.display = kabout ? '' : 'none';
+      document.getElementById('cardPointsSection').style.display = kabout ? 'none' : '';
       updateAdvPreview();
     }
 
@@ -1806,15 +1949,29 @@
       updateAdvPreview();
     }
 
+    let buntTeamMode = 'lana'; // which team the bunt grid assigns to
+
+    function setBuntTeam(team) {
+      buntTeamMode = team;
+      document.getElementById('buntForLana').classList.toggle('active', team === 'lana');
+      document.getElementById('buntForLahum').classList.toggle('active', team === 'lahum');
+      // Re-apply current selection with new team
+      if (buntSelectedIdx >= 0) {
+        pickBunt(buntSelectedIdx, true);
+      }
+    }
+
     let buntSelectedIdx = -1;
     let buntFlipped = false;
 
     function buildBuntPresets() {
-      const total = BalootScoring.TOTAL_BUNT[advState.type];
+      const max = 26; // always show full grid (صن max)
+      const active = BalootScoring.TOTAL_BUNT[advState.type]; // 16 for حكم, 26 for صن
       const grid = document.getElementById('buntPresetGrid');
       const btns = [];
-      for (let i = 0; i <= total; i++) {
-        btns.push(`<button class="bp-btn" id="bp${i}" onclick="pickBunt(${i})">${i}</button>`);
+      for (let i = 0; i <= max; i++) {
+        const disabled = i > active;
+        btns.push(`<button class="bp-btn${disabled ? ' bp-disabled' : ''}" id="bp${i}" ${disabled ? 'disabled' : `onclick="pickBunt(${i})"`} aria-label="${i} بنط">${i}</button>`);
       }
       grid.innerHTML = btns.join('');
       buntSelectedIdx = -1;
@@ -1823,25 +1980,32 @@
       document.getElementById('advBuntLahum').textContent = '-';
     }
 
-    function pickBunt(i) {
+    function pickBunt(i, forceUpdate) {
       const total = BalootScoring.TOTAL_BUNT[advState.type];
-      if (buntSelectedIdx === i) {
-        buntFlipped = !buntFlipped;
-      } else {
-        buntSelectedIdx = i;
-        buntFlipped = false;
+      if (buntSelectedIdx === i && !forceUpdate) {
+        // Toggle team on re-tap as fallback
+        buntTeamMode = buntTeamMode === 'lana' ? 'lahum' : 'lana';
+        setBuntTeam(buntTeamMode);
+        return;
       }
+      buntSelectedIdx = i;
 
-      const lana = buntFlipped ? (total - i) : i;
-      const lahum = buntFlipped ? i : (total - i);
+      const isLana = buntTeamMode === 'lana';
+      const lana = isLana ? i : (total - i);
+      const lahum = isLana ? (total - i) : i;
 
       document.getElementById('advBuntLana').textContent = lana;
       document.getElementById('advBuntLahum').textContent = lahum;
 
-      // Update button styles
+      // Haptic feedback
+      if (navigator.vibrate) navigator.vibrate(10);
+
+      // Update button styles (preserve disabled state)
+      const active = BalootScoring.TOTAL_BUNT[advState.type];
       document.querySelectorAll('.bp-btn').forEach((b, j) => {
         b.className = 'bp-btn';
-        if (j === i) b.classList.add(buntFlipped ? 'lahum-pick' : 'lana-pick');
+        if (j > active) b.classList.add('bp-disabled');
+        if (j === i) b.classList.add(isLana ? 'lana-pick' : 'lahum-pick');
       });
 
       updateAdvPreview();
@@ -1859,15 +2023,8 @@
 
       const container = document.getElementById('projRows');
       container.innerHTML = projects
-        .filter(p => p[type] > 0 || p.key === '400')
+        .filter(p => p[type] > 0)
         .map(p => {
-          if (p[type] === 0) {
-            return `<div class="proj-row" style="opacity:0.25" onclick="showSaying('أصلاً عادي ما أبي أربعمية 😢')">
-              <div class="proj-side"></div>
-              <span class="proj-name" style="text-decoration:line-through">${p.label}</span>
-              <div class="proj-side"></div>
-            </div>`;
-          }
           return `<div class="proj-row">
             <div class="proj-side">
               <button class="stepper-btn" onclick="stepProject('Lana','${p.key}',1)" aria-label="أكثر ${p.label} لنا">+</button>
@@ -1927,13 +2084,13 @@
       const projLana = BalootScoring.calcProjects(getProjectCounts('Lana'), type, mult);
       const projLahum = BalootScoring.calcProjects(getProjectCounts('Lahum'), type, mult);
 
-      // Check buyer failure
+      // Check buyer failure: if opponent has more bunt than buyer, opponent takes all
       const buyer = advState.buyer;
       const opponent = buyer === 'lana' ? 'lahum' : 'lana';
       const buyerBunt = buyer === 'lana' ? buntLana : buntLahum;
-      const halfBunt = Math.ceil(BalootScoring.TOTAL_BUNT[type] / 2);
+      const opponentBunt = buyer === 'lana' ? buntLahum : buntLana;
 
-      if (buyerBunt < halfBunt && (buntLana > 0 || buntLahum > 0)) {
+      if (opponentBunt > buyerBunt && (buntLana > 0 || buntLahum > 0)) {
         // Buyer failed — all bunt to opponent
         const allBunt = BalootScoring.TOTAL_BUNT[type] * mult;
         const oppProj = opponent === 'lana' ? projLana : projLahum;
@@ -1951,19 +2108,22 @@
       setAdvMult('normal');
       document.getElementById('advKabout').checked = false;
       document.getElementById('cardPointsSection').style.display = '';
+      document.getElementById('projectsSection').style.display = '';
+      document.getElementById('advPreview').style.display = '';
       buildBuntPresets();
       advState.kaboutWinner = 'lana';
       document.getElementById('kaboutWinnerSection').style.display = 'none';
+      buntTeamMode = 'lana';
+      setBuntTeam('lana');
       renderProjects();
       updateAdvPreview();
     }
 
-    function submitAdvanced() {
+    async function submitAdvanced() {
       if (advState.multiplier === 'coffee') {
         // Ask who won the coffee round
         const buyerName = advState.buyer === 'lana' ? 'لنا' : 'لهم';
-        const opponentName = advState.buyer === 'lana' ? 'لهم' : 'لنا';
-        const buyerWon = confirm(`هل فاز المشتري (${buyerName}) بالجولة؟`);
+        const buyerWon = await appConfirm(`هل فاز المشتري (${buyerName}) بالجولة؟`);
         const winner = buyerWon ? advState.buyer : (advState.buyer === 'lana' ? 'lahum' : 'lana');
         const result = StateManager.handleCoffee(appState, winner);
         resetAdvancedForm();
@@ -1994,9 +2154,9 @@
         const buyer = advState.buyer;
         const opponent = buyer === 'lana' ? 'lahum' : 'lana';
         const buyerBunt = buyer === 'lana' ? buntLana : buntLahum;
-        const halfBunt = Math.ceil(BalootScoring.TOTAL_BUNT[type] / 2);
+        const opponentBunt = buyer === 'lana' ? buntLahum : buntLana;
 
-        if (buyerBunt < halfBunt && (buntLana > 0 || buntLahum > 0)) {
+        if (opponentBunt > buyerBunt && (buntLana > 0 || buntLahum > 0)) {
           const allBunt = BalootScoring.TOTAL_BUNT[type] * mult;
           const oppProj = opponent === 'lana' ? projLana : projLahum;
           if (opponent === 'lana') { lana = allBunt + oppProj; } else { lahum = allBunt + oppProj; }
@@ -2196,6 +2356,7 @@
         correctLevel: QRCode.CorrectLevel.M
       });
       document.getElementById('connectedCount').textContent = 'جاري الاتصال...';
+      pushOverlay('roomModal');
       document.getElementById('roomModal').classList.add('open');
       document.getElementById('editLockToggle').checked = false;
       editUnlocked = false;
@@ -2253,6 +2414,7 @@
       document.getElementById('roomJoinView').style.display = '';
       document.getElementById('joinCodeInput').value = '';
       document.getElementById('joinError').textContent = '';
+      pushOverlay('roomModal');
       document.getElementById('roomModal').classList.add('open');
     }
 
@@ -2262,7 +2424,8 @@
         document.getElementById('joinError').textContent = 'أدخل رمز من ٤ أحرف';
         return;
       }
-      document.getElementById('joinError').textContent = 'جاري الاتصال...';
+      document.getElementById('joinError').textContent = '';
+      document.getElementById('joinSpinner').style.display = '';
       isHost = false;
       roomCode = code;
 
@@ -2279,6 +2442,7 @@
         hostConn = peer.connect(PEER_PREFIX + code.toLowerCase());
 
         hostConn.on('open', () => {
+          document.getElementById('joinSpinner').style.display = 'none';
           closeRoomModal();
           showRoomStatus('غرفة ' + code + ' • متصل');
         });
@@ -2303,6 +2467,7 @@
 
         setTimeout(() => {
           if (!hostConn || !hostConn.open) {
+            document.getElementById('joinSpinner').style.display = 'none';
             document.getElementById('joinError').textContent = 'لم يتم العثور على الغرفة، تأكد من الرمز والإنترنت';
             if (peer) peer.destroy();
           }
@@ -2551,11 +2716,15 @@
       return 'light';
     }
 
+    const SVG_MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+    const SVG_SUN = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+    const SVG_CHECK = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
     function applyTheme(theme) {
       document.documentElement.setAttribute('data-theme', theme);
-      document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
+      document.getElementById('themeToggle').innerHTML = theme === 'dark' ? SVG_SUN : SVG_MOON;
       const themeLabel = document.getElementById('themeLabel');
-      if (themeLabel) themeLabel.textContent = theme === 'dark' ? '☀️' : '🌙';
+      if (themeLabel) themeLabel.innerHTML = theme === 'dark' ? SVG_SUN : SVG_MOON;
       const themeName = document.getElementById('themeName');
       if (themeName) themeName.textContent = theme === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن';
       localStorage.setItem('baloot_theme', theme);
@@ -2579,8 +2748,30 @@
       if (el) el.textContent = appState.settings.smartMode ? 'شغّال' : 'مطفي';
     }
 
+    // ── History Management (back button) ──────────────────────
+    function pushOverlay(id) {
+      history.pushState({ overlay: id }, '');
+    }
+    window.addEventListener('popstate', function(e) {
+      const state = e.state;
+      // Close any open overlay when back is pressed
+      if (document.getElementById('menuOverlay').classList.contains('open')) {
+        document.getElementById('menuOverlay').classList.remove('open');
+        document.getElementById('sideMenu').classList.remove('open');
+        return;
+      }
+      if (document.getElementById('roomModal').classList.contains('open')) {
+        document.getElementById('roomModal').classList.remove('open');
+        return;
+      }
+      // Close any app-dialog
+      const dlg = document.querySelector('.app-dialog-overlay');
+      if (dlg) { dlg.remove(); return; }
+    });
+
     function openMenu() {
       updateSmartLabel();
+      pushOverlay('menu');
       document.getElementById('menuOverlay').classList.add('open');
       document.getElementById('sideMenu').classList.add('open');
     }
@@ -2608,8 +2799,8 @@
       currentGameMode = game;
       document.getElementById('balootView').style.display = game === 'baloot' ? '' : 'none';
       document.getElementById('sibeetsView').style.display = game === 'sibeet' ? '' : 'none';
-      document.getElementById('checkBaloot').textContent = game === 'baloot' ? '✓' : '';
-      document.getElementById('checkSibeet').textContent = game === 'sibeet' ? '✓' : '';
+      document.getElementById('checkBaloot').innerHTML = game === 'baloot' ? SVG_CHECK : '';
+      document.getElementById('checkSibeet').innerHTML = game === 'sibeet' ? SVG_CHECK : '';
       // Update title
       document.querySelector('.header h1').textContent = game === 'baloot' ? 'حاسبة بلوت' : 'بنت السبيت';
       // Show/hide mode toggle (بسيط/تفصيلي only for بلوت)
@@ -2765,6 +2956,13 @@
 
       // Validation message
       document.getElementById('sibeetValidation').textContent = '';
+
+      // Block entry if game is over
+      var gameOver = s.totals.some(function(t) { return t >= (s.target || 100); });
+      var entryEl = document.querySelector('.sibeet-entry');
+      if (entryEl) {
+        entryEl.style.display = gameOver ? 'none' : '';
+      }
     }
 
     function toggleSibeetDouble(type) {
@@ -2883,24 +3081,24 @@
       document.body.appendChild(overlay);
     }
 
-    function renameSibeetPlayer(idx) {
-      var name = prompt('اسم اللاعب:', sibeetState.players[idx]);
-      if (name && name.trim()) {
-        sibeetState.players[idx] = name.trim();
+    async function renameSibeetPlayer(idx) {
+      var name = await appPrompt('اسم اللاعب:', sibeetState.players[idx]);
+      if (name) {
+        sibeetState.players[idx] = name;
         SibeetState.save(sibeetState);
         renderSibeet();
       }
     }
 
-    function undoSibeetRound() {
+    async function undoSibeetRound() {
       if (sibeetState.rounds.length === 0) return;
-      if (!confirm('تراجع عن آخر جولة؟')) return;
+      if (!(await appConfirm('تراجع عن آخر جولة؟'))) return;
       SibeetState.undoLastRound(sibeetState);
       renderSibeet();
     }
 
-    function newSibeetGame() {
-      if (!confirm('لعبة جديدة؟ سيتم مسح جميع النتائج')) return;
+    async function newSibeetGame() {
+      if (!(await appConfirm('لعبة جديدة؟ سيتم مسح جميع النتائج'))) return;
       SibeetState.newGame(sibeetState);
       renderSibeet();
     }
