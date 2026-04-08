@@ -2773,7 +2773,7 @@
       // Dim overlay
       const dimOverlay = document.createElement('div');
       dimOverlay.id = 'dimOverlay';
-      dimOverlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;pointer-events:none;opacity:0;transition:opacity 0.8s ease';
+      dimOverlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:250;pointer-events:none;opacity:0;transition:opacity 0.8s ease';
       document.body.appendChild(dimOverlay);
 
       function dim() { dimOverlay.style.opacity = '1'; }
