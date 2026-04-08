@@ -2101,7 +2101,9 @@
 
     function tapCardEntry(el) {
       const key = el.dataset.key;
-      const max = CARD_DEFS[key].max;
+      let max = CARD_DEFS[key].max;
+      // In حكم, regular jack max is 3 (one is trump jack)
+      if (key === 'jack' && advState.type === 'hokm') max = 3;
       const cur = cardCounts[key] || 0;
       const next = (cur + 1) % (max + 1);
       cardCounts[key] = next;
