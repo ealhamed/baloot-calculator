@@ -587,6 +587,118 @@
       filter: brightness(1.8) contrast(1.1);
     }
 
+    /* ── بنت السبيت ──────────────────────── */
+    .sibeet-scores {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 0 16px 8px;
+    }
+    .sibeet-player {
+      background: rgba(26,39,68,0.04);
+      border-radius: 14px;
+      padding: 10px 12px;
+      text-align: center;
+    }
+    .sibeet-player-name {
+      font-size: 12px;
+      color: var(--gold-text);
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .sibeet-player-total {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.1;
+    }
+    .sibeet-player.danger .sibeet-player-total { color: var(--burgundy); }
+
+    .sibeet-entry {
+      padding: 0 16px 8px;
+    }
+    .sibeet-entry-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .sibeet-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sibeet-input-label {
+      font-size: 11px;
+      color: var(--gold-text);
+      font-weight: 600;
+      min-width: 40px;
+    }
+    .sibeet-input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid rgba(26,39,68,0.15);
+      border-radius: 12px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      text-align: center;
+      background: white;
+      color: var(--navy);
+      outline: none;
+      -moz-appearance: textfield;
+    }
+    .sibeet-input::-webkit-outer-spin-button,
+    .sibeet-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    .sibeet-doubles {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .sibeet-double-btn {
+      flex: 1;
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(26,39,68,0.06);
+      color: var(--navy);
+      border-radius: 12px;
+      border: 1px solid transparent;
+      text-align: center;
+    }
+    .sibeet-double-btn.active {
+      background: var(--burgundy);
+      color: var(--cream);
+    }
+
+    .sibeet-rounds-table {
+      padding: 0 16px;
+      max-height: 30vh;
+      overflow-y: auto;
+    }
+    .sibeet-round-row {
+      display: grid;
+      grid-template-columns: 30px 1fr 1fr 1fr 1fr;
+      gap: 4px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(26,39,68,0.04);
+      font-size: 13px;
+      text-align: center;
+    }
+    .sibeet-round-row.header {
+      font-weight: 700;
+      color: var(--gold-text);
+      font-size: 11px;
+      border-bottom: 1px solid rgba(26,39,68,0.1);
+    }
+    .sibeet-round-num { color: var(--navy); opacity: 0.4; font-weight: 600; }
+
+    /* Dark mode overrides for بنت السبيت */
+    [data-theme="dark"] .sibeet-player { background: rgba(232,228,220,0.06); }
+    [data-theme="dark"] .sibeet-input { background: var(--input-bg); border-color: var(--input-border); color: var(--text); }
+    [data-theme="dark"] .sibeet-double-btn { background: rgba(232,228,220,0.08); }
+
     /* ── Reduced Motion ────────────────────── */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -621,6 +733,7 @@
       <button class="theme-toggle" onclick="toggleTheme()" aria-label="تغيير المظهر" id="themeToggle">🌙</button>
     </div>
 
+    <div id="balootView">
     <div class="scoreboard">
       <div class="team">
         <div class="team-label">لنا</div>
@@ -769,6 +882,45 @@
     <div class="session-bar" id="sessionBar">لنا 0 - 0 لهم</div>
 
     <div class="bottom-pad"></div>
+    </div><!-- /balootView -->
+
+    <div id="sibeetsView" style="display:none">
+      <!-- Scoreboard -->
+      <div class="sibeet-scores" id="sibeetScores"></div>
+
+      <!-- Score Entry -->
+      <div class="sibeet-entry">
+        <div class="sibeet-entry-grid" id="sibeetInputs"></div>
+        <div class="sibeet-doubles">
+          <button class="sibeet-double-btn" id="dblQueen" onclick="toggleSibeetDouble('queen')">بنت السبيت ×٢</button>
+          <button class="sibeet-double-btn" id="dblDiamond" onclick="toggleSibeetDouble('diamond')">١٠ ديمن ×٢</button>
+        </div>
+        <div style="text-align:center">
+          <button class="btn-primary" style="max-width:200px" onclick="submitSibeet()">تأكيد</button>
+        </div>
+        <div style="text-align:center;margin-top:4px">
+          <span id="sibeetValidation" style="font-size:12px;color:var(--burgundy)"></span>
+        </div>
+      </div>
+
+      <!-- Round History -->
+      <div class="sibeet-rounds-table" id="sibeetRoundsSection" style="display:none">
+        <div class="sibeet-round-row header">
+          <span>#</span>
+          <span id="sColH1">لاعب ١</span>
+          <span id="sColH2">لاعب ٢</span>
+          <span id="sColH3">لاعب ٣</span>
+          <span id="sColH4">لاعب ٤</span>
+        </div>
+        <div id="sibeetRoundsList"></div>
+      </div>
+
+      <!-- Actions -->
+      <div id="sibeetActions" style="display:none;justify-content:center;gap:8px;padding:8px 0">
+        <button class="btn-secondary" style="font-size:11px;padding:4px 14px;border-radius:12px" onclick="undoSibeetRound()">تراجع</button>
+        <button class="btn-secondary" style="font-size:11px;padding:4px 14px;border-radius:12px" onclick="newSibeetGame()">لعبة جديدة</button>
+      </div>
+    </div><!-- /sibeetsView -->
 
     <!-- Side Menu -->
     <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
@@ -779,6 +931,18 @@
       </div>
 
       <div class="menu-section">
+        <div class="menu-section-title">الألعاب</div>
+        <button class="menu-item" onclick="switchGame('baloot')">
+          <span>حاسبة بلوت</span>
+          <span id="checkBaloot">✓</span>
+        </button>
+        <button class="menu-item" onclick="switchGame('sibeet')">
+          <span>بنت السبيت</span>
+          <span id="checkSibeet"></span>
+        </button>
+      </div>
+
+      <div class="menu-section" id="menuRoomSection">
         <div class="menu-section-title">الغرفة</div>
         <button class="menu-item" onclick="closeMenu();createRoom()">غرفة جديدة</button>
         <button class="menu-item" onclick="closeMenu();joinRoom()">انضم لغرفة</button>
@@ -2331,6 +2495,224 @@
     }
     updateScrollLock(appState.settings.mode);
     render();
+
+    // ── Game Switching ───────────────────────────────────────────
+
+    let currentGameMode = 'baloot';
+
+    function switchGame(game) {
+      currentGameMode = game;
+      document.getElementById('balootView').style.display = game === 'baloot' ? '' : 'none';
+      document.getElementById('sibeetsView').style.display = game === 'sibeet' ? '' : 'none';
+      document.getElementById('checkBaloot').textContent = game === 'baloot' ? '✓' : '';
+      document.getElementById('checkSibeet').textContent = game === 'sibeet' ? '✓' : '';
+      // Update title
+      document.querySelector('.header h1').textContent = game === 'baloot' ? 'حاسبة بلوت' : 'بنت السبيت';
+      // Show/hide mode toggle (بسيط/تفصيلي only for بلوت)
+      document.querySelector('.mode-toggle').style.display = game === 'baloot' ? '' : 'none';
+      closeMenu();
+      if (game === 'sibeet') renderSibeet();
+      if (game === 'baloot') render();
+    }
+
+    // ── بنت السبيت State ────────────────────────────────────────
+
+    const SibeetState = {
+      STORAGE_KEY: 'sibeet_state',
+
+      _defaultState() {
+        return {
+          players: ['لاعب ١', 'لاعب ٢', 'لاعب ٣', 'لاعب ٤'],
+          rounds: [],
+          totals: [0, 0, 0, 0],
+          doubleQueen: false,
+          doubleDiamond: false
+        };
+      },
+
+      load() {
+        try {
+          const raw = localStorage.getItem(this.STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            const def = this._defaultState();
+            return {
+              players: parsed.players || def.players,
+              rounds: parsed.rounds || def.rounds,
+              totals: parsed.totals || def.totals,
+              doubleQueen: parsed.doubleQueen || false,
+              doubleDiamond: parsed.doubleDiamond || false
+            };
+          }
+        } catch (e) {}
+        return this._defaultState();
+      },
+
+      save(state) {
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(state));
+      },
+
+      addRound(state, scores) {
+        state.rounds.push({ scores: [...scores], doubleQueen: state.doubleQueen, doubleDiamond: state.doubleDiamond });
+        for (let i = 0; i < 4; i++) state.totals[i] += scores[i];
+        this.save(state);
+        return { gameOver: state.totals.some(function(t) { return t >= 100; }) };
+      },
+
+      undoLastRound(state) {
+        if (state.rounds.length === 0) return;
+        const last = state.rounds.pop();
+        for (let i = 0; i < 4; i++) state.totals[i] -= last.scores[i];
+        this.save(state);
+      },
+
+      newGame(state) {
+        state.rounds = [];
+        state.totals = [0, 0, 0, 0];
+        this.save(state);
+      },
+
+      getExpectedTotal(state) {
+        var total = 36;
+        if (state.doubleQueen) total += 13;
+        if (state.doubleDiamond) total += 10;
+        return total;
+      }
+    };
+
+    var sibeetState = SibeetState.load();
+
+    // ── بنت السبيت UI ──────────────────────────────────────────
+
+    function renderSibeet() {
+      var s = sibeetState;
+
+      // Scoreboard
+      var scores = document.getElementById('sibeetScores');
+      scores.innerHTML = s.players.map(function(name, i) {
+        var danger = s.totals[i] >= 80 ? ' danger' : '';
+        return '<div class="sibeet-player' + danger + '">' +
+          '<div class="sibeet-player-name" onclick="renameSibeetPlayer(' + i + ')">' + name + '</div>' +
+          '<div class="sibeet-player-total">' + s.totals[i] + '</div>' +
+        '</div>';
+      }).join('');
+
+      // Input fields
+      var inputs = document.getElementById('sibeetInputs');
+      inputs.innerHTML = s.players.map(function(name, i) {
+        return '<div class="sibeet-input-wrap">' +
+          '<span class="sibeet-input-label">' + name.substring(0, 6) + '</span>' +
+          '<input type="number" class="sibeet-input" id="sibIn' + i + '" min="0" inputmode="numeric" placeholder="٠">' +
+        '</div>';
+      }).join('');
+
+      // Doubles
+      document.getElementById('dblQueen').classList.toggle('active', s.doubleQueen);
+      document.getElementById('dblDiamond').classList.toggle('active', s.doubleDiamond);
+
+      // Round history
+      var hasRounds = s.rounds.length > 0;
+      document.getElementById('sibeetRoundsSection').style.display = hasRounds ? '' : 'none';
+      var actionsEl = document.getElementById('sibeetActions');
+      actionsEl.style.display = hasRounds ? 'flex' : 'none';
+
+      if (hasRounds) {
+        // Update column headers with player names
+        s.players.forEach(function(name, i) {
+          var h = document.getElementById('sColH' + (i + 1));
+          if (h) h.textContent = name.substring(0, 4);
+        });
+
+        var list = document.getElementById('sibeetRoundsList');
+        list.innerHTML = s.rounds.map(function(r, i) {
+          return '<div class="sibeet-round-row">' +
+            '<span class="sibeet-round-num">' + (i + 1) + '</span>' +
+            r.scores.map(function(sc) { return '<span>' + sc + '</span>'; }).join('') +
+          '</div>';
+        }).join('');
+      }
+
+      // Validation message
+      document.getElementById('sibeetValidation').textContent = '';
+    }
+
+    function toggleSibeetDouble(type) {
+      if (type === 'queen') sibeetState.doubleQueen = !sibeetState.doubleQueen;
+      if (type === 'diamond') sibeetState.doubleDiamond = !sibeetState.doubleDiamond;
+      SibeetState.save(sibeetState);
+      renderSibeet();
+    }
+
+    function submitSibeet() {
+      var scores = [];
+      for (var i = 0; i < 4; i++) {
+        var val = parseInt(document.getElementById('sibIn' + i).value) || 0;
+        if (val < 0) {
+          document.getElementById('sibeetValidation').textContent = 'الأرقام لازم تكون صفر أو أكثر';
+          return;
+        }
+        scores.push(val);
+      }
+
+      var total = scores.reduce(function(a, b) { return a + b; }, 0);
+      var expected = SibeetState.getExpectedTotal(sibeetState);
+
+      if (total !== expected) {
+        document.getElementById('sibeetValidation').textContent = 'المجموع لازم يكون ' + expected + ' (الحالي: ' + total + ')';
+        return;
+      }
+
+      var result = SibeetState.addRound(sibeetState, scores);
+      renderSibeet();
+
+      if (result.gameOver) {
+        showSibeetGameOver();
+      }
+    }
+
+    function showSibeetGameOver() {
+      var s = sibeetState;
+      var ranked = s.players.map(function(name, i) { return { name: name, score: s.totals[i] }; })
+        .sort(function(a, b) { return a.score - b.score; });
+
+      var overlay = document.createElement('div');
+      overlay.className = 'game-over-overlay';
+      overlay.innerHTML =
+        '<h2>انتهت اللعبة!</h2>' +
+        '<div class="winner-text">\uD83C\uDFC6 ' + ranked[0].name + '</div>' +
+        '<div style="width:100%;max-width:280px;margin-top:8px">' +
+          ranked.map(function(p, i) {
+            return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(245,240,230,0.1);font-size:15px">' +
+              '<span>' + (i + 1) + '. ' + p.name + '</span>' +
+              '<span style="font-weight:700">' + p.score + '</span>' +
+            '</div>';
+          }).join('') +
+        '</div>' +
+        '<button onclick="this.parentElement.remove()" style="font-size:16px;margin-top:16px">متابعة</button>';
+      document.body.appendChild(overlay);
+    }
+
+    function renameSibeetPlayer(idx) {
+      var name = prompt('اسم اللاعب:', sibeetState.players[idx]);
+      if (name && name.trim()) {
+        sibeetState.players[idx] = name.trim();
+        SibeetState.save(sibeetState);
+        renderSibeet();
+      }
+    }
+
+    function undoSibeetRound() {
+      if (sibeetState.rounds.length === 0) return;
+      if (!confirm('تراجع عن آخر جولة؟')) return;
+      SibeetState.undoLastRound(sibeetState);
+      renderSibeet();
+    }
+
+    function newSibeetGame() {
+      if (!confirm('لعبة جديدة؟ سيتم مسح جميع النتائج')) return;
+      SibeetState.newGame(sibeetState);
+      renderSibeet();
+    }
 
     // Auto-join room from URL parameter
     (function() {
