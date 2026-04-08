@@ -124,6 +124,7 @@
       color: var(--cream); animation: fadeIn 0.3s ease;
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
     .game-over-overlay h2 { font-size: 28px; color: var(--gold); margin-bottom: 8px; }
     [data-theme="dark"] .game-over-overlay { background: rgba(0,0,0,0.85); }
 
@@ -276,6 +277,16 @@
 </head>
 <body>
   <main>
+    <div id="roomStatus" style="display:none;background:var(--navy);padding:6px 12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
+        <span id="roomStatusText" style="font-size:11px;color:var(--cream);font-weight:600"></span>
+        <div style="display:flex;gap:4px;align-items:center">
+          <button id="editToggleBar" style="font-size:11px;padding:8px 12px;min-height:36px;background:transparent;border:1px solid rgba(245,240,230,0.3);color:var(--cream);border-radius:10px;display:none" onclick="toggleEditFromBar()">تعديل: مقفل</button>
+          <button style="font-size:11px;padding:8px 12px;min-height:36px;background:var(--burgundy);border-radius:10px" onclick="shareRoom()">مشاركة</button>
+          <button style="font-size:11px;padding:8px 12px;min-height:36px;background:transparent;border:1px solid rgba(245,240,230,0.3);color:var(--cream);border-radius:10px" onclick="leaveRoom()">خروج</button>
+        </div>
+      </div>
+    </div>
     <div class="header">
       <div class="logo-wrap"><img src="logo.png" alt="الديوانية" style="height:72px"></div>
       <h1>بنت السبيت</h1>
@@ -342,6 +353,11 @@
         </button>
       </div>
       <div class="menu-section">
+        <div class="menu-section-title">الغرفة</div>
+        <button class="menu-item" onclick="closeMenu();createRoom()">غرفة جديدة</button>
+        <button class="menu-item" onclick="closeMenu();joinRoom()">انضم لغرفة</button>
+      </div>
+      <div class="menu-section">
         <div class="menu-section-title">الإعدادات</div>
         <button class="menu-item" onclick="toggleTheme()">
           <span id="themeName">الوضع الداكن</span>
@@ -350,8 +366,52 @@
       </div>
       <div class="menu-footer">With warm regards from ESH</div>
     </div>
+    <!-- Room Modal -->
+    <div class="modal-overlay" id="roomModal" style="position:fixed;inset:0;background:rgba(26,39,68,0.5);z-index:100;display:none;align-items:flex-end;justify-content:center">
+      <div style="background:var(--bg);border-radius:24px 24px 0 0;width:100%;max-width:430px;padding:24px 20px env(safe-area-inset-bottom,20px);animation:fadeIn 0.3s ease;max-height:90vh;overflow-y:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <span style="color:var(--navy);font-size:20px;font-weight:700" id="roomModalTitle">غرفة جديدة</span>
+          <button class="modal-close" onclick="closeRoomModal()" aria-label="إغلاق"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+        <div id="roomCreateView">
+          <div style="text-align:center;padding:12px 0">
+            <div style="font-size:13px;color:var(--navy);opacity:0.5;margin-bottom:4px">رمز الغرفة</div>
+            <div style="font-size:48px;font-weight:700;color:var(--navy);letter-spacing:12px" id="roomCodeDisplay"></div>
+            <div id="qrBox" style="margin:12px auto;width:160px;height:160px"></div>
+            <div style="text-align:center;font-size:13px;color:var(--navy);opacity:0.6;margin-bottom:8px" id="connectedCount"></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <button class="btn-primary" style="flex:1;font-size:14px;padding:10px;max-width:none" onclick="shareRoom()">مشاركة الرابط</button>
+            <button class="btn-secondary" style="flex:1;font-size:14px;padding:10px;opacity:1;border-color:var(--navy)" onclick="copyRoomLink()">نسخ الرابط</button>
+          </div>
+          <div id="copyMsg" style="font-size:12px;color:var(--burgundy);text-align:center;margin-bottom:8px;opacity:0;transition:opacity 0.3s"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(114,47,55,0.05);border-radius:16px;margin-top:4px">
+            <span style="font-size:14px;font-weight:700;color:var(--burgundy)">السماح بالتعديل</span>
+            <label style="position:relative;width:48px;height:28px">
+              <input type="checkbox" id="editLockToggle" onchange="toggleEditLock()" style="opacity:0;width:0;height:0">
+              <span style="position:absolute;inset:0;background:#ccc;border-radius:28px;transition:0.3s;cursor:pointer"></span>
+            </label>
+          </div>
+        </div>
+        <div id="roomJoinView" style="display:none">
+          <div style="text-align:center;font-size:13px;color:var(--navy);opacity:0.5;margin-bottom:12px">أدخل الرمز من المعزّب</div>
+          <div id="joinSpinner" style="display:none;text-align:center;padding:16px 0">
+            <div style="width:32px;height:32px;border:3px solid rgba(26,39,68,0.15);border-top-color:var(--burgundy);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto"></div>
+            <div style="font-size:12px;color:var(--navy);opacity:0.5;margin-top:8px">جاري الاتصال...</div>
+          </div>
+          <div style="margin-bottom:16px">
+            <label style="display:block;color:var(--gold-text);font-size:16px;font-weight:700;margin-bottom:6px">رمز الغرفة</label>
+            <input type="text" id="joinCodeInput" maxlength="4" style="width:100%;padding:10px 12px;border:1px solid rgba(26,39,68,0.2);border-radius:14px;font-family:'Cairo',sans-serif;font-size:18px;font-weight:700;text-align:center;background:white;color:var(--navy);outline:none;text-transform:uppercase;letter-spacing:8px" placeholder="----" inputmode="text">
+          </div>
+          <button class="btn-primary" style="width:100%;max-width:none" onclick="doJoinRoom()">انضم</button>
+          <div style="color:var(--burgundy);text-align:center;margin-top:8px;font-size:13px" id="joinError"></div>
+        </div>
+      </div>
+    </div>
   </main>
 
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js" integrity="sha384-nlUQ8ZqCbvStErob+biJNzSgltf6urV3VGqhfIfzhmg9RXmpeRm76ELw0pYnKlTR" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"></script>
   <script>
     // ── In-App Dialog ────────────────────────────────────────
     function appConfirm(message) {
@@ -532,10 +592,12 @@
 
       document.getElementById('sibeetValidation').textContent = '';
       var gameOver = s.totals.some(function(t) { return t >= (s.target||100); });
+      var viewOnly = hostConn && !editUnlocked;
+      var hideEntry = gameOver || viewOnly;
       var entryEl = document.querySelector('.sibeet-entry');
-      if (entryEl) entryEl.style.display = gameOver ? 'none' : '';
+      if (entryEl) entryEl.style.display = hideEntry ? 'none' : '';
       document.querySelectorAll('.sibeet-player-controls, .sibeet-player-round-total').forEach(function(el) {
-        el.style.display = gameOver ? 'none' : '';
+        el.style.display = hideEntry ? 'none' : '';
       });
     }
 
@@ -676,6 +738,206 @@
       if (!(await appConfirm('لعبة جديدة؟ سيتم مسح جميع النتائج'))) return;
       SibeetState.newGame(sibeetState); renderSibeet();
     }
+
+    // ── P2P Room Manager ──────────────────────────────────────
+    const PEER_PREFIX = 'sib1-';
+    let peer = null, connections = [], hostConn = null, isHost = false, editUnlocked = false, roomCode = '';
+
+    function genRoomCode() { return Math.random().toString(36).substring(2, 6).toUpperCase(); }
+
+    function createRoom() {
+      roomCode = genRoomCode();
+      document.getElementById('roomModalTitle').textContent = 'غرفة جديدة';
+      document.getElementById('roomCreateView').style.display = '';
+      document.getElementById('roomJoinView').style.display = 'none';
+      document.getElementById('roomCodeDisplay').textContent = roomCode;
+      const joinUrl = window.location.href.split('?')[0] + '?room=' + roomCode;
+      const qrBox = document.getElementById('qrBox'); qrBox.innerHTML = '';
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      new QRCode(qrBox, { text: joinUrl, width: 160, height: 160, colorDark: isDark ? '#E8E4DC' : '#1A2744', colorLight: isDark ? '#1A1A2E' : '#F5F0E6', correctLevel: QRCode.CorrectLevel.M });
+      document.getElementById('connectedCount').textContent = 'جاري الاتصال...';
+      pushOverlay('roomModal');
+      document.getElementById('roomModal').style.display = 'flex';
+      document.getElementById('editLockToggle').checked = false;
+      editUnlocked = false; isHost = true; connections = [];
+
+      peer = new Peer(PEER_PREFIX + roomCode.toLowerCase(), { config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] } });
+      peer.on('open', () => { document.getElementById('connectedCount').textContent = 'جاهز • ٠ متصلين'; showRoomStatus('غرفة ' + roomCode + ' • معزّب • ٠ متصلين'); });
+      peer.on('connection', conn => {
+        connections.push(conn);
+        updateConnCount();
+        conn.on('data', msg => {
+          if (msg.type === 'round_added' && editUnlocked) {
+            SibeetState.addRound(sibeetState, msg.payload.scores);
+            renderSibeet(); broadcastState();
+          } else if (msg.type === 'name_changed' && editUnlocked) {
+            sibeetState.players[msg.payload.idx] = msg.payload.name;
+            SibeetState.save(sibeetState); renderSibeet(); broadcastState();
+          }
+        });
+        conn.on('close', () => { connections = connections.filter(c => c !== conn); updateConnCount(); });
+        conn.on('open', () => {
+          conn.send({ type: 'state_sync', payload: getStatePayload() });
+          conn.send({ type: 'edit_lock', payload: { unlocked: editUnlocked } });
+        });
+      });
+      peer.on('error', err => { console.error('Peer error:', err); document.getElementById('connectedCount').textContent = 'لم يتم الاتصال، تأكد من الإنترنت'; });
+    }
+
+    function joinRoom() {
+      document.getElementById('roomModalTitle').textContent = 'انضم لغرفة';
+      document.getElementById('roomCreateView').style.display = 'none';
+      document.getElementById('roomJoinView').style.display = '';
+      document.getElementById('joinCodeInput').value = '';
+      document.getElementById('joinError').textContent = '';
+      pushOverlay('roomModal');
+      document.getElementById('roomModal').style.display = 'flex';
+    }
+
+    function doJoinRoom() {
+      const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+      if (!code || code.length !== 4) { document.getElementById('joinError').textContent = 'أدخل رمز من ٤ أحرف'; return; }
+      document.getElementById('joinError').textContent = '';
+      document.getElementById('joinSpinner').style.display = '';
+      isHost = false; roomCode = code;
+
+      peer = new Peer(undefined, { config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] } });
+      peer.on('open', () => {
+        hostConn = peer.connect(PEER_PREFIX + code.toLowerCase());
+        hostConn.on('open', () => { document.getElementById('joinSpinner').style.display = 'none'; closeRoomModal(); showRoomStatus('غرفة ' + code + ' • متصل'); });
+        hostConn.on('data', msg => {
+          if (msg.type === 'state_sync') { applyStatePayload(msg.payload); renderSibeet(); }
+          else if (msg.type === 'edit_lock') {
+            editUnlocked = msg.payload.unlocked;
+            document.querySelector('.sibeet-entry').style.display = editUnlocked ? '' : 'none';
+            document.querySelectorAll('.sibeet-player-controls, .sibeet-player-round-total').forEach(el => { el.style.display = editUnlocked ? '' : 'none'; });
+          }
+        });
+        hostConn.on('close', () => { showRoomStatus('انقطع الاتصال'); hostConn = null; });
+        setTimeout(() => {
+          if (!hostConn || !hostConn.open) {
+            document.getElementById('joinSpinner').style.display = 'none';
+            document.getElementById('joinError').textContent = 'لم يتم العثور على الغرفة، تأكد من الرمز والإنترنت';
+            if (peer) peer.destroy();
+          }
+        }, 10000);
+      });
+    }
+
+    function closeRoomModal() { document.getElementById('roomModal').style.display = 'none'; }
+
+    function getJoinUrl() { return window.location.href.split('?')[0] + '?room=' + roomCode; }
+
+    function copyRoomLink() {
+      navigator.clipboard.writeText(getJoinUrl()).then(() => {
+        const msg = document.getElementById('copyMsg');
+        msg.textContent = 'تم نسخ الرابط!'; msg.style.opacity = '1';
+        setTimeout(() => msg.style.opacity = '0', 1500);
+      });
+    }
+
+    function shareRoom() {
+      const joinUrl = getJoinUrl();
+      if (navigator.share) {
+        navigator.share({ title: 'بنت السبيت - الديوانية', text: 'تعال انضم للغرفة! الرمز: ' + roomCode, url: joinUrl }).catch(() => copyRoomLink());
+      } else { copyRoomLink(); }
+    }
+
+    function toggleEditLock() {
+      editUnlocked = document.getElementById('editLockToggle').checked;
+      connections.forEach(c => { if (c.open) c.send({ type: 'edit_lock', payload: { unlocked: editUnlocked } }); });
+    }
+
+    function updateConnCount() {
+      const count = connections.filter(c => c.open).length;
+      const arabic = count.toLocaleString('ar-SA');
+      document.getElementById('connectedCount').textContent = arabic + ' متصلين';
+      showRoomStatus('غرفة ' + roomCode + ' • معزّب • ' + arabic + ' متصلين');
+    }
+
+    function showRoomStatus(text) {
+      document.getElementById('roomStatus').style.display = '';
+      document.getElementById('roomStatusText').textContent = text;
+      const editBtn = document.getElementById('editToggleBar');
+      if (isHost) {
+        editBtn.style.display = '';
+        editBtn.textContent = editUnlocked ? 'تعديل: مفتوح' : 'تعديل: مقفل';
+        editBtn.style.background = editUnlocked ? 'rgba(114,47,55,0.6)' : 'transparent';
+      } else { editBtn.style.display = 'none'; }
+    }
+
+    function toggleEditFromBar() {
+      editUnlocked = !editUnlocked;
+      document.getElementById('editLockToggle').checked = editUnlocked;
+      toggleEditLock();
+      const editBtn = document.getElementById('editToggleBar');
+      editBtn.textContent = editUnlocked ? 'تعديل: مفتوح' : 'تعديل: مقفل';
+      editBtn.style.background = editUnlocked ? 'rgba(114,47,55,0.6)' : 'transparent';
+    }
+
+    function leaveRoom() {
+      if (peer) { peer.destroy(); peer = null; }
+      connections = []; hostConn = null; isHost = false; roomCode = ''; editUnlocked = false;
+      document.getElementById('roomStatus').style.display = 'none';
+      renderSibeet();
+    }
+
+    function getStatePayload() { return { players: sibeetState.players, rounds: sibeetState.rounds, totals: sibeetState.totals, target: sibeetState.target }; }
+
+    function applyStatePayload(payload) {
+      sibeetState.players = payload.players;
+      sibeetState.rounds = payload.rounds;
+      sibeetState.totals = payload.totals;
+      sibeetState.target = payload.target;
+      SibeetState.save(sibeetState);
+    }
+
+    function broadcastState() {
+      if (!isHost) {
+        if (hostConn && hostConn.open) {
+          const rounds = sibeetState.rounds;
+          const lastRound = rounds[rounds.length - 1];
+          if (lastRound) hostConn.send({ type: 'round_added', payload: { scores: lastRound.scores } });
+        }
+        return;
+      }
+      const payload = { type: 'state_sync', payload: getStatePayload() };
+      connections.forEach(c => { if (c.open) c.send(payload); });
+    }
+
+    // Hook broadcastState into submit and game actions
+    const _origSubmit = submitSibeet;
+    submitSibeet = function() { _origSubmit(); broadcastState(); };
+    const _origUndo = undoSibeetRound;
+    undoSibeetRound = async function() { await _origUndo(); broadcastState(); };
+    const _origNew = newSibeetGame;
+    newSibeetGame = async function() { await _origNew(); broadcastState(); };
+    const _origRename = renameSibeetPlayer;
+    renameSibeetPlayer = async function(idx) {
+      await _origRename(idx);
+      if (!isHost && hostConn && hostConn.open) {
+        hostConn.send({ type: 'name_changed', payload: { idx, name: sibeetState.players[idx] } });
+      }
+      broadcastState();
+    };
+
+    // Auto-join room from URL parameter
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      const roomParam = params.get('room');
+      if (roomParam && roomParam.length === 4) {
+        window.history.replaceState({}, '', window.location.pathname);
+        setTimeout(() => { document.getElementById('joinCodeInput').value = roomParam.toUpperCase(); doJoinRoom(); }, 500);
+      }
+    })();
+
+    // Also handle popstate for room modal
+    const _origPopstate = window.onpopstate;
+    window.addEventListener('popstate', function() {
+      if (document.getElementById('roomModal').style.display === 'flex') {
+        document.getElementById('roomModal').style.display = 'none';
+      }
+    });
 
     // Init
     renderSibeet();
