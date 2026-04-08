@@ -1,8 +1,10 @@
-const CACHE = 'baloot-v2';
+const CACHE = 'baloot-v3';
 const ASSETS = [
   './',
   './index.html',
+  './sibeet.html',
   './manifest.json',
+  './manifest-sibeet.json',
   './logo.png',
   'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',

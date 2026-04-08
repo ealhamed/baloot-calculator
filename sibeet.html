@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#722F37">
+  <title>بنت السبيت - الديوانية</title>
+  <link rel="manifest" href="manifest-sibeet.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>@font-face { font-family: 'Cairo'; font-display: swap; }</style>
+  <style>
+    :root {
+      --bg: #F5F0E6;
+      --burgundy: #722F37;
+      --gold: #C9A227;
+      --navy: #1A2744;
+      --text: #1D1E20;
+      --cream: #F5F0E6;
+      --gold-text: #8B7318;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html.no-scroll, html.no-scroll body { overflow: hidden; height: 100%; }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100dvh;
+      direction: rtl;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      overscroll-behavior: contain;
+      touch-action: manipulation;
+    }
+
+    button {
+      font-family: 'Cairo', sans-serif;
+      background: var(--burgundy);
+      color: var(--cream);
+      border: none;
+      border-radius: 28px;
+      padding: 12px 28px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    button:active { opacity: 0.8; }
+    button:focus-visible { outline: 2px solid var(--burgundy); outline-offset: 2px; }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      padding: 12px 16px 4px;
+      position: relative;
+    }
+    .header h1 { color: var(--gold-text); font-size: 20px; font-weight: 700; margin-bottom: 2px; }
+    .burger-btn {
+      position: absolute;
+      right: 16px;
+      top: 12px;
+      background: rgba(26,39,68,0.08);
+      font-size: 20px;
+      padding: 4px;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--navy);
+      line-height: 1;
+    }
+    .logo-wrap { text-align: center; margin: 0 auto 4px; }
+    [data-theme="dark"] .logo-wrap img { filter: brightness(1.8) contrast(1.1); }
+
+    /* ── Menu ── */
+    .menu-overlay {
+      position: fixed; inset: 0; background: rgba(26,39,68,0.5); z-index: 150;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    }
+    .menu-overlay.open { opacity: 1; pointer-events: auto; }
+    .side-menu {
+      position: fixed; top: 0; right: -280px; width: 280px; height: 100%;
+      background: var(--bg); z-index: 151;
+      transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
+      padding: 24px 20px; overflow-y: auto;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+      display: flex; flex-direction: column;
+    }
+    .side-menu.open { right: 0; }
+    .menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .menu-title { font-size: 18px; font-weight: 700; color: var(--navy); }
+    .menu-section { margin-bottom: 20px; }
+    .menu-section-title { font-size: 12px; font-weight: 700; color: var(--gold-text); margin-bottom: 8px; opacity: 0.7; }
+    .menu-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 0; border-bottom: 1px solid rgba(26,39,68,0.06);
+      cursor: pointer; font-size: 15px; font-weight: 600; color: var(--navy);
+      background: none; border-radius: 0; width: 100%; text-align: right;
+    }
+    .menu-item:active { opacity: 0.6; }
+    .menu-footer { margin-top: auto; text-align: center; font-size: 11px; color: var(--navy); opacity: 0.3; padding-top: 16px; }
+    .modal-close {
+      background: transparent; color: var(--navy); font-size: 24px;
+      padding: 4px 8px; border-radius: 12px;
+    }
+    [data-theme="dark"] .side-menu { box-shadow: -4px 0 20px rgba(0,0,0,0.4); }
+
+    .btn-primary { width: 100%; max-width: 200px; padding: 10px 24px; font-size: 16px; }
+    .btn-secondary { background: transparent; color: var(--navy); border: 1px solid rgba(26,39,68,0.2); font-size: 13px; padding: 10px 20px; min-height: 44px; opacity: 0.7; cursor: pointer; }
+
+    /* ── Game Over ── */
+    .game-over-overlay {
+      position: fixed; inset: 0; background: rgba(26,39,68,0.85); z-index: 200;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: var(--cream); animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .game-over-overlay h2 { font-size: 28px; color: var(--gold); margin-bottom: 8px; }
+    [data-theme="dark"] .game-over-overlay { background: rgba(0,0,0,0.85); }
+
+    /* ── بنت السبيت ── */
+    .sibeet-scores {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 16px 6px;
+    }
+    .sibeet-player {
+      background: rgba(26,39,68,0.04); border-radius: 16px; padding: 10px;
+      text-align: center; transition: all 0.3s;
+    }
+    .sibeet-player-name { font-size: 13px; color: var(--gold-text); font-weight: 700; cursor: pointer; }
+    .sibeet-player-total {
+      font-size: 36px; font-weight: 700; color: var(--navy);
+      line-height: 1.1; margin-bottom: 4px; transition: color 0.3s;
+    }
+    .sibeet-player-bar { height: 3px; background: rgba(26,39,68,0.08); border-radius: 2px; margin-bottom: 8px; overflow: hidden; }
+    .sibeet-player-bar-fill { height: 100%; background: var(--navy); border-radius: 2px; transition: width 0.4s ease; }
+    .sibeet-player-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+    .sib-toggle {
+      height: 52px; border-radius: 8px; border: 1.5px solid rgba(26,39,68,0.12);
+      background: white; color: var(--navy); cursor: pointer; transition: all 0.15s;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0; font-family: 'Cairo', sans-serif; position: relative;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06); padding: 2px;
+    }
+    .sib-toggle .card-suit { font-size: 28px; line-height: 1; }
+    .sib-toggle .card-val { font-size: 11px; font-weight: 700; line-height: 1; opacity: 0.7; }
+    .sib-toggle.spade .card-suit { color: #1A2744; }
+    .sib-toggle.diamond .card-suit { color: #C41E3A; }
+    .sib-toggle.diamond .card-val { color: #C41E3A; }
+    .sib-toggle.active {
+      background: var(--burgundy); border-color: var(--burgundy);
+      box-shadow: 0 2px 8px rgba(114,47,55,0.3);
+    }
+    .sib-toggle.active .card-suit,
+    .sib-toggle.active .card-val { color: var(--cream); opacity: 1; }
+    .sib-toggle.doubled {
+      background: var(--burgundy); border-color: var(--gold); border-width: 2px;
+      box-shadow: 0 2px 8px rgba(201,162,39,0.3);
+    }
+    .sib-toggle.doubled .card-suit,
+    .sib-toggle.doubled .card-val { color: var(--cream); opacity: 1; }
+    .sib-toggle .mult-badge {
+      display: none; position: absolute; top: -5px; left: -5px;
+      font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 6px; line-height: 1.2;
+    }
+    .sib-toggle.active .mult-badge { display: block; background: rgba(245,240,230,0.85); color: var(--burgundy); }
+    .sib-toggle.doubled .mult-badge { display: block; background: var(--gold); color: var(--navy); }
+    .sib-toggle:active { transform: scale(0.93); }
+    .sibeet-hearts-row {
+      grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto 1fr;
+      gap: 0 4px; align-items: center;
+    }
+    .sibeet-hearts-btn {
+      height: 52px; border-radius: 8px; background: var(--navy); color: var(--cream);
+      font-size: 20px; display: flex; align-items: center; justify-content: center;
+      padding: 0; border: none; cursor: pointer; font-family: 'Cairo', sans-serif;
+      transition: opacity 0.15s; font-weight: 700;
+    }
+    .sibeet-hearts-btn:active { opacity: 0.7; }
+    .sibeet-hearts-circle {
+      width: 72px; height: 72px; display: flex; align-items: center; justify-content: center;
+      margin: 0 -8px; font-size: 22px; font-weight: 700; color: white;
+      position: relative; padding-top: 6px;
+    }
+    .sibeet-hearts-circle::before {
+      content: '♥'; position: absolute; inset: 0; font-size: 74px; color: #C41E3A;
+      display: flex; align-items: center; justify-content: center; z-index: 0; line-height: 1;
+    }
+    .sibeet-hearts-circle span { position: relative; z-index: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+    .sibeet-player-round-total { font-size: 13px; font-weight: 700; color: var(--burgundy); margin-top: 8px; }
+    .sibeet-player.danger { background: rgba(114,47,55,0.06); }
+    .sibeet-player.danger .sibeet-player-total { color: var(--burgundy); }
+    .sibeet-player.danger .sibeet-player-bar-fill { background: var(--burgundy); }
+    .sibeet-player.leader .sibeet-player-bar-fill { background: var(--gold); }
+
+    .sibeet-entry { padding: 0 16px 8px; }
+    .sibeet-target-row {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 2px 0 8px; font-size: 12px; font-weight: 600; color: var(--navy); opacity: 0.5;
+    }
+    .sibeet-target-btn {
+      background: rgba(26,39,68,0.08); color: var(--navy); border-radius: 10px;
+      padding: 6px 16px; font-size: 13px; font-weight: 700; border: none;
+      cursor: pointer; font-family: 'Cairo', sans-serif; min-height: 36px; transition: all 0.15s;
+    }
+    .sibeet-target-btn.active { background: var(--burgundy); color: var(--cream); opacity: 1; }
+    .sibeet-target-input {
+      width: 48px; height: 36px; border: 1.5px solid rgba(26,39,68,0.15); border-radius: 10px;
+      font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700; text-align: center;
+      background: white; color: var(--navy); outline: none; -moz-appearance: textfield; opacity: 0.7;
+    }
+    .sibeet-target-input::-webkit-outer-spin-button,
+    .sibeet-target-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .sibeet-target-input:focus { border-color: var(--burgundy); opacity: 1; }
+    .sibeet-target-input.active { background: var(--burgundy); color: var(--cream); border-color: var(--burgundy); opacity: 1; }
+    .sibeet-rounds-table { padding: 0 16px; max-height: 30vh; overflow-y: auto; }
+    .sibeet-round-row {
+      display: grid; grid-template-columns: 28px 1fr 1fr 1fr 1fr; gap: 2px;
+      padding: 7px 0; border-bottom: 1px solid rgba(26,39,68,0.05);
+      font-size: 13px; font-weight: 600; text-align: center; color: var(--navy);
+    }
+    .sibeet-round-row.header { font-weight: 700; color: var(--gold-text); font-size: 11px; border-bottom: 1px solid rgba(26,39,68,0.1); }
+    .sibeet-round-num { opacity: 0.3; font-weight: 700; }
+    .sibeet-round-high { color: var(--burgundy); font-weight: 700; }
+
+    /* ── Dark Mode ── */
+    [data-theme="dark"] {
+      --bg: #1A1A2E; --burgundy: #A84450; --gold: #D4AF37; --gold-text: #D4AF37;
+      --navy: #E8E4DC; --text: #E8E4DC; --cream: #1A1A2E;
+      --input-bg: #2A2A4A; --input-border: rgba(232,228,220,0.15);
+    }
+    [data-theme="dark"] .sibeet-player { background: rgba(232,228,220,0.06); }
+    [data-theme="dark"] .sibeet-player.danger { background: rgba(168,68,80,0.1); }
+    [data-theme="dark"] .sib-toggle { background: var(--input-bg); border-color: rgba(232,228,220,0.1); box-shadow: none; }
+    [data-theme="dark"] .sib-toggle.active { background: var(--burgundy); border-color: var(--burgundy); }
+    [data-theme="dark"] .sibeet-player-bar { background: rgba(232,228,220,0.1); }
+    [data-theme="dark"] .sibeet-target-input { background: var(--input-bg); border-color: rgba(232,228,220,0.1); color: var(--text); }
+    [data-theme="dark"] .btn-secondary { color: var(--text); border-color: rgba(232,228,220,0.2); }
+
+    /* ── In-App Dialog ── */
+    .app-dialog-overlay {
+      position: fixed; inset: 0; background: rgba(26,39,68,0.5); z-index: 300;
+      display: flex; align-items: center; justify-content: center;
+      animation: fadeIn 0.2s ease; padding: 24px;
+    }
+    .app-dialog {
+      background: var(--bg); border-radius: 20px; padding: 24px 20px;
+      width: 100%; max-width: 320px; text-align: center;
+    }
+    .app-dialog-msg { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 20px; line-height: 1.5; }
+    .app-dialog-input {
+      width: 100%; padding: 10px 12px; border: 1px solid rgba(26,39,68,0.2); border-radius: 14px;
+      font-family: 'Cairo', sans-serif; font-size: 16px; font-weight: 600; text-align: center;
+      background: white; color: var(--navy); outline: none; margin-bottom: 16px;
+    }
+    [data-theme="dark"] .app-dialog-input { background: var(--input-bg); border-color: var(--input-border); color: var(--text); }
+    .app-dialog-actions { display: flex; gap: 8px; }
+    .app-dialog-actions button { flex: 1; padding: 12px; font-size: 15px; border-radius: 14px; min-height: 48px; }
+    .app-dialog-actions .dlg-cancel { background: transparent; color: var(--navy); border: 1px solid rgba(26,39,68,0.2); }
+    .app-dialog-actions .dlg-confirm { background: var(--burgundy); color: var(--cream); }
+
+    .bottom-pad { height: env(safe-area-inset-bottom, 16px); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="header">
+      <div class="logo-wrap"><img src="logo.png" alt="الديوانية" style="height:72px"></div>
+      <h1>بنت السبيت</h1>
+      <button class="burger-btn" onclick="openMenu()" aria-label="القائمة"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+    </div>
+
+    <!-- Player cards with embedded entry -->
+    <div class="sibeet-scores" id="sibeetScores"></div>
+
+    <!-- Target + Confirm -->
+    <div class="sibeet-entry">
+      <div class="sibeet-target-row">
+        <span>الهدف:</span>
+        <button class="sibeet-target-btn" onclick="setSibeetTarget(100)">١٠٠</button>
+        <button class="sibeet-target-btn" onclick="setSibeetTarget(150)">١٥٠</button>
+        <button class="sibeet-target-btn" onclick="setSibeetTarget(200)">٢٠٠</button>
+        <input type="number" id="sibeetCustomTarget" class="sibeet-target-input"
+          inputmode="numeric" placeholder="..." min="10"
+          onchange="setCustomSibeetTarget(this.value)" onfocus="this.select()">
+      </div>
+      <div style="text-align:center">
+        <button class="btn-primary" style="max-width:220px;font-size:17px;padding:12px 28px" onclick="submitSibeet()">تأكيد</button>
+      </div>
+      <div style="text-align:center;margin-top:4px">
+        <span id="sibeetValidation" style="font-size:13px;color:var(--burgundy);font-weight:600" role="alert" aria-live="polite"></span>
+      </div>
+    </div>
+
+    <!-- Round History -->
+    <div class="sibeet-rounds-table" id="sibeetRoundsSection" style="display:none">
+      <div class="sibeet-round-row header">
+        <span>#</span>
+        <span id="sColH1">١</span>
+        <span id="sColH2">٢</span>
+        <span id="sColH3">٣</span>
+        <span id="sColH4">٤</span>
+      </div>
+      <div id="sibeetRoundsList"></div>
+    </div>
+
+    <!-- Actions -->
+    <div id="sibeetActions" style="display:none;justify-content:center;gap:8px;padding:8px 16px">
+      <button class="btn-secondary" onclick="undoSibeetRound()">تراجع</button>
+      <button class="btn-secondary" onclick="newSibeetGame()">لعبة جديدة</button>
+    </div>
+
+    <div class="bottom-pad"></div>
+
+    <!-- Side Menu -->
+    <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+    <div class="side-menu" id="sideMenu">
+      <div class="menu-header">
+        <span class="menu-title">القائمة</span>
+        <button class="modal-close" onclick="closeMenu()" aria-label="إغلاق"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div class="menu-section">
+        <div class="menu-section-title">الألعاب</div>
+        <a class="menu-item" href="index.html" style="text-decoration:none">
+          <span>حاسبة بلوت</span>
+        </a>
+        <button class="menu-item" disabled style="opacity:0.5">
+          <span>بنت السبيت</span>
+          <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        </button>
+      </div>
+      <div class="menu-section">
+        <div class="menu-section-title">الإعدادات</div>
+        <button class="menu-item" onclick="toggleTheme()">
+          <span id="themeName">الوضع الداكن</span>
+          <span id="themeLabel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
+        </button>
+      </div>
+      <div class="menu-footer">With warm regards from ESH</div>
+    </div>
+  </main>
+
+  <script>
+    // ── In-App Dialog ────────────────────────────────────────
+    function appConfirm(message) {
+      return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.className = 'app-dialog-overlay';
+        overlay.innerHTML = `
+          <div class="app-dialog">
+            <div class="app-dialog-msg">${message}</div>
+            <div class="app-dialog-actions">
+              <button class="dlg-confirm" data-action="yes">نعم</button>
+              <button class="dlg-cancel" data-action="no">لا</button>
+            </div>
+          </div>`;
+        overlay.addEventListener('click', e => {
+          const action = e.target.dataset?.action;
+          if (action === 'yes') { overlay.remove(); resolve(true); }
+          else if (action === 'no') { overlay.remove(); resolve(false); }
+        });
+        document.body.appendChild(overlay);
+      });
+    }
+
+    function appPrompt(message, defaultValue) {
+      return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.className = 'app-dialog-overlay';
+        overlay.innerHTML = `
+          <div class="app-dialog">
+            <div class="app-dialog-msg">${message}</div>
+            <input class="app-dialog-input" type="text" value="${defaultValue || ''}" autofocus>
+            <div class="app-dialog-actions">
+              <button class="dlg-confirm" data-action="ok">تأكيد</button>
+              <button class="dlg-cancel" data-action="cancel">إلغاء</button>
+            </div>
+          </div>`;
+        const input = overlay.querySelector('input');
+        setTimeout(() => input.focus(), 50);
+        input.addEventListener('keydown', e => {
+          if (e.key === 'Enter') { overlay.remove(); resolve(input.value.trim() || null); }
+        });
+        overlay.addEventListener('click', e => {
+          const action = e.target.dataset?.action;
+          if (action === 'ok') { overlay.remove(); resolve(input.value.trim() || null); }
+          else if (action === 'cancel') { overlay.remove(); resolve(null); }
+        });
+        document.body.appendChild(overlay);
+      });
+    }
+
+    // ── Theme ────────────────────────────────────────────────
+    const SVG_MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+    const SVG_SUN = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      const themeLabel = document.getElementById('themeLabel');
+      if (themeLabel) themeLabel.innerHTML = theme === 'dark' ? SVG_SUN : SVG_MOON;
+      const themeName = document.getElementById('themeName');
+      if (themeName) themeName.textContent = theme === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن';
+      localStorage.setItem('baloot_theme', theme);
+    }
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      applyTheme(current === 'dark' ? 'light' : 'dark');
+    }
+    applyTheme('light');
+
+    // ── Menu ─────────────────────────────────────────────────
+    function pushOverlay(id) { history.pushState({ overlay: id }, ''); }
+    window.addEventListener('popstate', function() {
+      if (document.getElementById('menuOverlay').classList.contains('open')) {
+        document.getElementById('menuOverlay').classList.remove('open');
+        document.getElementById('sideMenu').classList.remove('open');
+        return;
+      }
+      const dlg = document.querySelector('.app-dialog-overlay');
+      if (dlg) { dlg.remove(); }
+    });
+
+    function openMenu() {
+      pushOverlay('menu');
+      document.getElementById('menuOverlay').classList.add('open');
+      document.getElementById('sideMenu').classList.add('open');
+    }
+    function closeMenu() {
+      document.getElementById('menuOverlay').classList.remove('open');
+      document.getElementById('sideMenu').classList.remove('open');
+    }
+
+    // ── State ────────────────────────────────────────────────
+    const SibeetState = {
+      STORAGE_KEY: 'sibeet_state',
+      _defaultState() {
+        return { players: ['لاعب ١', 'لاعب ٢', 'لاعب ٣', 'لاعب ٤'], rounds: [], totals: [0,0,0,0], target: 100 };
+      },
+      load() {
+        try {
+          const raw = localStorage.getItem(this.STORAGE_KEY);
+          if (raw) {
+            const p = JSON.parse(raw);
+            const d = this._defaultState();
+            return { players: p.players||d.players, rounds: p.rounds||d.rounds, totals: p.totals||d.totals, target: p.target||100 };
+          }
+        } catch(e) {}
+        return this._defaultState();
+      },
+      save(s) { localStorage.setItem(this.STORAGE_KEY, JSON.stringify(s)); },
+      addRound(s, scores) {
+        s.rounds.push({ scores: [...scores] });
+        for (let i=0;i<4;i++) s.totals[i] += scores[i];
+        this.save(s);
+        return { gameOver: s.totals.some(t => t >= (s.target||100)) };
+      },
+      undoLastRound(s) {
+        if (!s.rounds.length) return;
+        const last = s.rounds.pop();
+        for (let i=0;i<4;i++) s.totals[i] -= last.scores[i];
+        this.save(s);
+      },
+      newGame(s) { s.rounds=[]; s.totals=[0,0,0,0]; this.save(s); }
+    };
+
+    var sibeetState = SibeetState.load();
+
+    // ── UI ───────────────────────────────────────────────────
+    function renderSibeet() {
+      var s = sibeetState;
+      var tgt = s.target || 100;
+      var minScore = Math.min.apply(null, s.totals);
+
+      var scores = document.getElementById('sibeetScores');
+      scores.innerHTML = s.players.map(function(name, i) {
+        var pct = Math.min((s.totals[i] / tgt) * 100, 100);
+        var danger = s.totals[i] >= (tgt * 0.8) ? ' danger' : '';
+        var leader = (s.totals[i] === minScore && s.rounds.length > 0) ? ' leader' : '';
+        return '<div class="sibeet-player' + danger + leader + '">' +
+          '<div class="sibeet-player-name" onclick="renameSibeetPlayer(' + i + ')">' + name + '</div>' +
+          '<div class="sibeet-player-total">' + s.totals[i] + '</div>' +
+          '<div class="sibeet-player-bar"><div class="sibeet-player-bar-fill" style="width:' + pct + '%"></div></div>' +
+          '<div class="sibeet-player-controls">' +
+            '<button class="sib-toggle spade" id="sibQ' + i + '" onclick="toggleSibCard(' + i + ',\'queen\')" aria-label="بنت السبيت ' + name + '" aria-pressed="false" data-state="0"><span class="mult-badge" id="sibQB' + i + '">×1</span><span class="card-suit">♠</span><span class="card-val">Q</span></button>' +
+            '<button class="sib-toggle diamond" id="sibD' + i + '" onclick="toggleSibCard(' + i + ',\'diamond\')" aria-label="١٠ ديمن ' + name + '" aria-pressed="false" data-state="0"><span class="mult-badge" id="sibDB' + i + '">×1</span><span class="card-suit">♦</span><span class="card-val">10</span></button>' +
+            '<div class="sibeet-hearts-row">' +
+              '<button class="sibeet-hearts-btn" onclick="stepHearts(' + i + ',1)" aria-label="زيادة هاص ' + name + '">+</button>' +
+              '<div class="sibeet-hearts-circle" id="sibH' + i + '"><span>0</span></div>' +
+              '<button class="sibeet-hearts-btn" onclick="stepHearts(' + i + ',-1)" aria-label="إنقاص هاص ' + name + '">−</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="sibeet-player-round-total" id="sibPTotal' + i + '">+0</div>' +
+        '</div>';
+      }).join('');
+
+      var isPreset = [100,150,200].indexOf(s.target) !== -1;
+      document.querySelectorAll('.sibeet-target-btn').forEach(function(btn) {
+        var val = parseInt(btn.textContent.replace(/[^\d]/g, ''));
+        btn.classList.toggle('active', val === s.target);
+      });
+      var ci = document.getElementById('sibeetCustomTarget');
+      if (ci) { if (!isPreset) { ci.value = s.target; ci.classList.add('active'); } else { ci.value = ''; ci.classList.remove('active'); } }
+
+      var hasRounds = s.rounds.length > 0;
+      document.getElementById('sibeetRoundsSection').style.display = hasRounds ? '' : 'none';
+      document.getElementById('sibeetActions').style.display = hasRounds ? 'flex' : 'none';
+
+      if (hasRounds) {
+        s.players.forEach(function(name, i) {
+          var h = document.getElementById('sColH' + (i+1));
+          if (h) h.textContent = name.substring(0, 4);
+        });
+        document.getElementById('sibeetRoundsList').innerHTML = s.rounds.map(function(r, idx) {
+          var mx = Math.max.apply(null, r.scores);
+          return '<div class="sibeet-round-row"><span class="sibeet-round-num">' + (idx+1) + '</span>' +
+            r.scores.map(function(sc) { return '<span' + (sc===mx&&mx>0 ? ' class="sibeet-round-high"' : '') + '>' + sc + '</span>'; }).join('') +
+          '</div>';
+        }).join('');
+      }
+
+      document.getElementById('sibeetValidation').textContent = '';
+      var gameOver = s.totals.some(function(t) { return t >= (s.target||100); });
+      var entryEl = document.querySelector('.sibeet-entry');
+      if (entryEl) entryEl.style.display = gameOver ? 'none' : '';
+      document.querySelectorAll('.sibeet-player-controls, .sibeet-player-round-total').forEach(function(el) {
+        el.style.display = gameOver ? 'none' : '';
+      });
+    }
+
+    function toggleSibCard(player, type) {
+      var prefix = type === 'queen' ? 'sibQ' : 'sibD';
+      var el = document.getElementById(prefix + player);
+      var state = parseInt(el.dataset.state) || 0;
+      var nextState = (state + 1) % 3;
+      var badgePrefix = type === 'queen' ? 'sibQB' : 'sibDB';
+
+      if (nextState === 1) {
+        for (var j = 0; j < 4; j++) {
+          var btn = document.getElementById(prefix + j);
+          btn.classList.remove('active', 'doubled'); btn.dataset.state = '0';
+          btn.setAttribute('aria-pressed', 'false');
+          document.getElementById(badgePrefix + j).textContent = '×1';
+        }
+        el.classList.add('active'); el.dataset.state = '1';
+        el.setAttribute('aria-pressed', 'true');
+        document.getElementById(badgePrefix + player).textContent = '×1';
+      } else if (nextState === 2) {
+        el.classList.remove('active'); el.classList.add('doubled'); el.dataset.state = '2';
+        document.getElementById(badgePrefix + player).textContent = '×2';
+      } else {
+        el.classList.remove('active', 'doubled'); el.dataset.state = '0';
+        el.setAttribute('aria-pressed', 'false');
+        document.getElementById(badgePrefix + player).textContent = '×1';
+      }
+      if (navigator.vibrate) navigator.vibrate(nextState === 2 ? [10,30,10] : 10);
+      updateSibeetTotals();
+    }
+
+    function getTotalHearts() {
+      var t = 0; for (var i=0;i<4;i++) t += parseInt(document.getElementById('sibH'+i).textContent)||0; return t;
+    }
+    function getHeartsVal(i) { return parseInt(document.getElementById('sibH'+i).textContent)||0; }
+    function setHeartsVal(i, val) { document.getElementById('sibH'+i).innerHTML = '<span>'+val+'</span>'; }
+
+    function stepHearts(player, delta) {
+      var cur = getHeartsVal(player);
+      var nv = cur + delta;
+      if (nv < 0) return;
+      if (delta > 0 && getTotalHearts() >= 13) return;
+      if (nv > 13) return;
+      if (nv !== cur && navigator.vibrate) navigator.vibrate(8);
+      setHeartsVal(player, nv);
+      updateSibeetTotals();
+    }
+
+    function getCardVal(prefix, i) {
+      var state = parseInt(document.getElementById(prefix+i).dataset.state)||0;
+      if (state === 0) return 0;
+      var base = prefix === 'sibQ' ? 13 : 10;
+      return state === 2 ? base * 2 : base;
+    }
+
+    function updateSibeetTotals() {
+      for (var i=0;i<4;i++) {
+        var total = getCardVal('sibQ',i) + getCardVal('sibD',i) + getHeartsVal(i);
+        var el = document.getElementById('sibPTotal'+i);
+        el.textContent = total > 0 ? '+'+total : '+0';
+        el.style.opacity = total > 0 ? '1' : '0.3';
+      }
+    }
+
+    function setSibeetTarget(val) {
+      sibeetState.target = val; SibeetState.save(sibeetState);
+      var ci = document.getElementById('sibeetCustomTarget');
+      if (ci) { ci.value = ''; ci.classList.remove('active'); }
+      renderSibeet();
+    }
+
+    function setCustomSibeetTarget(val) {
+      var num = parseInt(val);
+      if (!num || num < 10) return;
+      sibeetState.target = num; SibeetState.save(sibeetState);
+      document.querySelectorAll('.sibeet-target-btn').forEach(function(btn) { btn.classList.remove('active'); });
+      var ci = document.getElementById('sibeetCustomTarget');
+      if (ci) ci.classList.add('active');
+      renderSibeet();
+    }
+
+    var sibeetSubmitLocked = false;
+    function submitSibeet() {
+      if (sibeetSubmitLocked) return;
+      var scores = [], totalHearts = 0;
+      for (var i=0;i<4;i++) {
+        var total = getCardVal('sibQ',i) + getCardVal('sibD',i);
+        var hearts = getHeartsVal(i); total += hearts; totalHearts += hearts;
+        scores.push(total);
+      }
+      if (totalHearts !== 13) { document.getElementById('sibeetValidation').textContent = 'مجموع الهاص لازم يكون ١٣ (الحالي: '+totalHearts+')'; return; }
+      var qc = 0; for (var i=0;i<4;i++) { if (parseInt(document.getElementById('sibQ'+i).dataset.state)>0) qc++; }
+      if (qc !== 1) { document.getElementById('sibeetValidation').textContent = 'حدد من عنده بنت السبيت'; return; }
+      var dc = 0; for (var i=0;i<4;i++) { if (parseInt(document.getElementById('sibD'+i).dataset.state)>0) dc++; }
+      if (dc !== 1) { document.getElementById('sibeetValidation').textContent = 'حدد من عنده ١٠ ديمن'; return; }
+
+      sibeetSubmitLocked = true;
+      if (navigator.vibrate) navigator.vibrate(15);
+      var result = SibeetState.addRound(sibeetState, scores);
+      renderSibeet();
+      setTimeout(function() { sibeetSubmitLocked = false; }, 400);
+      if (result.gameOver) showSibeetGameOver();
+    }
+
+    function showSibeetGameOver() {
+      var s = sibeetState;
+      var ranked = s.players.map(function(n,i) { return {name:n, score:s.totals[i]}; }).sort(function(a,b) { return a.score-b.score; });
+      var medals = ['🥇','🥈','🥉',''];
+      var barColors = ['var(--gold)','rgba(192,192,192,0.7)','rgba(205,127,50,0.7)','rgba(245,240,230,0.2)'];
+      var overlay = document.createElement('div');
+      overlay.className = 'game-over-overlay';
+      overlay.innerHTML =
+        '<h2>انتهت اللعبة!</h2>' +
+        '<div style="font-size:20px;font-weight:700;margin-bottom:4px">' + ranked[0].name + ' الأقل نقاط!</div>' +
+        '<div style="width:100%;max-width:300px;margin-top:12px">' +
+          ranked.map(function(p,i) {
+            var pct = ranked[3]&&ranked[3].score>0 ? Math.max(20,(p.score/ranked[3].score)*100) : 50;
+            return '<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><span style="font-size:14px;font-weight:600">'+(medals[i]||'')+' '+p.name+'</span><span style="font-size:16px;font-weight:700">'+p.score+'</span></div><div style="height:6px;background:rgba(245,240,230,0.1);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+barColors[i]+';border-radius:3px;transition:width 0.6s ease"></div></div></div>';
+          }).join('') +
+        '</div>' +
+        '<button onclick="this.parentElement.remove()" style="font-size:16px;margin-top:16px;padding:12px 32px">متابعة</button>';
+      document.body.appendChild(overlay);
+    }
+
+    async function renameSibeetPlayer(idx) {
+      var name = await appPrompt('اسم اللاعب:', sibeetState.players[idx]);
+      if (name) { sibeetState.players[idx] = name; SibeetState.save(sibeetState); renderSibeet(); }
+    }
+
+    async function undoSibeetRound() {
+      if (!sibeetState.rounds.length) return;
+      if (!(await appConfirm('تراجع عن آخر جولة؟'))) return;
+      SibeetState.undoLastRound(sibeetState); renderSibeet();
+    }
+
+    async function newSibeetGame() {
+      if (!(await appConfirm('لعبة جديدة؟ سيتم مسح جميع النتائج'))) return;
+      SibeetState.newGame(sibeetState); renderSibeet();
+    }
+
+    // Init
+    renderSibeet();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+  </script>
+</body>
+</html>

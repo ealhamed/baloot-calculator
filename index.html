@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>@font-face { font-family: 'Cairo'; font-display: swap; }</style>
   <style>
     :root {
       --bg: #F5F0E6;
@@ -128,7 +129,7 @@
     .round-type.hokm { background: var(--navy); }
     .round-scores { font-weight: 600; color: var(--text); white-space: nowrap; }
     .rs-label { font-size: 10px; font-weight: 600; opacity: 0.4; }
-    .round-tags { display: flex; flex-wrap: wrap; gap: 3px; flex: 1; padding: 0 6px; }
+    .round-tags { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; padding: 0 6px; }
     .round-tag { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 6px; white-space: nowrap; }
     .round-tag.mult { background: rgba(114,47,55,0.15); color: var(--burgundy); }
     .round-tag.kabout { background: rgba(26,39,68,0.12); color: var(--navy); }
@@ -596,18 +597,19 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
-      padding: 0 16px 8px;
+      padding: 0 16px 6px;
     }
     .sibeet-player {
       background: rgba(26,39,68,0.04);
-      border-radius: 14px;
-      padding: 10px 12px;
+      border-radius: 16px;
+      padding: 10px;
       text-align: center;
+      transition: all 0.3s;
     }
     .sibeet-player-name {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--gold-text);
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
     }
     .sibeet-player-total {
@@ -615,145 +617,99 @@
       font-weight: 700;
       color: var(--navy);
       line-height: 1.1;
+      margin-bottom: 4px;
+      transition: color 0.3s;
     }
-    .sibeet-player.danger .sibeet-player-total { color: var(--burgundy); }
-
-    .sibeet-entry {
-      padding: 0 16px 8px;
+    .sibeet-player-bar {
+      height: 3px;
+      background: rgba(26,39,68,0.08);
+      border-radius: 2px;
+      margin-bottom: 8px;
+      overflow: hidden;
     }
-    .sibeet-entry-grid {
+    .sibeet-player-bar-fill {
+      height: 100%;
+      background: var(--navy);
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+    .sibeet-player-controls {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 8px;
+      gap: 4px;
     }
-    .sibeet-input-wrap {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .sibeet-input-label {
-      font-size: 11px;
-      color: var(--gold-text);
-      font-weight: 600;
-      min-width: 40px;
-    }
-    .sibeet-input {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid rgba(26,39,68,0.15);
-      border-radius: 12px;
-      font-family: 'Cairo', sans-serif;
-      font-size: 16px;
-      font-weight: 700;
-      text-align: center;
+    .sib-toggle {
+      height: 52px;
+      border-radius: 8px;
+      border: 1.5px solid rgba(26,39,68,0.12);
       background: white;
       color: var(--navy);
-      outline: none;
-      -moz-appearance: textfield;
-    }
-    .sibeet-input::-webkit-outer-spin-button,
-    .sibeet-input::-webkit-inner-spin-button { -webkit-appearance: none; }
-
-    .sibeet-doubles {
+      cursor: pointer;
+      transition: all 0.15s;
       display: flex;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .sibeet-double-btn {
-      flex: 1;
-      padding: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      background: rgba(26,39,68,0.06);
-      color: var(--navy);
-      border-radius: 12px;
-      border: 1px solid transparent;
-      text-align: center;
-    }
-    .sibeet-double-btn.active {
-      background: var(--burgundy);
-      color: var(--cream);
-    }
-
-    .sibeet-rounds-table {
-      padding: 0 16px;
-      max-height: 30vh;
-      overflow-y: auto;
-    }
-    .sibeet-round-row {
-      display: grid;
-      grid-template-columns: 30px 1fr 1fr 1fr 1fr;
-      gap: 4px;
-      padding: 6px 0;
-      border-bottom: 1px solid rgba(26,39,68,0.04);
-      font-size: 13px;
-      text-align: center;
-    }
-    .sibeet-round-row.header {
-      font-weight: 700;
-      color: var(--gold-text);
-      font-size: 11px;
-      border-bottom: 1px solid rgba(26,39,68,0.1);
-    }
-    .sibeet-round-num { color: var(--navy); opacity: 0.4; font-weight: 600; }
-
-    /* Dark mode overrides for بنت السبيت */
-    [data-theme="dark"] .sibeet-player { background: rgba(232,228,220,0.06); }
-    [data-theme="dark"] .sibeet-input { background: var(--input-bg); border-color: var(--input-border); color: var(--text); }
-
-    .sibeet-pcard {
-      background: rgba(26,39,68,0.03);
-      border: 1px solid rgba(26,39,68,0.08);
-      border-radius: 14px;
-      padding: 8px 10px;
-      margin-bottom: 6px;
-    }
-    .sibeet-pcard-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-    .sibeet-pcard-name { font-size: 13px; font-weight: 700; color: var(--navy); }
-    .sibeet-pcard-total { font-size: 13px; font-weight: 700; color: var(--burgundy); }
-    .sibeet-pcard-items {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .sibeet-card-item {
-      flex: 1;
-      display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
-      padding: 8px 4px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.12s;
-      text-align: center;
-      min-height: 44px;
+      gap: 0;
+      font-family: 'Cairo', sans-serif;
+      position: relative;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      padding: 2px;
     }
-    .sibeet-card-item.toggle-item {
-      background: rgba(26,39,68,0.06);
+    .sib-toggle .card-suit { font-size: 28px; line-height: 1; }
+    .sib-toggle .card-val { font-size: 11px; font-weight: 700; line-height: 1; opacity: 0.7; }
+    .sib-toggle.spade .card-suit { color: #1A2744; }
+    .sib-toggle.diamond .card-suit { color: #C41E3A; }
+    .sib-toggle.diamond .card-val { color: #C41E3A; }
+    .sib-toggle.active {
+      background: var(--burgundy);
+      border-color: var(--burgundy);
+      box-shadow: 0 2px 8px rgba(114,47,55,0.3);
+    }
+    .sib-toggle.active .card-suit,
+    .sib-toggle.active .card-val { color: var(--cream); opacity: 1; }
+    .sib-toggle.doubled {
+      background: var(--burgundy);
+      border-color: var(--gold);
+      border-width: 2px;
+      box-shadow: 0 2px 8px rgba(201,162,39,0.3);
+    }
+    .sib-toggle.doubled .card-suit,
+    .sib-toggle.doubled .card-val { color: var(--cream); opacity: 1; }
+    .sib-toggle .mult-badge {
+      display: none;
+      position: absolute;
+      top: -5px;
+      left: -5px;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 6px;
+      line-height: 1.2;
+    }
+    .sib-toggle.active .mult-badge {
+      display: block;
+      background: rgba(245,240,230,0.85);
+      color: var(--burgundy);
+    }
+    .sib-toggle.doubled .mult-badge {
+      display: block;
+      background: var(--gold);
       color: var(--navy);
     }
-    .sibeet-card-item.toggle-item.active {
-      background: var(--burgundy);
-      color: var(--cream);
-    }
-    .sibeet-card-item.hearts-item {
-      display: flex;
+    .sib-toggle:active { transform: scale(0.93); }
+    [data-theme="dark"] .sib-toggle { background: var(--input-bg); border-color: rgba(232,228,220,0.1); box-shadow: none; }
+    [data-theme="dark"] .sib-toggle.active { background: var(--burgundy); border-color: var(--burgundy); }
+    .sibeet-hearts-row {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 0 4px;
       align-items: center;
-      gap: 2px;
     }
     .sibeet-hearts-btn {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
+      height: 52px;
+      border-radius: 8px;
       background: var(--navy);
       color: var(--cream);
       font-size: 20px;
@@ -764,39 +720,156 @@
       border: none;
       cursor: pointer;
       font-family: 'Cairo', sans-serif;
+      transition: opacity 0.15s;
+      font-weight: 700;
     }
     .sibeet-hearts-btn:active { opacity: 0.7; }
-    .sibeet-hearts-count {
-      font-size: 16px;
+    .sibeet-hearts-circle {
+      width: 72px;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      font-size: 22px;
       font-weight: 700;
-      color: var(--navy);
-      min-width: 20px;
-      text-align: center;
+      color: white;
+      position: relative;
+      padding-top: 6px;
     }
+    .sibeet-hearts-circle::before {
+      content: '♥';
+      position: absolute;
+      inset: 0;
+      font-size: 74px;
+      color: #C41E3A;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 0;
+      line-height: 1;
+    }
+    .sibeet-hearts-circle span {
+      position: relative;
+      z-index: 1;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    }
+    .sibeet-hearts-circle { margin: 0 -8px; }
+    .sibeet-player-round-total {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--burgundy);
+      margin-top: 8px;
+    }
+    .sibeet-player.danger { background: rgba(114,47,55,0.06); }
+    .sibeet-player.danger .sibeet-player-total { color: var(--burgundy); }
+    .sibeet-player.danger .sibeet-player-bar-fill { background: var(--burgundy); }
+    .sibeet-player.leader .sibeet-player-bar-fill { background: var(--gold); }
+
+    .sibeet-entry { padding: 0 16px 8px; }
+
+    .sibeet-doubles {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .sibeet-double-btn {
+      flex: 1;
+      padding: 10px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(26,39,68,0.05);
+      color: var(--navy);
+      border-radius: 12px;
+      border: 1px solid rgba(26,39,68,0.08);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      min-height: 44px;
+    }
+    .sibeet-double-btn.active {
+      background: var(--burgundy);
+      color: var(--cream);
+      border-color: var(--burgundy);
+    }
+
     .sibeet-target-row {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      padding: 4px 0 8px;
+      gap: 6px;
+      padding: 2px 0 8px;
       font-size: 12px;
+      font-weight: 600;
       color: var(--navy);
       opacity: 0.5;
     }
     .sibeet-target-btn {
       background: rgba(26,39,68,0.08);
       color: var(--navy);
-      border-radius: 8px;
-      padding: 2px 10px;
-      font-size: 12px;
-      font-weight: 600;
+      border-radius: 10px;
+      padding: 6px 16px;
+      font-size: 13px;
+      font-weight: 700;
       border: none;
       cursor: pointer;
       font-family: 'Cairo', sans-serif;
+      min-height: 36px;
+      transition: all 0.15s;
     }
-    .sibeet-target-btn.active { background: var(--burgundy); color: var(--cream); }
-    [data-theme="dark"] .sibeet-pcard { background: rgba(232,228,220,0.04); border-color: rgba(232,228,220,0.08); }
-    [data-theme="dark"] .sibeet-double-btn { background: rgba(232,228,220,0.08); }
+    .sibeet-target-btn.active { background: var(--burgundy); color: var(--cream); opacity: 1; }
+    .sibeet-target-input {
+      width: 48px;
+      height: 36px;
+      border: 1.5px solid rgba(26,39,68,0.15);
+      border-radius: 10px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+      background: white;
+      color: var(--navy);
+      outline: none;
+      -moz-appearance: textfield;
+      opacity: 0.7;
+    }
+    .sibeet-target-input::-webkit-outer-spin-button,
+    .sibeet-target-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .sibeet-target-input:focus { border-color: var(--burgundy); opacity: 1; }
+    .sibeet-target-input.active { background: var(--burgundy); color: var(--cream); border-color: var(--burgundy); opacity: 1; }
+    [data-theme="dark"] .sibeet-target-input { background: var(--input-bg); border-color: rgba(232,228,220,0.1); color: var(--text); }
+
+    .sibeet-rounds-table {
+      padding: 0 16px;
+      max-height: 30vh;
+      overflow-y: auto;
+    }
+    .sibeet-round-row {
+      display: grid;
+      grid-template-columns: 28px 1fr 1fr 1fr 1fr;
+      gap: 2px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(26,39,68,0.05);
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      color: var(--navy);
+    }
+    .sibeet-round-row.header {
+      font-weight: 700;
+      color: var(--gold-text);
+      font-size: 11px;
+      border-bottom: 1px solid rgba(26,39,68,0.1);
+    }
+    .sibeet-round-num { opacity: 0.3; font-weight: 700; }
+    .sibeet-round-high { color: var(--burgundy); font-weight: 700; }
+
+    /* Dark mode */
+    [data-theme="dark"] .sibeet-player { background: rgba(232,228,220,0.06); }
+    [data-theme="dark"] .sibeet-player.danger { background: rgba(168,68,80,0.1); }
+    [data-theme="dark"] .sib-toggle { background: rgba(232,228,220,0.08); }
+    [data-theme="dark"] .sibeet-double-btn { background: rgba(232,228,220,0.06); border-color: rgba(232,228,220,0.08); }
+    [data-theme="dark"] .sibeet-player-bar { background: rgba(232,228,220,0.1); }
 
     /* ── In-App Confirm/Prompt Modal ─────── */
     .app-dialog-overlay {
@@ -940,7 +1013,7 @@
           <button class="btn-primary" style="max-width:200px" onclick="submitSimple()">تأكيد</button>
         </div>
         <!-- Clarification MCQ area -->
-        <div id="clarifyArea" style="display:none">
+        <div id="clarifyArea" style="display:none" role="alert" aria-live="assertive">
           <div id="clarifyQuestion" style="text-align:center;font-size:14px;font-weight:700;color:var(--navy);padding:8px 0"></div>
           <div id="clarifyOptions" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:4px 0"></div>
         </div>
@@ -1049,31 +1122,26 @@
     </div><!-- /balootView -->
 
     <div id="sibeetsView" style="display:none">
-      <!-- Scoreboard -->
+      <!-- Player cards with embedded entry -->
       <div class="sibeet-scores" id="sibeetScores"></div>
 
-      <!-- Target selector -->
-      <div class="sibeet-target-row">
-        <span>نهاية اللعبة:</span>
-        <button class="sibeet-target-btn" onclick="setSibeetTarget(100)">١٠٠</button>
-        <button class="sibeet-target-btn" onclick="setSibeetTarget(150)">١٥٠</button>
-        <button class="sibeet-target-btn" onclick="setSibeetTarget(200)">٢٠٠</button>
-      </div>
-
-      <!-- Score Entry -->
+      <!-- Target + Doubles + Confirm -->
       <div class="sibeet-entry">
-        <!-- Doubling toggles (per game) -->
-        <div class="sibeet-doubles">
-          <button class="sibeet-double-btn" id="dblQueen" onclick="toggleSibeetDouble('queen')">بنت السبيت ×٢</button>
-          <button class="sibeet-double-btn" id="dblDiamond" onclick="toggleSibeetDouble('diamond')">١٠ ديمن ×٢</button>
+        <div class="sibeet-target-row">
+          <span>الهدف:</span>
+          <button class="sibeet-target-btn" onclick="setSibeetTarget(100)">١٠٠</button>
+          <button class="sibeet-target-btn" onclick="setSibeetTarget(150)">١٥٠</button>
+          <button class="sibeet-target-btn" onclick="setSibeetTarget(200)">٢٠٠</button>
+          <input type="number" id="sibeetCustomTarget" class="sibeet-target-input"
+            inputmode="numeric" placeholder="..." min="10"
+            onchange="setCustomSibeetTarget(this.value)"
+            onfocus="this.select()">
         </div>
-        <!-- Per-player card entry -->
-        <div id="sibeetCardEntry"></div>
-        <div style="text-align:center;margin-top:8px">
-          <button class="btn-primary" style="max-width:200px" onclick="submitSibeet()">تأكيد</button>
+        <div style="text-align:center">
+          <button class="btn-primary" style="max-width:220px;font-size:17px;padding:12px 28px" onclick="submitSibeet()">تأكيد</button>
         </div>
         <div style="text-align:center;margin-top:4px">
-          <span id="sibeetValidation" style="font-size:12px;color:var(--burgundy)"></span>
+          <span id="sibeetValidation" style="font-size:13px;color:var(--burgundy);font-weight:600" role="alert" aria-live="polite"></span>
         </div>
       </div>
 
@@ -1081,10 +1149,10 @@
       <div class="sibeet-rounds-table" id="sibeetRoundsSection" style="display:none">
         <div class="sibeet-round-row header">
           <span>#</span>
-          <span id="sColH1">لاعب ١</span>
-          <span id="sColH2">لاعب ٢</span>
-          <span id="sColH3">لاعب ٣</span>
-          <span id="sColH4">لاعب ٤</span>
+          <span id="sColH1">١</span>
+          <span id="sColH2">٢</span>
+          <span id="sColH3">٣</span>
+          <span id="sColH4">٤</span>
         </div>
         <div id="sibeetRoundsList"></div>
       </div>
@@ -1106,14 +1174,13 @@
 
       <div class="menu-section">
         <div class="menu-section-title">الألعاب</div>
-        <button class="menu-item" onclick="switchGame('baloot')">
+        <button class="menu-item" disabled style="opacity:0.5">
           <span>حاسبة بلوت</span>
-          <span id="checkBaloot"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
         </button>
-        <button class="menu-item" onclick="switchGame('sibeet')">
+        <a class="menu-item" href="sibeet.html" style="text-decoration:none">
           <span>بنت السبيت</span>
-          <span id="checkSibeet"></span>
-        </button>
+        </a>
       </div>
 
       <div class="menu-section" id="menuRoomSection">
@@ -1633,7 +1700,9 @@
     let pendingBunt = null; // { lana, lahum } waiting for clarification
     let pendingMeta = {};   // accumulated metadata from MCQ answers
 
+    let submitLocked = false;
     function submitSimple() {
+      if (submitLocked) return;
       const lana = parseInt(document.getElementById('simpleLana').value) || 0;
       const lahum = parseInt(document.getElementById('simpleLahum').value) || 0;
       if (lana === 0 && lahum === 0) return;
@@ -1875,8 +1944,10 @@
 
     function finishSimple() {
       document.getElementById('clarifyArea').style.display = 'none';
+      submitLocked = true;
       const result = StateManager.addRound(appState, pendingBunt, pendingMeta);
       if (navigator.vibrate) navigator.vibrate(15);
+      setTimeout(function() { submitLocked = false; }, 400);
       document.querySelector('#simpleForm .btn-primary').classList.add('btn-flash');
       setTimeout(() => document.querySelector('#simpleForm .btn-primary').classList.remove('btn-flash'), 300);
       document.getElementById('simpleLana').value = '';
@@ -2884,53 +2955,48 @@
 
     function renderSibeet() {
       var s = sibeetState;
+      var tgt = s.target || 100;
+      var minScore = Math.min.apply(null, s.totals);
 
-      // Scoreboard
+      // Player cards with embedded controls
       var scores = document.getElementById('sibeetScores');
       scores.innerHTML = s.players.map(function(name, i) {
-        var danger = s.totals[i] >= 80 ? ' danger' : '';
-        return '<div class="sibeet-player' + danger + '">' +
+        var pct = Math.min((s.totals[i] / tgt) * 100, 100);
+        var danger = s.totals[i] >= (tgt * 0.8) ? ' danger' : '';
+        var leader = (s.totals[i] === minScore && s.rounds.length > 0) ? ' leader' : '';
+        return '<div class="sibeet-player' + danger + leader + '">' +
           '<div class="sibeet-player-name" onclick="renameSibeetPlayer(' + i + ')">' + name + '</div>' +
           '<div class="sibeet-player-total">' + s.totals[i] + '</div>' +
-        '</div>';
-      }).join('');
-
-      // Card entry per player
-      var queenVal = s.doubleQueen ? 26 : 13;
-      var diamondVal = s.doubleDiamond ? 20 : 10;
-      var cardEntry = document.getElementById('sibeetCardEntry');
-      cardEntry.innerHTML = s.players.map(function(name, i) {
-        return '<div class="sibeet-pcard">' +
-          '<div class="sibeet-pcard-header">' +
-            '<span class="sibeet-pcard-name">' + name + '</span>' +
-            '<span class="sibeet-pcard-total" id="sibPTotal' + i + '">0</span>' +
-          '</div>' +
-          '<div class="sibeet-pcard-items">' +
-            '<button class="sibeet-card-item toggle-item" id="sibQ' + i + '" onclick="toggleSibCard(' + i + ',\'queen\')">' +
-              'بنت<br>السبيت' +
-            '</button>' +
-            '<button class="sibeet-card-item toggle-item" id="sibD' + i + '" onclick="toggleSibCard(' + i + ',\'diamond\')">' +
-              '١٠<br>ديمن' +
-            '</button>' +
-            '<div class="sibeet-card-item hearts-item">' +
-              '<button class="sibeet-hearts-btn" onclick="stepHearts(' + i + ',1)">+</button>' +
-              '<span class="sibeet-hearts-count" id="sibH' + i + '">0</span>' +
-              '<button class="sibeet-hearts-btn" onclick="stepHearts(' + i + ',-1)">−</button>' +
-              '<span style="font-size:10px;color:var(--burgundy)">هاص</span>' +
+          '<div class="sibeet-player-bar"><div class="sibeet-player-bar-fill" style="width:' + pct + '%"></div></div>' +
+          '<div class="sibeet-player-controls">' +
+            '<button class="sib-toggle spade" id="sibQ' + i + '" onclick="toggleSibCard(' + i + ',\'queen\')" aria-label="بنت السبيت ' + name + '" aria-pressed="false" data-state="0"><span class="mult-badge" id="sibQB' + i + '">×1</span><span class="card-suit">♠</span><span class="card-val">Q</span></button>' +
+            '<button class="sib-toggle diamond" id="sibD' + i + '" onclick="toggleSibCard(' + i + ',\'diamond\')" aria-label="١٠ ديمن ' + name + '" aria-pressed="false" data-state="0"><span class="mult-badge" id="sibDB' + i + '">×1</span><span class="card-suit">♦</span><span class="card-val">10</span></button>' +
+            '<div class="sibeet-hearts-row">' +
+              '<button class="sibeet-hearts-btn" onclick="stepHearts(' + i + ',1)" aria-label="زيادة هاص ' + name + '">+</button>' +
+              '<div class="sibeet-hearts-circle" id="sibH' + i + '"><span>0</span></div>' +
+              '<button class="sibeet-hearts-btn" onclick="stepHearts(' + i + ',-1)" aria-label="إنقاص هاص ' + name + '">−</button>' +
             '</div>' +
           '</div>' +
+          '<div class="sibeet-player-round-total" id="sibPTotal' + i + '">+0</div>' +
         '</div>';
       }).join('');
 
-      // Doubles
-      document.getElementById('dblQueen').classList.toggle('active', s.doubleQueen);
-      document.getElementById('dblDiamond').classList.toggle('active', s.doubleDiamond);
-
       // Target buttons
+      var isPreset = [100, 150, 200].indexOf(s.target) !== -1;
       document.querySelectorAll('.sibeet-target-btn').forEach(function(btn) {
         var val = parseInt(btn.textContent.replace(/[^\d]/g, ''));
         btn.classList.toggle('active', val === s.target);
       });
+      var customInput = document.getElementById('sibeetCustomTarget');
+      if (customInput) {
+        if (!isPreset) {
+          customInput.value = s.target;
+          customInput.classList.add('active');
+        } else {
+          customInput.value = '';
+          customInput.classList.remove('active');
+        }
+      }
 
       // Round history
       var hasRounds = s.rounds.length > 0;
@@ -2946,10 +3012,13 @@
         });
 
         var list = document.getElementById('sibeetRoundsList');
-        list.innerHTML = s.rounds.map(function(r, i) {
+        list.innerHTML = s.rounds.map(function(r, idx) {
+          var maxScore = Math.max.apply(null, r.scores);
           return '<div class="sibeet-round-row">' +
-            '<span class="sibeet-round-num">' + (i + 1) + '</span>' +
-            r.scores.map(function(sc) { return '<span>' + sc + '</span>'; }).join('') +
+            '<span class="sibeet-round-num">' + (idx + 1) + '</span>' +
+            r.scores.map(function(sc) {
+              return '<span' + (sc === maxScore && maxScore > 0 ? ' class="sibeet-round-high"' : '') + '>' + sc + '</span>';
+            }).join('') +
           '</div>';
         }).join('');
       }
@@ -2960,66 +3029,123 @@
       // Block entry if game is over
       var gameOver = s.totals.some(function(t) { return t >= (s.target || 100); });
       var entryEl = document.querySelector('.sibeet-entry');
-      if (entryEl) {
-        entryEl.style.display = gameOver ? 'none' : '';
-      }
+      if (entryEl) entryEl.style.display = gameOver ? 'none' : '';
+      // Hide controls in player cards
+      document.querySelectorAll('.sibeet-player-controls, .sibeet-player-round-total').forEach(function(el) {
+        el.style.display = gameOver ? 'none' : '';
+      });
     }
 
-    function toggleSibeetDouble(type) {
-      if (type === 'queen') sibeetState.doubleQueen = !sibeetState.doubleQueen;
-      if (type === 'diamond') sibeetState.doubleDiamond = !sibeetState.doubleDiamond;
-      SibeetState.save(sibeetState);
-      renderSibeet();
-    }
 
     function toggleSibCard(player, type) {
-      var el = document.getElementById(type === 'queen' ? 'sibQ' + player : 'sibD' + player);
-      var wasActive = el.classList.contains('active');
-      // Only one player can have each card — deactivate others
-      for (var j = 0; j < 4; j++) {
-        document.getElementById(type === 'queen' ? 'sibQ' + j : 'sibD' + j).classList.remove('active');
+      var prefix = type === 'queen' ? 'sibQ' : 'sibD';
+      var el = document.getElementById(prefix + player);
+      var state = parseInt(el.dataset.state) || 0;
+      var nextState = (state + 1) % 3; // 0 → 1 → 2 → 0
+
+      var badgePrefix = type === 'queen' ? 'sibQB' : 'sibDB';
+
+      if (nextState === 1) {
+        // Activating: deactivate all others first (only one player per card)
+        for (var j = 0; j < 4; j++) {
+          var btn = document.getElementById(prefix + j);
+          btn.classList.remove('active', 'doubled');
+          btn.dataset.state = '0';
+          btn.setAttribute('aria-pressed', 'false');
+          document.getElementById(badgePrefix + j).textContent = '×1';
+        }
+        el.classList.add('active');
+        el.dataset.state = '1';
+        el.setAttribute('aria-pressed', 'true');
+        document.getElementById(badgePrefix + player).textContent = '×1';
+      } else if (nextState === 2) {
+        // Doubling
+        el.classList.remove('active');
+        el.classList.add('doubled');
+        el.dataset.state = '2';
+        document.getElementById(badgePrefix + player).textContent = '×2';
+      } else {
+        // Back to off
+        el.classList.remove('active', 'doubled');
+        el.dataset.state = '0';
+        el.setAttribute('aria-pressed', 'false');
+        document.getElementById(badgePrefix + player).textContent = '×1';
       }
-      if (!wasActive) el.classList.add('active');
+
+      if (navigator.vibrate) navigator.vibrate(nextState === 2 ? [10, 30, 10] : 10);
       updateSibeetTotals();
+    }
+
+    function getTotalHearts() {
+      var total = 0;
+      for (var i = 0; i < 4; i++) total += parseInt(document.getElementById('sibH' + i).textContent) || 0;
+      return total;
+    }
+
+    function getHeartsVal(i) {
+      return parseInt(document.getElementById('sibH' + i).textContent) || 0;
+    }
+
+    function setHeartsVal(i, val) {
+      document.getElementById('sibH' + i).innerHTML = '<span>' + val + '</span>';
     }
 
     function stepHearts(player, delta) {
-      var el = document.getElementById('sibH' + player);
-      var cur = parseInt(el.textContent) || 0;
-      var newVal = Math.max(0, Math.min(13, cur + delta));
-      el.textContent = newVal;
+      var cur = getHeartsVal(player);
+      var newVal = cur + delta;
+      if (newVal < 0) return;
+      if (delta > 0 && getTotalHearts() >= 13) return;
+      if (newVal > 13) return;
+      if (newVal !== cur && navigator.vibrate) navigator.vibrate(8);
+      setHeartsVal(player, newVal);
       updateSibeetTotals();
     }
 
+    function getCardVal(prefix, i) {
+      var state = parseInt(document.getElementById(prefix + i).dataset.state) || 0;
+      if (state === 0) return 0;
+      var base = prefix === 'sibQ' ? 13 : 10;
+      return state === 2 ? base * 2 : base;
+    }
+
     function updateSibeetTotals() {
-      var queenVal = sibeetState.doubleQueen ? 26 : 13;
-      var diamondVal = sibeetState.doubleDiamond ? 20 : 10;
       for (var i = 0; i < 4; i++) {
-        var total = 0;
-        if (document.getElementById('sibQ' + i).classList.contains('active')) total += queenVal;
-        if (document.getElementById('sibD' + i).classList.contains('active')) total += diamondVal;
-        total += parseInt(document.getElementById('sibH' + i).textContent) || 0;
-        document.getElementById('sibPTotal' + i).textContent = total;
+        var total = getCardVal('sibQ', i) + getCardVal('sibD', i) + getHeartsVal(i);
+        var el = document.getElementById('sibPTotal' + i);
+        el.textContent = total > 0 ? '+' + total : '+0';
+        el.style.opacity = total > 0 ? '1' : '0.3';
       }
     }
 
     function setSibeetTarget(val) {
       sibeetState.target = val;
       SibeetState.save(sibeetState);
+      var customInput = document.getElementById('sibeetCustomTarget');
+      if (customInput) { customInput.value = ''; customInput.classList.remove('active'); }
       renderSibeet();
     }
 
+    function setCustomSibeetTarget(val) {
+      var num = parseInt(val);
+      if (!num || num < 10) return;
+      sibeetState.target = num;
+      SibeetState.save(sibeetState);
+      // Deactivate preset buttons, activate input
+      document.querySelectorAll('.sibeet-target-btn').forEach(function(btn) { btn.classList.remove('active'); });
+      var customInput = document.getElementById('sibeetCustomTarget');
+      if (customInput) customInput.classList.add('active');
+      renderSibeet();
+    }
+
+    var sibeetSubmitLocked = false;
     function submitSibeet() {
-      var queenVal = sibeetState.doubleQueen ? 26 : 13;
-      var diamondVal = sibeetState.doubleDiamond ? 20 : 10;
+      if (sibeetSubmitLocked) return;
       var scores = [];
       var totalHearts = 0;
 
       for (var i = 0; i < 4; i++) {
-        var total = 0;
-        if (document.getElementById('sibQ' + i).classList.contains('active')) total += queenVal;
-        if (document.getElementById('sibD' + i).classList.contains('active')) total += diamondVal;
-        var hearts = parseInt(document.getElementById('sibH' + i).textContent) || 0;
+        var total = getCardVal('sibQ', i) + getCardVal('sibD', i);
+        var hearts = getHeartsVal(i);
         total += hearts;
         totalHearts += hearts;
         scores.push(total);
@@ -3031,10 +3157,10 @@
         return;
       }
 
-      // Validate queen assigned (exactly one or none)
+      // Validate queen assigned
       var queenCount = 0;
       for (var i = 0; i < 4; i++) {
-        if (document.getElementById('sibQ' + i).classList.contains('active')) queenCount++;
+        if (parseInt(document.getElementById('sibQ' + i).dataset.state) > 0) queenCount++;
       }
       if (queenCount !== 1) {
         document.getElementById('sibeetValidation').textContent = 'حدد من عنده بنت السبيت';
@@ -3044,15 +3170,18 @@
       // Validate diamond assigned
       var diamondCount = 0;
       for (var i = 0; i < 4; i++) {
-        if (document.getElementById('sibD' + i).classList.contains('active')) diamondCount++;
+        if (parseInt(document.getElementById('sibD' + i).dataset.state) > 0) diamondCount++;
       }
       if (diamondCount !== 1) {
         document.getElementById('sibeetValidation').textContent = 'حدد من عنده ١٠ ديمن';
         return;
       }
 
+      sibeetSubmitLocked = true;
+      if (navigator.vibrate) navigator.vibrate(15);
       var result = SibeetState.addRound(sibeetState, scores);
       renderSibeet();
+      setTimeout(function() { sibeetSubmitLocked = false; }, 400);
 
       if (result.gameOver) {
         showSibeetGameOver();
@@ -3064,20 +3193,29 @@
       var ranked = s.players.map(function(name, i) { return { name: name, score: s.totals[i] }; })
         .sort(function(a, b) { return a.score - b.score; });
 
+      var medals = ['🥇', '🥈', '🥉', ''];
+      var barColors = ['var(--gold)', 'rgba(192,192,192,0.7)', 'rgba(205,127,50,0.7)', 'rgba(245,240,230,0.2)'];
+
       var overlay = document.createElement('div');
       overlay.className = 'game-over-overlay';
       overlay.innerHTML =
         '<h2>انتهت اللعبة!</h2>' +
-        '<div class="winner-text">\uD83C\uDFC6 ' + ranked[0].name + '</div>' +
-        '<div style="width:100%;max-width:280px;margin-top:8px">' +
+        '<div style="font-size:20px;font-weight:700;margin-bottom:4px">' + ranked[0].name + ' الأقل نقاط!</div>' +
+        '<div style="width:100%;max-width:300px;margin-top:12px">' +
           ranked.map(function(p, i) {
-            return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(245,240,230,0.1);font-size:15px">' +
-              '<span>' + (i + 1) + '. ' + p.name + '</span>' +
-              '<span style="font-weight:700">' + p.score + '</span>' +
+            var pct = ranked[3] && ranked[3].score > 0 ? Math.max(20, (p.score / ranked[3].score) * 100) : 50;
+            return '<div style="margin-bottom:8px">' +
+              '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">' +
+                '<span style="font-size:14px;font-weight:600">' + (medals[i] || '') + ' ' + p.name + '</span>' +
+                '<span style="font-size:16px;font-weight:700">' + p.score + '</span>' +
+              '</div>' +
+              '<div style="height:6px;background:rgba(245,240,230,0.1);border-radius:3px;overflow:hidden">' +
+                '<div style="height:100%;width:' + pct + '%;background:' + barColors[i] + ';border-radius:3px;transition:width 0.6s ease"></div>' +
+              '</div>' +
             '</div>';
           }).join('') +
         '</div>' +
-        '<button onclick="this.parentElement.remove()" style="font-size:16px;margin-top:16px">متابعة</button>';
+        '<button onclick="this.parentElement.remove()" style="font-size:16px;margin-top:16px;padding:12px 32px">متابعة</button>';
       document.body.appendChild(overlay);
     }
 
