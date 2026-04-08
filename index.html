@@ -258,6 +258,29 @@
     }
     .clarify-btn:active { opacity: 0.7; }
 
+    .proj-card {
+      border-radius: 14px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+    }
+    .proj-card.lana-proj {
+      background: rgba(114, 47, 55, 0.06);
+      border-right: 3px solid var(--burgundy);
+    }
+    .proj-card.lahum-proj {
+      background: rgba(26, 39, 68, 0.06);
+      border-right: 3px solid var(--navy);
+    }
+    .proj-card-header {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .lana-proj .proj-card-header { color: var(--burgundy); }
+    .lahum-proj .proj-card-header { color: var(--navy); }
+    [data-theme="dark"] .proj-card.lana-proj { background: rgba(168, 68, 80, 0.1); }
+    [data-theme="dark"] .proj-card.lahum-proj { background: rgba(232, 228, 220, 0.06); }
+
     .bunt-preset-score {
       display: flex;
       justify-content: space-around;
@@ -709,15 +732,13 @@
 
         <!-- Projects -->
         <div id="projectsSection">
-          <div class="input-row">
-            <div style="flex:1">
-              <div class="input-label" style="font-size:13px">مشاريع لنا</div>
-              <div id="projLana"></div>
-            </div>
-            <div style="flex:1">
-              <div class="input-label" style="font-size:13px">مشاريع لهم</div>
-              <div id="projLahum"></div>
-            </div>
+          <div class="proj-card lana-proj">
+            <div class="proj-card-header">مشاريع لنا</div>
+            <div id="projLana"></div>
+          </div>
+          <div class="proj-card lahum-proj">
+            <div class="proj-card-header">مشاريع لهم</div>
+            <div id="projLahum"></div>
           </div>
         </div>
 
