@@ -1808,7 +1808,14 @@
         if (hokmProjects.length > 0) {
           resolveProjects(hokmExcess, 'hokm');
         } else {
-          finishSimple();
+          // Excess doesn't match any project combination (e.g. 17, 19)
+          askQuestion('المجموع ' + total + ' غير مألوف للحكم — تأكد من الأرقام', [
+            { label: 'تسجيل كذا', value: 'keep' },
+            { label: 'تعديل', value: 'cancel' }
+          ], (answer) => {
+            if (answer === 'keep') finishSimple();
+            else { pendingBunt = null; pendingMeta = {}; }
+          });
         }
         return;
       }
@@ -1851,8 +1858,14 @@
           pendingMeta.type = 'hokm';
           resolveProjects(hokmExcess, 'hokm');
         } else {
-          // Can't decompose — just record as-is
-          finishSimple();
+          // Neither صن nor حكم decompose cleanly
+          askQuestion('المجموع ' + total + ' غير مألوف — تأكد من الأرقام', [
+            { label: 'تسجيل كذا', value: 'keep' },
+            { label: 'تعديل', value: 'cancel' }
+          ], (answer) => {
+            if (answer === 'keep') finishSimple();
+            else { pendingBunt = null; pendingMeta = {}; }
+          });
         }
         return;
       }
