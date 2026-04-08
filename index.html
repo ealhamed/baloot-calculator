@@ -1222,7 +1222,7 @@
 
           <!-- Share actions -->
           <div style="display:flex;gap:8px;margin-bottom:12px">
-            <button class="btn-primary" style="flex:1;font-size:14px;padding:10px" onclick="shareRoom()">مشاركة الرابط</button>
+            <button class="btn-primary" style="flex:1;font-size:14px;padding:10px" onclick="doShareNative()">مشاركة الرابط</button>
             <button class="btn-secondary" style="flex:1;font-size:14px;padding:10px;opacity:1;border-color:var(--navy)" onclick="copyRoomLink()">نسخ الرابط</button>
           </div>
           <div id="copyMsg" style="font-size:12px;color:var(--burgundy);text-align:center;margin-bottom:8px;opacity:0;transition:opacity 0.3s"></div>
@@ -2564,20 +2564,26 @@
     }
 
     function shareRoom() {
+      // Show room modal with QR + code + share options
+      document.getElementById('roomModalTitle').textContent = 'مشاركة الغرفة';
+      document.getElementById('roomCreateView').style.display = '';
+      document.getElementById('roomJoinView').style.display = 'none';
+      document.getElementById('roomCodeDisplay').textContent = roomCode;
+      const joinUrl = getJoinUrl();
+      const qrBox = document.getElementById('qrBox'); qrBox.innerHTML = '';
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      new QRCode(qrBox, { text: joinUrl, width: 160, height: 160, colorDark: isDark ? '#E8E4DC' : '#1A2744', colorLight: isDark ? '#1A1A2E' : '#F5F0E6', correctLevel: QRCode.CorrectLevel.M });
+      const count = connections.filter(c => c.open).length;
+      document.getElementById('connectedCount').textContent = count.toLocaleString('ar-SA') + ' متصلين';
+      pushOverlay('roomModal');
+      document.getElementById('roomModal').classList.add('open');
+    }
+
+    function doShareNative() {
       const joinUrl = getJoinUrl();
       if (navigator.share) {
-        navigator.share({
-          title: 'حاسبة بلوت - الديوانية',
-          text: 'تعال انضم للغرفة! الرمز: ' + roomCode,
-          url: joinUrl
-        }).catch(() => {
-          // User cancelled share, fall back to copy
-          copyRoomLink();
-        });
-      } else {
-        // Web Share not supported, fall back to copy
-        copyRoomLink();
-      }
+        navigator.share({ title: 'حاسبة بلوت - الديوانية', text: 'تعال انضم للغرفة! الرمز: ' + roomCode, url: joinUrl }).catch(() => copyRoomLink());
+      } else { copyRoomLink(); }
     }
 
     function toggleEditLock() {
