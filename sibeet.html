@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#722F37">
+  <title>بنت السبيت - الديوانية</title>
+  <link rel="manifest" href="manifest-sibeet.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>@font-face { font-family: 'Cairo'; font-display: swap; }</style>
+  <style>
+    :root {
+      --bg: #F5F0E6;
+      --burgundy: #722F37;
+      --gold: #C9A227;
+      --navy: #1A2744;
+      --text: #1D1E20;
+      --cream: #F5F0E6;
+      --gold-text: #8B7318;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html.no-scroll, html.no-scroll body { overflow: hidden; height: 100%; }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100dvh;
+      direction: rtl;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      overscroll-behavior: contain;
+      touch-action: manipulation;
+    }
+
+    button {
+      font-family: 'Cairo', sans-serif;
+      background: var(--burgundy);
+      color: var(--cream);
+      border: none;
+      border-radius: 28px;
+      padding: 12px 28px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    button:active { opacity: 0.8; }
+    button:focus-visible { outline: 2px solid var(--burgundy); outline-offset: 2px; }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      padding: 12px 16px 4px;
+      position: relative;
+    }
+    .header h1 { color: var(--gold-text); font-size: 20px; font-weight: 700; margin-bottom: 2px; }
+    .burger-btn {
+      position: absolute;
+      right: 16px;
+      top: 12px;
+      background: rgba(26,39,68,0.08);
+      font-size: 20px;
+      padding: 4px;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--navy);
+      line-height: 1;
+    }
+    .logo-wrap { text-align: center; margin: 0 auto 4px; }
+    [data-theme="dark"] .logo-wrap img { filter: brightness(1.8) contrast(1.1); }
+
+    /* ── Menu ── */
+    .menu-overlay {
+      position: fixed; inset: 0; background: rgba(26,39,68,0.5); z-index: 150;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    }
+    .menu-overlay.open { opacity: 1; pointer-events: auto; }
+    .side-menu {
+      position: fixed; top: 0; right: -280px; width: 280px; height: 100%;
+      background: var(--bg); z-index: 151;
+      transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
+      padding: 24px 20px; overflow-y: auto;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+      display: flex; flex-direction: column;
+    }
+    .side-menu.open { right: 0; }
+    .menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .menu-title { font-size: 18px; font-weight: 700; color: var(--navy); }
+    .menu-section { margin-bottom: 20px; }
+    .menu-section-title { font-size: 12px; font-weight: 700; color: var(--gold-text); margin-bottom: 8px; opacity: 0.7; }
+    .menu-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 0; border-bottom: 1px solid rgba(26,39,68,0.06);
+      cursor: pointer; font-size: 15px; font-weight: 600; color: var(--navy);
+      background: none; border-radius: 0; width: 100%; text-align: right;
+    }
+    .menu-item:active { opacity: 0.6; }
+    .menu-footer { margin-top: auto; text-align: center; font-size: 11px; color: var(--navy); opacity: 0.3; padding-top: 16px; }
+    .modal-close {
+      background: transparent; color: var(--navy); font-size: 24px;
+      padding: 4px 8px; border-radius: 12px;
+    }
+    [data-theme="dark"] .side-menu { box-shadow: -4px 0 20px rgba(0,0,0,0.4); }
+
+    .btn-primary { width: 100%; max-width: 200px; padding: 10px 24px; font-size: 16px; }
+    .btn-secondary { background: transparent; color: var(--navy); border: 1px solid rgba(26,39,68,0.2); font-size: 13px; padding: 10px 20px; min-height: 44px; opacity: 0.7; cursor: pointer; }
+
+    /* ── Game Over ── */
+    .game-over-overlay {
+      position: fixed; inset: 0; background: rgba(26,39,68,0.85); z-index: 200;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: var(--cream); animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .game-over-overlay h2 { font-size: 28px; color: var(--gold); margin-bottom: 8px; }
+    [data-theme="dark"] .game-over-overlay { background: rgba(0,0,0,0.85); }
+
+    /* ── بنت السبيت ── */
+    .sibeet-scores {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 0 12px 6px;
+    }
+    .sibeet-player {
+      background: rgba(26,39,68,0.04); border-radius: 14px; padding: 8px 6px;
+      text-align: center; transition: all 0.3s;
+    }
+    .sibeet-player-name { font-size: 12px; color: var(--gold-text); font-weight: 700; cursor: pointer; }
+    .sibeet-player-total {
+      font-size: 32px; font-weight: 700; color: var(--navy);
+      line-height: 1.1; margin-bottom: 2px; transition: color 0.3s;
+    }
+    .sibeet-player-bar { height: 3px; background: rgba(26,39,68,0.08); border-radius: 2px; margin-bottom: 6px; overflow: hidden; }
+    .sibeet-player-bar-fill { height: 100%; background: var(--navy); border-radius: 2px; transition: width 0.4s ease; }
+    .sibeet-player-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+    .sib-toggle {
+      height: 46px; border-radius: 8px; border: 1.5px solid rgba(26,39,68,0.12);
+      background: white; color: var(--navy); cursor: pointer; transition: all 0.15s;
+      display: flex; flex-direction: row; align-items: center; justify-content: center;
+      gap: 3px; font-family: 'Cairo', sans-serif; position: relative;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06); padding: 2px 4px;
+    }
+    .sib-toggle .card-suit { font-size: 22px; line-height: 1; }
+    .sib-toggle .card-val { font-size: 12px; font-weight: 700; line-height: 1; opacity: 0.7; }
+    .sib-toggle.spade .card-suit { color: #1A2744; }
+    .sib-toggle.diamond .card-suit { color: #C41E3A; }
+    .sib-toggle.diamond .card-val { color: #C41E3A; }
+    .sib-toggle.active {
+      background: var(--burgundy); border-color: var(--burgundy);
+      box-shadow: 0 2px 8px rgba(114,47,55,0.3);
+    }
+    .sib-toggle.active .card-suit,
+    .sib-toggle.active .card-val { color: var(--cream); opacity: 1; }
+    .sib-toggle.doubled {
+      background: var(--burgundy); border-color: var(--gold); border-width: 2px;
+      box-shadow: 0 2px 8px rgba(201,162,39,0.3);
+    }
+    .sib-toggle.doubled .card-suit,
+    .sib-toggle.doubled .card-val { color: var(--cream); opacity: 1; }
+    .sib-toggle .mult-badge {
+      display: none; position: absolute; top: -5px; left: -5px;
+      font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 6px; line-height: 1.2;
+    }
+    .sib-toggle.active .mult-badge { display: block; background: rgba(245,240,230,0.85); color: var(--burgundy); }
+    .sib-toggle.doubled .mult-badge { display: block; background: var(--gold); color: var(--navy); }
+    .sib-toggle.maseera.active { background: var(--gold); border-color: var(--gold); box-shadow: 0 3px 10px rgba(201,162,39,0.3); }
+    .sib-toggle.maseera.active .card-val { color: var(--navy); opacity: 1; }
+    .sib-toggle:active { transform: scale(0.93); }
+    .sibeet-hearts-row {
+      grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto 1fr;
+      gap: 0 4px; align-items: center;
+    }
+    .sibeet-hearts-btn {
+      height: 46px; border-radius: 8px; background: var(--navy); color: var(--cream);
+      font-size: 20px; display: flex; align-items: center; justify-content: center;
+      padding: 0; border: none; cursor: pointer; font-family: 'Cairo', sans-serif;
+      transition: opacity 0.15s; font-weight: 700;
+    }
+    .sibeet-hearts-btn:active { opacity: 0.7; }
+    .sibeet-hearts-circle {
+      width: 52px; height: 52px; display: flex; align-items: center; justify-content: center;
+      margin: 0; position: relative;
+    }
+    .sibeet-hearts-circle svg.heart-bg {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+    }
+    .sibeet-hearts-circle span {
+      position: relative; z-index: 1; font-size: 18px; font-weight: 700; color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.15); margin-top: 2px;
+    }
+    .sibeet-player-round-total { font-size: 12px; font-weight: 700; color: var(--burgundy); margin-top: 4px; }
+    .sibeet-player.danger { background: rgba(114,47,55,0.06); }
+    .sibeet-player.danger .sibeet-player-total { color: var(--burgundy); }
+    .sibeet-player.danger .sibeet-player-bar-fill { background: var(--burgundy); }
+    .sibeet-player.leader .sibeet-player-bar-fill { background: var(--gold); }
+
+    .sibeet-entry { padding: 0 12px 8px; }
+    .sibeet-target-row {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 2px 0 8px; font-size: 13px; font-weight: 700; color: var(--navy);
+    }
+    .sibeet-target-btn {
+      background: rgba(26,39,68,0.08); color: var(--navy); border-radius: 10px;
+      padding: 6px 16px; font-size: 13px; font-weight: 700; border: none;
+      cursor: pointer; font-family: 'Cairo', sans-serif; min-height: 36px; transition: all 0.15s;
+    }
+    .sibeet-target-btn.active { background: var(--burgundy); color: white; box-shadow: 0 2px 8px rgba(114,47,55,0.35); transform: scale(1.08); }
+    .sibeet-target-input {
+      width: 48px; height: 36px; border: 1.5px solid rgba(26,39,68,0.15); border-radius: 10px;
+      font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700; text-align: center;
+      background: white; color: var(--navy); outline: none; -moz-appearance: textfield; opacity: 0.7;
+    }
+    .sibeet-target-input::-webkit-outer-spin-button,
+    .sibeet-target-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .sibeet-target-input:focus { border-color: var(--burgundy); opacity: 1; }
+    .sibeet-target-input.active { background: var(--burgundy); color: var(--cream); border-color: var(--burgundy); opacity: 1; }
+    .sibeet-rounds-table { padding: 0 16px; max-height: 30vh; overflow-y: auto; }
+    .sibeet-round-row {
+      display: grid; grid-template-columns: 28px 1fr 1fr 1fr 1fr; gap: 2px;
+      padding: 7px 0; border-bottom: 1px solid rgba(26,39,68,0.05);
+      font-size: 13px; font-weight: 600; text-align: center; color: var(--navy);
+    }
+    .sibeet-round-row.header { font-weight: 700; color: var(--gold-text); font-size: 11px; border-bottom: 1px solid rgba(26,39,68,0.1); }
+    .sibeet-round-num { opacity: 0.3; font-weight: 700; }
+    .sibeet-round-high { color: var(--burgundy); font-weight: 700; }
+
+    /* ── Dark Mode ── */
+    [data-theme="dark"] {
+      --bg: #1A1A2E; --burgundy: #A84450; --gold: #D4AF37; --gold-text: #D4AF37;
+      --navy: #E8E4DC; --text: #E8E4DC; --cream: #1A1A2E;
+      --input-bg: #2A2A4A; --input-border: rgba(232,228,220,0.15);
+    }
+    [data-theme="dark"] .sibeet-player { background: rgba(232,228,220,0.06); }
+    [data-theme="dark"] .sibeet-player.danger { background: rgba(168,68,80,0.1); }
+    [data-theme="dark"] .sib-toggle { background: var(--input-bg); border-color: rgba(232,228,220,0.1); box-shadow: none; }
+    [data-theme="dark"] .sib-toggle.active { background: var(--burgundy); border-color: var(--burgundy); }
+    [data-theme="dark"] .sibeet-player-bar { background: rgba(232,228,220,0.1); }
+    [data-theme="dark"] .sibeet-target-input { background: var(--input-bg); border-color: rgba(232,228,220,0.1); color: var(--text); }
+    [data-theme="dark"] .btn-secondary { color: var(--text); border-color: rgba(232,228,220,0.2); }
+
+    /* ── In-App Dialog ── */
+    .app-dialog-overlay {
+      position: fixed; inset: 0; background: rgba(26,39,68,0.5); z-index: 300;
+      display: flex; align-items: center; justify-content: center;
+      animation: fadeIn 0.2s ease; padding: 24px;
+    }
+    .app-dialog {
+      background: var(--bg); border-radius: 20px; padding: 24px 20px;
+      width: 100%; max-width: 320px; text-align: center;
+    }
+    .app-dialog-msg { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 20px; line-height: 1.5; }
+    .app-dialog-input {
+      width: 100%; padding: 10px 12px; border: 1px solid rgba(26,39,68,0.2); border-radius: 14px;
+      font-family: 'Cairo', sans-serif; font-size: 16px; font-weight: 600; text-align: center;
+      background: white; color: var(--navy); outline: none; margin-bottom: 16px;
+    }
+    [data-theme="dark"] .app-dialog-input { background: var(--input-bg); border-color: var(--input-border); color: var(--text); }
+    .app-dialog-actions { display: flex; gap: 8px; }
+    .app-dialog-actions button { flex: 1; padding: 12px; font-size: 15px; border-radius: 14px; min-height: 48px; }
+    .app-dialog-actions .dlg-cancel { background: transparent; color: var(--navy); border: 1px solid rgba(26,39,68,0.2); }
+    .app-dialog-actions .dlg-confirm { background: var(--burgundy); color: var(--cream); }
+
+    .bottom-pad { height: env(safe-area-inset-bottom, 16px); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div id="roomStatus" style="display:none;background:var(--navy);padding:6px 12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
+        <span id="roomStatusText" style="font-size:11px;color:var(--cream);font-weight:600"></span>
+        <div style="display:flex;gap:4px;align-items:center">
+          <button id="editToggleBar" style="font-size:11px;padding:8px 12px;min-height:36px;background:transparent;border:1px solid rgba(245,240,230,0.3);color:var(--cream);border-radius:10px;display:none" onclick="toggleEditFromBar()">تعديل: مقفل</button>
+          <button style="font-size:11px;padding:8px 12px;min-height:36px;background:var(--burgundy);border-radius:10px" onclick="shareRoom()">مشاركة</button>
+          <button style="font-size:11px;padding:8px 12px;min-height:36px;background:transparent;border:1px solid rgba(245,240,230,0.3);color:var(--cream);border-radius:10px" onclick="leaveRoom()">خروج</button>
+        </div>
+      </div>
+    </div>
+    <div class="header">
+      <div class="logo-wrap"><img src="logo.png" alt="الديوانية" style="height:72px"></div>
+      <h1>بنت السبيت</h1>
+      <button class="burger-btn" onclick="openMenu()" aria-label="القائمة"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+    </div>
+
+    <!-- Player cards with embedded entry -->
+    <div class="sibeet-scores" id="sibeetScores"></div>
+
+    <!-- Target + Confirm -->
+    <div class="sibeet-entry">
+      <div class="sibeet-target-row">
+        <span>اللعب لين:</span>
+        <input type="number" id="sibeetCustomTarget" class="sibeet-target-input active"
+          inputmode="numeric" min="10" value="150"
+          onchange="setCustomSibeetTarget(this.value)" onfocus="this.select()">
+      </div>
+      <div style="text-align:center">
+        <button class="btn-primary" style="max-width:220px;font-size:17px;padding:12px 28px" onclick="submitSibeet()">تأكيد</button>
+      </div>
+      <div style="text-align:center;margin-top:4px">
+        <span id="sibeetValidation" style="font-size:13px;color:var(--burgundy);font-weight:600" role="alert" aria-live="polite"></span>
+      </div>
+    </div>
+
+    <!-- Round History -->
+    <div class="sibeet-rounds-table" id="sibeetRoundsSection" style="display:none">
+      <div class="sibeet-round-row header">
+        <span>#</span>
+        <span id="sColH1">١</span>
+        <span id="sColH2">٢</span>
+        <span id="sColH3">٣</span>
+        <span id="sColH4">٤</span>
+      </div>
+      <div id="sibeetRoundsList"></div>
+    </div>
+
+    <!-- Actions -->
+    <div id="sibeetActions" style="display:none;justify-content:center;gap:8px;padding:8px 16px">
+      <button class="btn-secondary" onclick="undoSibeetRound()">تراجع</button>
+      <button class="btn-secondary" onclick="newSibeetGame()">لعبة جديدة</button>
+    </div>
+
+    <div class="bottom-pad"></div>
+
+    <!-- Side Menu -->
+    <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+    <div class="side-menu" id="sideMenu">
+      <div class="menu-header">
+        <span class="menu-title">القائمة</span>
+        <button class="modal-close" onclick="closeMenu()" aria-label="إغلاق"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div class="menu-section">
+        <div class="menu-section-title">الألعاب</div>
+        <a class="menu-item" href="index.html" style="text-decoration:none">
+          <span>حاسبة بلوت</span>
+        </a>
+        <button class="menu-item" disabled style="opacity:0.5">
+          <span>بنت السبيت</span>
+          <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        </button>
+      </div>
+      <div class="menu-section">
+        <div class="menu-section-title">الغرفة</div>
+        <button class="menu-item" onclick="closeMenu();createRoom()">غرفة جديدة</button>
+        <button class="menu-item" onclick="closeMenu();joinRoom()">انضم لغرفة</button>
+      </div>
+      <div class="menu-section">
+        <div class="menu-section-title">الإعدادات</div>
+        <button class="menu-item" onclick="toggleTheme()">
+          <span id="themeName">الوضع الداكن</span>
+          <span id="themeLabel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
+        </button>
+      </div>
+      <div class="menu-footer">With warm regards from ESH</div>
+    </div>
+    <!-- Room Modal -->
+    <div class="modal-overlay" id="roomModal" style="position:fixed;inset:0;background:rgba(26,39,68,0.5);z-index:100;display:none;align-items:flex-end;justify-content:center">
+      <div style="background:var(--bg);border-radius:24px 24px 0 0;width:100%;max-width:430px;padding:24px 20px env(safe-area-inset-bottom,20px);animation:fadeIn 0.3s ease;max-height:90vh;overflow-y:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <span style="color:var(--navy);font-size:20px;font-weight:700" id="roomModalTitle">غرفة جديدة</span>
+          <button class="modal-close" onclick="closeRoomModal()" aria-label="إغلاق"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+        <div id="roomCreateView">
+          <div style="text-align:center;padding:12px 0">
+            <div style="font-size:13px;color:var(--navy);opacity:0.5;margin-bottom:4px">رمز الغرفة</div>
+            <div style="font-size:48px;font-weight:700;color:var(--navy);letter-spacing:12px" id="roomCodeDisplay"></div>
+            <div id="qrBox" style="margin:12px auto;width:160px;height:160px"></div>
+            <div style="text-align:center;font-size:13px;color:var(--navy);opacity:0.6;margin-bottom:8px" id="connectedCount"></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <button class="btn-primary" style="flex:1;font-size:14px;padding:10px;max-width:none" onclick="doShareNative()">مشاركة الرابط</button>
+            <button class="btn-secondary" style="flex:1;font-size:14px;padding:10px;opacity:1;border-color:var(--navy)" onclick="copyRoomLink()">نسخ الرابط</button>
+          </div>
+          <div id="copyMsg" style="font-size:12px;color:var(--burgundy);text-align:center;margin-bottom:8px;opacity:0;transition:opacity 0.3s"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(114,47,55,0.05);border-radius:16px;margin-top:4px">
+            <span style="font-size:14px;font-weight:700;color:var(--burgundy)">السماح بالتعديل</span>
+            <label style="position:relative;width:48px;height:28px">
+              <input type="checkbox" id="editLockToggle" onchange="toggleEditLock()" style="opacity:0;width:0;height:0">
+              <span style="position:absolute;inset:0;background:#ccc;border-radius:28px;transition:0.3s;cursor:pointer"></span>
+            </label>
+          </div>
+        </div>
+        <div id="roomJoinView" style="display:none">
+          <div style="text-align:center;font-size:13px;color:var(--navy);opacity:0.5;margin-bottom:12px">أدخل الرمز من المعزّب</div>
+          <div id="joinSpinner" style="display:none;text-align:center;padding:16px 0">
+            <div style="width:32px;height:32px;border:3px solid rgba(26,39,68,0.15);border-top-color:var(--burgundy);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto"></div>
+            <div style="font-size:12px;color:var(--navy);opacity:0.5;margin-top:8px">جاري الاتصال...</div>
+          </div>
+          <div style="margin-bottom:16px">
+            <label style="display:block;color:var(--gold-text);font-size:16px;font-weight:700;margin-bottom:6px">رمز الغرفة</label>
+            <input type="text" id="joinCodeInput" maxlength="4" style="width:100%;padding:10px 12px;border:1px solid rgba(26,39,68,0.2);border-radius:14px;font-family:'Cairo',sans-serif;font-size:18px;font-weight:700;text-align:center;background:white;color:var(--navy);outline:none;text-transform:uppercase;letter-spacing:8px" placeholder="----" inputmode="text">
+          </div>
+          <button class="btn-primary" style="width:100%;max-width:none" onclick="doJoinRoom()">انضم</button>
+          <div style="color:var(--burgundy);text-align:center;margin-top:8px;font-size:13px" id="joinError"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js" integrity="sha384-nlUQ8ZqCbvStErob+biJNzSgltf6urV3VGqhfIfzhmg9RXmpeRm76ELw0pYnKlTR" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"></script>
+  <script>
+    // ── In-App Dialog ────────────────────────────────────────
+    function appConfirm(message) {
+      return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.className = 'app-dialog-overlay';
+        overlay.innerHTML = `
+          <div class="app-dialog">
+            <div class="app-dialog-msg">${message}</div>
+            <div class="app-dialog-actions">
+              <button class="dlg-confirm" data-action="yes">نعم</button>
+              <button class="dlg-cancel" data-action="no">لا</button>
+            </div>
+          </div>`;
+        overlay.addEventListener('click', e => {
+          const action = e.target.dataset?.action;
+          if (action === 'yes') { overlay.remove(); resolve(true); }
+          else if (action === 'no') { overlay.remove(); resolve(false); }
+        });
+        document.body.appendChild(overlay);
+      });
+    }
+
+    function appPrompt(message, defaultValue) {
+      return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.className = 'app-dialog-overlay';
+        overlay.innerHTML = `
+          <div class="app-dialog">
+            <div class="app-dialog-msg">${message}</div>
+            <input class="app-dialog-input" type="text" value="${defaultValue || ''}" autofocus>
+            <div class="app-dialog-actions">
+              <button class="dlg-confirm" data-action="ok">تأكيد</button>
+              <button class="dlg-cancel" data-action="cancel">إلغاء</button>
+            </div>
+          </div>`;
+        const input = overlay.querySelector('input');
+        setTimeout(() => input.focus(), 50);
+        input.addEventListener('keydown', e => {
+          if (e.key === 'Enter') { overlay.remove(); resolve(input.value.trim() || null); }
+        });
+        overlay.addEventListener('click', e => {
+          const action = e.target.dataset?.action;
+          if (action === 'ok') { overlay.remove(); resolve(input.value.trim() || null); }
+          else if (action === 'cancel') { overlay.remove(); resolve(null); }
+        });
+        document.body.appendChild(overlay);
+      });
+    }
+
+    // ── Theme ────────────────────────────────────────────────
+    const SVG_MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+    const SVG_SUN = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      const themeLabel = document.getElementById('themeLabel');
+      if (themeLabel) themeLabel.innerHTML = theme === 'dark' ? SVG_SUN : SVG_MOON;
+      const themeName = document.getElementById('themeName');
+      if (themeName) themeName.textContent = theme === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن';
+      localStorage.setItem('baloot_theme', theme);
+    }
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      applyTheme(current === 'dark' ? 'light' : 'dark');
+    }
+    applyTheme('light');
+
+    // ── Menu ─────────────────────────────────────────────────
+    function pushOverlay(id) { history.pushState({ overlay: id }, ''); }
+    window.addEventListener('popstate', function() {
+      if (document.getElementById('menuOverlay').classList.contains('open')) {
+        document.getElementById('menuOverlay').classList.remove('open');
+        document.getElementById('sideMenu').classList.remove('open');
+        return;
+      }
+      const dlg = document.querySelector('.app-dialog-overlay');
+      if (dlg) { dlg.remove(); }
+    });
+
+    function openMenu() {
+      pushOverlay('menu');
+      document.getElementById('menuOverlay').classList.add('open');
+      document.getElementById('sideMenu').classList.add('open');
+    }
+    function closeMenu() {
+      document.getElementById('menuOverlay').classList.remove('open');
+      document.getElementById('sideMenu').classList.remove('open');
+    }
+
+    // ── State ────────────────────────────────────────────────
+    const SibeetState = {
+      STORAGE_KEY: 'sibeet_state',
+      _defaultState() {
+        return { players: ['لاعب ١', 'لاعب ٢', 'لاعب ٣', 'لاعب ٤'], rounds: [], totals: [0,0,0,0], target: 150 };
+      },
+      load() {
+        try {
+          const raw = localStorage.getItem(this.STORAGE_KEY);
+          if (raw) {
+            const p = JSON.parse(raw);
+            const d = this._defaultState();
+            return { players: p.players||d.players, rounds: p.rounds||d.rounds, totals: p.totals||d.totals, target: p.target||150 };
+          }
+        } catch(e) {}
+        return this._defaultState();
+      },
+      save(s) { localStorage.setItem(this.STORAGE_KEY, JSON.stringify(s)); },
+      addRound(s, scores) {
+        s.rounds.push({ scores: [...scores] });
+        for (let i=0;i<4;i++) s.totals[i] += scores[i];
+        this.save(s);
+        return { gameOver: s.totals.some(t => t >= (s.target||150)) };
+      },
+      undoLastRound(s) {
+        if (!s.rounds.length) return;
+        const last = s.rounds.pop();
+        for (let i=0;i<4;i++) s.totals[i] -= last.scores[i];
+        this.save(s);
+      },
+      newGame(s) { s.rounds=[]; s.totals=[0,0,0,0]; this.save(s); }
+    };
+
+    var sibeetState = SibeetState.load();
+
+    // ── UI ───────────────────────────────────────────────────
+    function renderSibeet() {
+      var s = sibeetState;
+      var tgt = s.target || 200;
+      var minScore = Math.min.apply(null, s.totals);
+
+      var scores = document.getElementById('sibeetScores');
+      scores.innerHTML = s.players.map(function(name, i) {
+        var pct = Math.min((s.totals[i] / tgt) * 100, 100);
+        var danger = s.totals[i] >= (tgt * 0.8) ? ' danger' : '';
+        var leader = (s.totals[i] === minScore && s.rounds.length > 0) ? ' leader' : '';
+        return '<div class="sibeet-player' + danger + leader + '">' +
+          '<div class="sibeet-player-name" onclick="renameSibeetPlayer(' + i + ')">' + name + ' <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.4"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></svg></div>' +
+          '<div class="sibeet-player-total">' + s.totals[i] + '</div>' +
+          '<div class="sibeet-player-bar"><div class="sibeet-player-bar-fill" style="width:' + pct + '%"></div></div>' +
+          '<div class="sibeet-player-controls">' +
+            '<button class="sib-toggle spade" id="sibQ' + i + '" onclick="toggleSibCard(' + i + ',\'queen\')" aria-label="بنت السبيت ' + name + '" aria-pressed="false" data-state="0"><span class="mult-badge" id="sibQB' + i + '">×1</span><span class="card-suit">♠</span><span class="card-val">Q</span></button>' +
+            '<button class="sib-toggle diamond" id="sibD' + i + '" onclick="toggleSibCard(' + i + ',\'diamond\')" aria-label="١٠ ديمن ' + name + '" aria-pressed="false" data-state="0"><span class="mult-badge" id="sibDB' + i + '">×1</span><span class="card-suit">♦</span><span class="card-val">10</span></button>' +
+            '<div style="grid-column:1/-1;display:flex;gap:4px">' +
+              '<button class="sib-toggle maseera" id="sibM' + i + '" onclick="toggleMaseera(' + i + ')" aria-label="إعلان إفلاس ' + name + '" aria-pressed="false" style="flex:1;height:32px;font-size:11px;gap:4px"><span class="card-val" style="opacity:1;font-size:11px">إعلان إفلاس</span></button>' +
+              '<button class="sib-toggle" id="sibMF' + i + '" onclick="toggleMaseeraFail(' + i + ')" style="flex:0 0 auto;height:32px;font-size:11px;padding:0 12px;display:none;background:var(--burgundy);border-color:var(--burgundy);color:var(--cream)"><span class="card-val" style="opacity:1;font-size:11px;color:var(--cream)">فشل</span></button>' +
+            '</div>' +
+            '<div class="sibeet-hearts-row">' +
+              '<button class="sibeet-hearts-btn" onclick="stepHearts(' + i + ',1)" aria-label="زيادة هاص ' + name + '">+</button>' +
+              '<div class="sibeet-hearts-circle" id="sibH' + i + '">' + SVG_HEART + '<span>0</span></div>' +
+              '<button class="sibeet-hearts-btn" onclick="stepHearts(' + i + ',-1)" aria-label="إنقاص هاص ' + name + '">−</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="sibeet-player-round-total" id="sibPTotal' + i + '">+0</div>' +
+        '</div>';
+      }).join('');
+
+      var ci = document.getElementById('sibeetCustomTarget');
+      if (ci) ci.value = s.target;
+
+      var hasRounds = s.rounds.length > 0;
+      document.getElementById('sibeetRoundsSection').style.display = hasRounds ? '' : 'none';
+      document.getElementById('sibeetActions').style.display = hasRounds ? 'flex' : 'none';
+
+      if (hasRounds) {
+        s.players.forEach(function(name, i) {
+          var h = document.getElementById('sColH' + (i+1));
+          if (h) h.textContent = name.substring(0, 4);
+        });
+        document.getElementById('sibeetRoundsList').innerHTML = s.rounds.map(function(r, idx) {
+          var mx = Math.max.apply(null, r.scores);
+          return '<div class="sibeet-round-row"><span class="sibeet-round-num">' + (idx+1) + '</span>' +
+            r.scores.map(function(sc) { var cls = ''; if (sc===mx&&mx>0) cls=' class="sibeet-round-high"'; else if (sc<0) cls=' style="color:var(--gold);font-weight:700"'; return '<span'+cls+'>'+sc+'</span>'; }).join('') +
+          '</div>';
+        }).join('');
+      }
+
+      document.getElementById('sibeetValidation').textContent = '';
+      var gameOver = s.totals.some(function(t) { return t >= (s.target||150); });
+      var viewOnly = hostConn && !editUnlocked;
+      var hideEntry = gameOver || viewOnly;
+      var entryEl = document.querySelector('.sibeet-entry');
+      if (entryEl) entryEl.style.display = hideEntry ? 'none' : '';
+      document.querySelectorAll('.sibeet-player-controls, .sibeet-player-round-total').forEach(function(el) {
+        el.style.display = hideEntry ? 'none' : '';
+      });
+    }
+
+    function toggleSibCard(player, type) {
+      var prefix = type === 'queen' ? 'sibQ' : 'sibD';
+      var el = document.getElementById(prefix + player);
+      var state = parseInt(el.dataset.state) || 0;
+      var nextState = (state + 1) % 3;
+      var badgePrefix = type === 'queen' ? 'sibQB' : 'sibDB';
+
+      if (nextState === 1) {
+        for (var j = 0; j < 4; j++) {
+          var btn = document.getElementById(prefix + j);
+          btn.classList.remove('active', 'doubled'); btn.dataset.state = '0';
+          btn.setAttribute('aria-pressed', 'false');
+          document.getElementById(badgePrefix + j).textContent = '×1';
+        }
+        el.classList.add('active'); el.dataset.state = '1';
+        el.setAttribute('aria-pressed', 'true');
+        document.getElementById(badgePrefix + player).textContent = '×1';
+      } else if (nextState === 2) {
+        el.classList.remove('active'); el.classList.add('doubled'); el.dataset.state = '2';
+        document.getElementById(badgePrefix + player).textContent = '×2';
+      } else {
+        el.classList.remove('active', 'doubled'); el.dataset.state = '0';
+        el.setAttribute('aria-pressed', 'false');
+        document.getElementById(badgePrefix + player).textContent = '×1';
+      }
+      if (navigator.vibrate) navigator.vibrate(nextState === 2 ? [10,30,10] : 10);
+      updateSibeetTotals();
+    }
+
+    function getTotalHearts() {
+      var t = 0; for (var i=0;i<4;i++) t += parseInt(document.getElementById('sibH'+i).textContent)||0; return t;
+    }
+    function getHeartsVal(i) { return parseInt(document.getElementById('sibH'+i).textContent)||0; }
+    const SVG_HEART = '<svg class="heart-bg" viewBox="0 0 52 52"><path d="M26 47 C26 47 4 32 4 17 4 9 10 4 17 4 21 4 24 6 26 9 28 6 31 4 35 4 42 4 48 9 48 17 48 32 26 47 26 47Z" fill="#C41E3A"/></svg>';
+    function setHeartsVal(i, val) { document.getElementById('sibH'+i).innerHTML = SVG_HEART+'<span>'+val+'</span>'; }
+
+    function stepHearts(player, delta) {
+      var cur = getHeartsVal(player);
+      var nv = cur + delta;
+      if (nv < 0) return;
+      if (delta > 0 && getTotalHearts() >= 13) return;
+      if (nv > 13) return;
+      if (nv !== cur && navigator.vibrate) navigator.vibrate(8);
+      setHeartsVal(player, nv);
+      updateSibeetTotals();
+    }
+
+    function getCardVal(prefix, i) {
+      var state = parseInt(document.getElementById(prefix+i).dataset.state)||0;
+      if (state === 0) return 0;
+      var base = prefix === 'sibQ' ? 13 : 10;
+      return state === 2 ? base * 2 : base;
+    }
+
+    function toggleMaseera(player) {
+      var el = document.getElementById('sibM' + player);
+      var failBtn = document.getElementById('sibMF' + player);
+      var isActive = el.classList.contains('active');
+      el.classList.toggle('active', !isActive);
+      el.setAttribute('aria-pressed', !isActive);
+      failBtn.style.display = !isActive ? '' : 'none';
+      if (isActive) failBtn.classList.remove('active');
+      if (navigator.vibrate) navigator.vibrate(10);
+      updateSibeetTotals();
+    }
+
+    function toggleMaseeraFail(player) {
+      var el = document.getElementById('sibMF' + player);
+      el.classList.toggle('active');
+      if (navigator.vibrate) navigator.vibrate(10);
+      updateSibeetTotals();
+    }
+
+    function isMaseera(i) {
+      var el = document.getElementById('sibM' + i);
+      return el && el.classList.contains('active');
+    }
+
+    function isMaseeraFailed(i) {
+      var el = document.getElementById('sibMF' + i);
+      return el && el.classList.contains('active');
+    }
+
+    function updateSibeetTotals() {
+      for (var i=0;i<4;i++) {
+        var raw = getCardVal('sibQ',i) + getCardVal('sibD',i) + getHeartsVal(i);
+        var el = document.getElementById('sibPTotal'+i);
+        if (isMaseera(i)) {
+          if (raw === 0) {
+            var failed = isMaseeraFailed(i) || raw > 0;
+          if (!failed) {
+            el.textContent = '−30';
+            el.style.color = 'var(--gold)';
+          } else {
+            el.textContent = '+' + (30 + raw);
+            el.style.color = 'var(--burgundy)';
+          }
+          el.style.opacity = '1';
+        } else {
+          el.textContent = raw > 0 ? '+'+raw : '+0';
+          el.style.color = 'var(--burgundy)';
+          el.style.opacity = raw > 0 ? '1' : '0.3';
+        }
+      }
+    }
+
+    function setCustomSibeetTarget(val) {
+      var num = parseInt(val);
+      if (!num || num < 10) return;
+      sibeetState.target = num; SibeetState.save(sibeetState);
+      renderSibeet();
+    }
+
+    var sibeetSubmitLocked = false;
+    function submitSibeet() {
+      if (sibeetSubmitLocked) return;
+      var scores = [], totalHearts = 0;
+      for (var i=0;i<4;i++) {
+        var total = getCardVal('sibQ',i) + getCardVal('sibD',i);
+        var hearts = getHeartsVal(i); total += hearts; totalHearts += hearts;
+        scores.push(total);
+      }
+      if (totalHearts !== 13) { document.getElementById('sibeetValidation').textContent = 'مجموع الهاص لازم يكون ١٣ (الحالي: '+totalHearts+')'; return; }
+      var qc = 0; for (var i=0;i<4;i++) { if (parseInt(document.getElementById('sibQ'+i).dataset.state)>0) qc++; }
+      if (qc !== 1) { document.getElementById('sibeetValidation').textContent = 'حدد من عنده بنت السبيت'; return; }
+      var dc = 0; for (var i=0;i<4;i++) { if (parseInt(document.getElementById('sibD'+i).dataset.state)>0) dc++; }
+      if (dc !== 1) { document.getElementById('sibeetValidation').textContent = 'حدد من عنده ١٠ ديمن'; return; }
+
+      // Check كبوت: one player has all 13 hearts + ♠Q + ♦10
+      var moonPlayer = -1;
+      for (var i = 0; i < 4; i++) {
+        var hasQ = parseInt(document.getElementById('sibQ' + i).dataset.state) > 0;
+        var hasD = parseInt(document.getElementById('sibD' + i).dataset.state) > 0;
+        if (hasQ && hasD && getHeartsVal(i) === 13) { moonPlayer = i; break; }
+      }
+      if (moonPlayer >= 0) {
+        for (var i = 0; i < 4; i++) scores[i] = (i === moonPlayer) ? 0 : 26;
+      } else {
+        // Apply إعلان إفلاس rules
+        for (var i = 0; i < 4; i++) {
+          if (isMaseera(i)) {
+            var failed = isMaseeraFailed(i) || scores[i] > 0;
+            scores[i] = failed ? 30 + scores[i] : -30;
+          }
+        }
+      }
+
+      sibeetSubmitLocked = true;
+      if (navigator.vibrate) navigator.vibrate(15);
+      var result = SibeetState.addRound(sibeetState, scores);
+      renderSibeet();
+      setTimeout(function() { sibeetSubmitLocked = false; }, 400);
+      if (result.gameOver) showSibeetGameOver();
+    }
+
+    function showSibeetGameOver() {
+      var s = sibeetState;
+      var ranked = s.players.map(function(n,i) { return {name:n, score:s.totals[i]}; }).sort(function(a,b) { return a.score-b.score; });
+      var svgMedal = function(color, num) { return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="14" r="8" fill="' + color + '" opacity="0.9"/><text x="12" y="18" text-anchor="middle" fill="white" font-size="10" font-weight="700" font-family="Cairo">' + num + '</text><path d="M8 2L12 8L16 2" stroke="' + color + '" stroke-width="2" fill="none" opacity="0.5"/></svg>'; };
+      var medals = [svgMedal('#C9A227','١'), svgMedal('#A0A0A0','٢'), svgMedal('#CD7F32','٣'), ''];
+      var barColors = ['var(--gold)','rgba(192,192,192,0.7)','rgba(205,127,50,0.7)','rgba(245,240,230,0.2)'];
+      var overlay = document.createElement('div');
+      overlay.className = 'game-over-overlay';
+      overlay.innerHTML =
+        '<h2>انتهت اللعبة!</h2>' +
+        '<div style="font-size:20px;font-weight:700;margin-bottom:4px">' + ranked[0].name + ' الأقل نقاط!</div>' +
+        '<div style="width:100%;max-width:300px;margin-top:12px">' +
+          ranked.map(function(p,i) {
+            var pct = ranked[3]&&ranked[3].score>0 ? Math.max(20,(p.score/ranked[3].score)*100) : 50;
+            return '<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><span style="font-size:14px;font-weight:600">'+(medals[i]||'')+' '+p.name+'</span><span style="font-size:16px;font-weight:700">'+p.score+'</span></div><div style="height:6px;background:rgba(245,240,230,0.1);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+barColors[i]+';border-radius:3px;transition:width 0.6s ease"></div></div></div>';
+          }).join('') +
+        '</div>' +
+        '<button onclick="this.parentElement.remove()" style="font-size:16px;margin-top:16px;padding:12px 32px">متابعة</button>';
+      document.body.appendChild(overlay);
+    }
+
+    async function renameSibeetPlayer(idx) {
+      var name = await appPrompt('اسم اللاعب:', sibeetState.players[idx]);
+      if (name) { sibeetState.players[idx] = name; SibeetState.save(sibeetState); renderSibeet(); }
+    }
+
+    async function undoSibeetRound() {
+      if (!sibeetState.rounds.length) return;
+      if (!(await appConfirm('تراجع عن آخر جولة؟'))) return;
+      SibeetState.undoLastRound(sibeetState); renderSibeet();
+    }
+
+    async function newSibeetGame() {
+      if (!(await appConfirm('لعبة جديدة؟ سيتم مسح جميع النتائج'))) return;
+      SibeetState.newGame(sibeetState); renderSibeet();
+    }
+
+    // ── P2P Room Manager ──────────────────────────────────────
+    const PEER_PREFIX = 'sib1-';
+    let peer = null, connections = [], hostConn = null, isHost = false, editUnlocked = false, roomCode = '';
+
+    function genRoomCode() { return Math.random().toString(36).substring(2, 6).toUpperCase(); }
+
+    function createRoom() {
+      roomCode = genRoomCode();
+      document.getElementById('roomModalTitle').textContent = 'غرفة جديدة';
+      document.getElementById('roomCreateView').style.display = '';
+      document.getElementById('roomJoinView').style.display = 'none';
+      document.getElementById('roomCodeDisplay').textContent = roomCode;
+      const joinUrl = window.location.href.split('?')[0] + '?room=' + roomCode;
+      const qrBox = document.getElementById('qrBox'); qrBox.innerHTML = '';
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      new QRCode(qrBox, { text: joinUrl, width: 160, height: 160, colorDark: isDark ? '#E8E4DC' : '#1A2744', colorLight: isDark ? '#1A1A2E' : '#F5F0E6', correctLevel: QRCode.CorrectLevel.M });
+      document.getElementById('connectedCount').textContent = 'جاري الاتصال...';
+      pushOverlay('roomModal');
+      document.getElementById('roomModal').style.display = 'flex';
+      document.getElementById('editLockToggle').checked = false;
+      editUnlocked = false; isHost = true; connections = [];
+
+      peer = new Peer(PEER_PREFIX + roomCode.toLowerCase(), { config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] } });
+      peer.on('open', () => { document.getElementById('connectedCount').textContent = 'جاهز • ٠ متصلين'; showRoomStatus('غرفة ' + roomCode + ' • معزّب • ٠ متصلين'); });
+      peer.on('connection', conn => {
+        connections.push(conn);
+        updateConnCount();
+        conn.on('data', msg => {
+          if (msg.type === 'round_added' && editUnlocked) {
+            SibeetState.addRound(sibeetState, msg.payload.scores);
+            renderSibeet(); broadcastState();
+          } else if (msg.type === 'name_changed' && editUnlocked) {
+            sibeetState.players[msg.payload.idx] = msg.payload.name;
+            SibeetState.save(sibeetState); renderSibeet(); broadcastState();
+          }
+        });
+        conn.on('close', () => { connections = connections.filter(c => c !== conn); updateConnCount(); });
+        conn.on('open', () => {
+          conn.send({ type: 'state_sync', payload: getStatePayload() });
+          conn.send({ type: 'edit_lock', payload: { unlocked: editUnlocked } });
+        });
+      });
+      peer.on('error', err => { console.error('Peer error:', err); document.getElementById('connectedCount').textContent = 'لم يتم الاتصال، تأكد من الإنترنت'; });
+    }
+
+    function joinRoom() {
+      document.getElementById('roomModalTitle').textContent = 'انضم لغرفة';
+      document.getElementById('roomCreateView').style.display = 'none';
+      document.getElementById('roomJoinView').style.display = '';
+      document.getElementById('joinCodeInput').value = '';
+      document.getElementById('joinError').textContent = '';
+      pushOverlay('roomModal');
+      document.getElementById('roomModal').style.display = 'flex';
+    }
+
+    function doJoinRoom() {
+      const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+      if (!code || code.length !== 4) { document.getElementById('joinError').textContent = 'أدخل رمز من ٤ أحرف'; return; }
+      document.getElementById('joinError').textContent = '';
+      document.getElementById('joinSpinner').style.display = '';
+      isHost = false; roomCode = code;
+
+      peer = new Peer(undefined, { config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] } });
+      peer.on('open', () => {
+        hostConn = peer.connect(PEER_PREFIX + code.toLowerCase());
+        hostConn.on('open', () => { document.getElementById('joinSpinner').style.display = 'none'; closeRoomModal(); showRoomStatus('غرفة ' + code + ' • متصل'); });
+        hostConn.on('data', msg => {
+          if (msg.type === 'state_sync') { applyStatePayload(msg.payload); renderSibeet(); }
+          else if (msg.type === 'edit_lock') {
+            editUnlocked = msg.payload.unlocked;
+            document.querySelector('.sibeet-entry').style.display = editUnlocked ? '' : 'none';
+            document.querySelectorAll('.sibeet-player-controls, .sibeet-player-round-total').forEach(el => { el.style.display = editUnlocked ? '' : 'none'; });
+          }
+        });
+        hostConn.on('close', () => { showRoomStatus('انقطع الاتصال'); hostConn = null; });
+        setTimeout(() => {
+          if (!hostConn || !hostConn.open) {
+            document.getElementById('joinSpinner').style.display = 'none';
+            document.getElementById('joinError').textContent = 'لم يتم العثور على الغرفة، تأكد من الرمز والإنترنت';
+            if (peer) peer.destroy();
+          }
+        }, 10000);
+      });
+    }
+
+    function closeRoomModal() { document.getElementById('roomModal').style.display = 'none'; }
+
+    function getJoinUrl() { return window.location.href.split('?')[0] + '?room=' + roomCode; }
+
+    function copyRoomLink() {
+      navigator.clipboard.writeText(getJoinUrl()).then(() => {
+        const msg = document.getElementById('copyMsg');
+        msg.textContent = 'تم نسخ الرابط!'; msg.style.opacity = '1';
+        setTimeout(() => msg.style.opacity = '0', 1500);
+      });
+    }
+
+    function shareRoom() {
+      // Show room modal with QR + code + share options
+      document.getElementById('roomModalTitle').textContent = 'مشاركة الغرفة';
+      document.getElementById('roomCreateView').style.display = '';
+      document.getElementById('roomJoinView').style.display = 'none';
+      document.getElementById('roomCodeDisplay').textContent = roomCode;
+      const joinUrl = getJoinUrl();
+      const qrBox = document.getElementById('qrBox'); qrBox.innerHTML = '';
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      new QRCode(qrBox, { text: joinUrl, width: 160, height: 160, colorDark: isDark ? '#E8E4DC' : '#1A2744', colorLight: isDark ? '#1A1A2E' : '#F5F0E6', correctLevel: QRCode.CorrectLevel.M });
+      const count = connections.filter(c => c.open).length;
+      document.getElementById('connectedCount').textContent = count.toLocaleString('ar-SA') + ' متصلين';
+      pushOverlay('roomModal');
+      document.getElementById('roomModal').style.display = 'flex';
+    }
+
+    function doShareNative() {
+      const joinUrl = getJoinUrl();
+      if (navigator.share) {
+        navigator.share({ title: 'بنت السبيت - الديوانية', text: 'تعال انضم للغرفة! الرمز: ' + roomCode, url: joinUrl }).catch(() => copyRoomLink());
+      } else { copyRoomLink(); }
+    }
+
+    function toggleEditLock() {
+      editUnlocked = document.getElementById('editLockToggle').checked;
+      connections.forEach(c => { if (c.open) c.send({ type: 'edit_lock', payload: { unlocked: editUnlocked } }); });
+    }
+
+    function updateConnCount() {
+      const count = connections.filter(c => c.open).length;
+      const arabic = count.toLocaleString('ar-SA');
+      document.getElementById('connectedCount').textContent = arabic + ' متصلين';
+      showRoomStatus('غرفة ' + roomCode + ' • معزّب • ' + arabic + ' متصلين');
+    }
+
+    function showRoomStatus(text) {
+      document.getElementById('roomStatus').style.display = '';
+      document.getElementById('roomStatusText').textContent = text;
+      const editBtn = document.getElementById('editToggleBar');
+      if (isHost) {
+        editBtn.style.display = '';
+        editBtn.textContent = editUnlocked ? 'تعديل: مفتوح' : 'تعديل: مقفل';
+        editBtn.style.background = editUnlocked ? 'rgba(114,47,55,0.6)' : 'transparent';
+      } else { editBtn.style.display = 'none'; }
+    }
+
+    function toggleEditFromBar() {
+      editUnlocked = !editUnlocked;
+      document.getElementById('editLockToggle').checked = editUnlocked;
+      toggleEditLock();
+      const editBtn = document.getElementById('editToggleBar');
+      editBtn.textContent = editUnlocked ? 'تعديل: مفتوح' : 'تعديل: مقفل';
+      editBtn.style.background = editUnlocked ? 'rgba(114,47,55,0.6)' : 'transparent';
+    }
+
+    function leaveRoom() {
+      if (peer) { peer.destroy(); peer = null; }
+      connections = []; hostConn = null; isHost = false; roomCode = ''; editUnlocked = false;
+      document.getElementById('roomStatus').style.display = 'none';
+      renderSibeet();
+    }
+
+    function getStatePayload() { return { players: sibeetState.players, rounds: sibeetState.rounds, totals: sibeetState.totals, target: sibeetState.target }; }
+
+    function applyStatePayload(payload) {
+      sibeetState.players = payload.players;
+      sibeetState.rounds = payload.rounds;
+      sibeetState.totals = payload.totals;
+      sibeetState.target = payload.target;
+      SibeetState.save(sibeetState);
+    }
+
+    function broadcastState() {
+      if (!isHost) {
+        if (hostConn && hostConn.open) {
+          const rounds = sibeetState.rounds;
+          const lastRound = rounds[rounds.length - 1];
+          if (lastRound) hostConn.send({ type: 'round_added', payload: { scores: lastRound.scores } });
+        }
+        return;
+      }
+      const payload = { type: 'state_sync', payload: getStatePayload() };
+      connections.forEach(c => { if (c.open) c.send(payload); });
+    }
+
+    // Hook broadcastState into submit and game actions
+    const _origSubmit = submitSibeet;
+    submitSibeet = function() { _origSubmit(); broadcastState(); };
+    const _origUndo = undoSibeetRound;
+    undoSibeetRound = async function() { await _origUndo(); broadcastState(); };
+    const _origNew = newSibeetGame;
+    newSibeetGame = async function() { await _origNew(); broadcastState(); };
+    const _origRename = renameSibeetPlayer;
+    renameSibeetPlayer = async function(idx) {
+      await _origRename(idx);
+      if (!isHost && hostConn && hostConn.open) {
+        hostConn.send({ type: 'name_changed', payload: { idx, name: sibeetState.players[idx] } });
+      }
+      broadcastState();
+    };
+
+    // Auto-join room from URL parameter
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      const roomParam = params.get('room');
+      if (roomParam && roomParam.length === 4) {
+        window.history.replaceState({}, '', window.location.pathname);
+        setTimeout(() => { document.getElementById('joinCodeInput').value = roomParam.toUpperCase(); doJoinRoom(); }, 500);
+      }
+    })();
+
+    // Also handle popstate for room modal
+    const _origPopstate = window.onpopstate;
+    window.addEventListener('popstate', function() {
+      if (document.getElementById('roomModal').style.display === 'flex') {
+        document.getElementById('roomModal').style.display = 'none';
+      }
+    });
+
+    // Init
+    renderSibeet();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+  </script>
+</body>
+</html>
