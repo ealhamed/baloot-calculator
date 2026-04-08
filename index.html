@@ -1039,6 +1039,29 @@
             <input type="number" class="input-field" id="simpleLahum" min="0" inputmode="numeric" placeholder="بنط">
           </div>
         </div>
+        <!-- Round metadata (optional) -->
+        <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;justify-content:center">
+          <div class="toggle-group" style="margin:0;gap:2px;flex:0 0 auto">
+            <button class="toggle-btn active" id="sType_sun" onclick="setSimpleMeta('type','sun')" style="padding:6px 12px;font-size:12px;border-radius:10px">صن</button>
+            <button class="toggle-btn" id="sType_hokm" onclick="setSimpleMeta('type','hokm')" style="padding:6px 12px;font-size:12px;border-radius:10px">حكم</button>
+          </div>
+          <div class="toggle-group" style="margin:0;gap:2px;flex:0 0 auto">
+            <button class="toggle-btn active" id="sBuyer_lana" onclick="setSimpleMeta('buyer','lana')" style="padding:6px 10px;font-size:12px;border-radius:10px">اشترى لنا</button>
+            <button class="toggle-btn" id="sBuyer_lahum" onclick="setSimpleMeta('buyer','lahum')" style="padding:6px 10px;font-size:12px;border-radius:10px">اشترى لهم</button>
+          </div>
+          <div class="toggle-group" style="margin:0;gap:2px;flex:0 0 auto">
+            <button class="toggle-btn active" id="sMult_normal" onclick="setSimpleMeta('mult','normal')" style="padding:6px 10px;font-size:12px;border-radius:10px">عادي</button>
+            <button class="toggle-btn" id="sMult_double" onclick="setSimpleMeta('mult','double')" style="padding:6px 10px;font-size:12px;border-radius:10px">دبل</button>
+          </div>
+        </div>
+        <!-- Projects row -->
+        <div style="display:flex;gap:3px;margin-top:6px;justify-content:center;flex-wrap:wrap" id="simpleProjects">
+          <button class="toggle-btn" id="sProj_sira" onclick="toggleSimpleProj('sira')" style="padding:5px 10px;font-size:11px;border-radius:8px">سرا</button>
+          <button class="toggle-btn" id="sProj_50" onclick="toggleSimpleProj('50')" style="padding:5px 10px;font-size:11px;border-radius:8px">خمسين</button>
+          <button class="toggle-btn" id="sProj_100" onclick="toggleSimpleProj('100')" style="padding:5px 10px;font-size:11px;border-radius:8px">مية</button>
+          <button class="toggle-btn" id="sProj_400" onclick="toggleSimpleProj('400')" style="padding:5px 10px;font-size:11px;border-radius:8px">أربعمية</button>
+          <button class="toggle-btn" id="sProj_baloot" onclick="toggleSimpleProj('baloot')" style="padding:5px 10px;font-size:11px;border-radius:8px">بلوت</button>
+        </div>
         <div style="text-align:center;padding-top:8px">
           <button class="btn-primary" style="max-width:200px" onclick="submitSimple()">تأكيد</button>
         </div>
@@ -1569,6 +1592,11 @@
       function buildRoundTags(r) {
         const tags = [];
         const projLabels = { sira: 'سرا', '50': 'خمسين', '100': 'مية', '400': 'أربعمية', baloot: 'بلوت' };
+        // Buyer
+        if (r.buyer) {
+          const bLabel = r.buyer === 'lana' ? 'لنا' : 'لهم';
+          tags.push(`<span class="round-tag mult" style="opacity:0.5">${bLabel}</span>`);
+        }
         // Multiplier
         if (r.multiplier && r.multiplier !== 'normal') {
           const ml = { double: 'دبل', triple: 'ثري', four: 'فور' };
@@ -1727,6 +1755,44 @@
 
     let pendingBunt = null; // { lana, lahum } waiting for clarification
     let pendingMeta = {};   // accumulated metadata from MCQ answers
+
+    // ── Simple Mode Metadata ────────────────────────────────
+    let simpleMeta = { type: 'sun', buyer: 'lana', mult: 'normal' };
+    let simpleProjects = {};
+
+    function setSimpleMeta(field, val) {
+      simpleMeta[field] = val;
+      if (field === 'type') {
+        document.getElementById('sType_sun').classList.toggle('active', val === 'sun');
+        document.getElementById('sType_hokm').classList.toggle('active', val === 'hokm');
+      } else if (field === 'buyer') {
+        document.getElementById('sBuyer_lana').classList.toggle('active', val === 'lana');
+        document.getElementById('sBuyer_lahum').classList.toggle('active', val === 'lahum');
+      } else if (field === 'mult') {
+        document.getElementById('sMult_normal').classList.toggle('active', val === 'normal');
+        document.getElementById('sMult_double').classList.toggle('active', val === 'double');
+      }
+    }
+
+    function toggleSimpleProj(key) {
+      const btn = document.getElementById('sProj_' + key);
+      if (simpleProjects[key]) {
+        delete simpleProjects[key];
+        btn.classList.remove('active');
+      } else {
+        simpleProjects[key] = 1;
+        btn.classList.add('active');
+      }
+    }
+
+    function resetSimpleMeta() {
+      simpleMeta = { type: 'sun', buyer: 'lana', mult: 'normal' };
+      simpleProjects = {};
+      setSimpleMeta('type', 'sun');
+      setSimpleMeta('buyer', 'lana');
+      setSimpleMeta('mult', 'normal');
+      document.querySelectorAll('#simpleProjects .toggle-btn').forEach(b => b.classList.remove('active'));
+    }
 
     let submitLocked = false;
     function submitSimple() {
@@ -1973,6 +2039,15 @@
     function finishSimple() {
       document.getElementById('clarifyArea').style.display = 'none';
       submitLocked = true;
+      // Merge simple metadata into pendingMeta
+      if (!pendingMeta.type) pendingMeta.type = simpleMeta.type;
+      if (!pendingMeta.buyer) pendingMeta.buyer = simpleMeta.buyer;
+      pendingMeta.multiplier = simpleMeta.mult;
+      // Add projects from toggle buttons
+      if (Object.keys(simpleProjects).length > 0) {
+        pendingMeta.projects = pendingMeta.projects || {};
+        pendingMeta.projects[simpleMeta.buyer] = { ...simpleProjects };
+      }
       const result = StateManager.addRound(appState, pendingBunt, pendingMeta);
       if (navigator.vibrate) navigator.vibrate(15);
       setTimeout(function() { submitLocked = false; }, 400);
@@ -1982,6 +2057,7 @@
       document.getElementById('simpleLahum').value = '';
       pendingBunt = null;
       pendingMeta = {};
+      resetSimpleMeta();
       render();
       checkSayings(result.gameOver ? 'gameOver' : 'roundEnd');
       if (result.gameOver) showGameOver(result.winner);
