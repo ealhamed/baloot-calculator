@@ -555,7 +555,10 @@
           '<div class="sibeet-player-controls">' +
             '<button class="sib-toggle spade" id="sibQ' + i + '" onclick="toggleSibCard(' + i + ',\'queen\')" aria-label="بنت السبيت ' + name + '" aria-pressed="false" data-state="0"><span class="mult-badge" id="sibQB' + i + '">×1</span><span class="card-suit">♠</span><span class="card-val">Q</span></button>' +
             '<button class="sib-toggle diamond" id="sibD' + i + '" onclick="toggleSibCard(' + i + ',\'diamond\')" aria-label="١٠ ديمن ' + name + '" aria-pressed="false" data-state="0"><span class="mult-badge" id="sibDB' + i + '">×1</span><span class="card-suit">♦</span><span class="card-val">10</span></button>' +
-            '<button class="sib-toggle maseera" id="sibM' + i + '" onclick="toggleMaseera(' + i + ')" aria-label="إعلان إفلاس ' + name + '" aria-pressed="false" style="grid-column:1/-1;height:32px;font-size:11px;gap:4px"><span class="card-val" style="opacity:1;font-size:11px">إعلان إفلاس</span></button>' +
+            '<div style="grid-column:1/-1;display:flex;gap:4px">' +
+              '<button class="sib-toggle maseera" id="sibM' + i + '" onclick="toggleMaseera(' + i + ')" aria-label="إعلان إفلاس ' + name + '" aria-pressed="false" style="flex:1;height:32px;font-size:11px;gap:4px"><span class="card-val" style="opacity:1;font-size:11px">إعلان إفلاس</span></button>' +
+              '<button class="sib-toggle" id="sibMF' + i + '" onclick="toggleMaseeraFail(' + i + ')" style="flex:0 0 auto;height:32px;font-size:11px;padding:0 12px;display:none;background:var(--burgundy);border-color:var(--burgundy);color:var(--cream)"><span class="card-val" style="opacity:1;font-size:11px;color:var(--cream)">فشل</span></button>' +
+            '</div>' +
             '<div class="sibeet-hearts-row">' +
               '<button class="sibeet-hearts-btn" onclick="stepHearts(' + i + ',1)" aria-label="زيادة هاص ' + name + '">+</button>' +
               '<div class="sibeet-hearts-circle" id="sibH' + i + '">' + SVG_HEART + '<span>0</span></div>' +
@@ -653,9 +656,19 @@
 
     function toggleMaseera(player) {
       var el = document.getElementById('sibM' + player);
+      var failBtn = document.getElementById('sibMF' + player);
       var isActive = el.classList.contains('active');
       el.classList.toggle('active', !isActive);
       el.setAttribute('aria-pressed', !isActive);
+      failBtn.style.display = !isActive ? '' : 'none';
+      if (isActive) failBtn.classList.remove('active');
+      if (navigator.vibrate) navigator.vibrate(10);
+      updateSibeetTotals();
+    }
+
+    function toggleMaseeraFail(player) {
+      var el = document.getElementById('sibMF' + player);
+      el.classList.toggle('active');
       if (navigator.vibrate) navigator.vibrate(10);
       updateSibeetTotals();
     }
@@ -665,12 +678,19 @@
       return el && el.classList.contains('active');
     }
 
+    function isMaseeraFailed(i) {
+      var el = document.getElementById('sibMF' + i);
+      return el && el.classList.contains('active');
+    }
+
     function updateSibeetTotals() {
       for (var i=0;i<4;i++) {
         var raw = getCardVal('sibQ',i) + getCardVal('sibD',i) + getHeartsVal(i);
         var el = document.getElementById('sibPTotal'+i);
         if (isMaseera(i)) {
           if (raw === 0) {
+            var failed = isMaseeraFailed(i) || raw > 0;
+          if (!failed) {
             el.textContent = '−30';
             el.style.color = 'var(--gold)';
           } else {
@@ -720,7 +740,10 @@
       } else {
         // Apply إعلان إفلاس rules
         for (var i = 0; i < 4; i++) {
-          if (isMaseera(i)) scores[i] = scores[i] === 0 ? -30 : 30 + scores[i];
+          if (isMaseera(i)) {
+            var failed = isMaseeraFailed(i) || scores[i] > 0;
+            scores[i] = failed ? 30 + scores[i] : -30;
+          }
         }
       }
 
