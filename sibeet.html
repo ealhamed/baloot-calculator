@@ -304,7 +304,7 @@
       <div class="sibeet-target-row">
         <span>اللعب لين:</span>
         <input type="number" id="sibeetCustomTarget" class="sibeet-target-input active"
-          inputmode="numeric" min="10" value="200"
+          inputmode="numeric" min="10" value="150"
           onchange="setCustomSibeetTarget(this.value)" onfocus="this.select()">
       </div>
       <div style="text-align:center">
@@ -506,7 +506,7 @@
     const SibeetState = {
       STORAGE_KEY: 'sibeet_state',
       _defaultState() {
-        return { players: ['لاعب ١', 'لاعب ٢', 'لاعب ٣', 'لاعب ٤'], rounds: [], totals: [0,0,0,0], target: 200 };
+        return { players: ['لاعب ١', 'لاعب ٢', 'لاعب ٣', 'لاعب ٤'], rounds: [], totals: [0,0,0,0], target: 150 };
       },
       load() {
         try {
@@ -514,7 +514,7 @@
           if (raw) {
             const p = JSON.parse(raw);
             const d = this._defaultState();
-            return { players: p.players||d.players, rounds: p.rounds||d.rounds, totals: p.totals||d.totals, target: p.target||200 };
+            return { players: p.players||d.players, rounds: p.rounds||d.rounds, totals: p.totals||d.totals, target: p.target||150 };
           }
         } catch(e) {}
         return this._defaultState();
@@ -524,7 +524,7 @@
         s.rounds.push({ scores: [...scores] });
         for (let i=0;i<4;i++) s.totals[i] += scores[i];
         this.save(s);
-        return { gameOver: s.totals.some(t => t >= (s.target||200)) };
+        return { gameOver: s.totals.some(t => t >= (s.target||150)) };
       },
       undoLastRound(s) {
         if (!s.rounds.length) return;
@@ -587,7 +587,7 @@
       }
 
       document.getElementById('sibeetValidation').textContent = '';
-      var gameOver = s.totals.some(function(t) { return t >= (s.target||200); });
+      var gameOver = s.totals.some(function(t) { return t >= (s.target||150); });
       var viewOnly = hostConn && !editUnlocked;
       var hideEntry = gameOver || viewOnly;
       var entryEl = document.querySelector('.sibeet-entry');

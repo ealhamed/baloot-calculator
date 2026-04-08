@@ -1383,7 +1383,7 @@
         <div class="sibeet-target-row">
           <span>اللعب لين:</span>
           <input type="number" id="sibeetCustomTarget" class="sibeet-target-input active"
-            inputmode="numeric" min="10" value="200"
+            inputmode="numeric" min="10" value="150"
             onchange="setCustomSibeetTarget(this.value)"
             onfocus="this.select()">
         </div>
@@ -3170,7 +3170,7 @@
           totals: [0, 0, 0, 0],
           doubleQueen: false,
           doubleDiamond: false,
-          target: 200
+          target: 150
         };
       },
 
@@ -3186,7 +3186,7 @@
               totals: parsed.totals || def.totals,
               doubleQueen: parsed.doubleQueen || false,
               doubleDiamond: parsed.doubleDiamond || false,
-              target: parsed.target || 200
+              target: parsed.target || 150
             };
           }
         } catch (e) {}
@@ -3201,7 +3201,7 @@
         state.rounds.push({ scores: [...scores], doubleQueen: state.doubleQueen, doubleDiamond: state.doubleDiamond });
         for (let i = 0; i < 4; i++) state.totals[i] += scores[i];
         this.save(state);
-        const tgt = state.target || 200;
+        const tgt = state.target || 150;
         return { gameOver: state.totals.some(function(t) { return t >= tgt; }) };
       },
 
@@ -3232,7 +3232,7 @@
 
     function renderSibeet() {
       var s = sibeetState;
-      var tgt = s.target || 200;
+      var tgt = s.target || 150;
       var minScore = Math.min.apply(null, s.totals);
 
       // Player cards with embedded controls
@@ -3295,7 +3295,7 @@
       document.getElementById('sibeetValidation').textContent = '';
 
       // Block entry if game is over
-      var gameOver = s.totals.some(function(t) { return t >= (s.target || 200); });
+      var gameOver = s.totals.some(function(t) { return t >= (s.target || 150); });
       var entryEl = document.querySelector('.sibeet-entry');
       if (entryEl) entryEl.style.display = gameOver ? 'none' : '';
       // Hide controls in player cards
