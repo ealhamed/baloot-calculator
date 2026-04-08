@@ -258,32 +258,36 @@
     }
     .clarify-btn:active { opacity: 0.7; }
 
-    .bunt-stepper {
+    .bunt-preset-score {
       display: flex;
+      justify-content: space-around;
       align-items: center;
-      justify-content: center;
-      gap: 12px;
+      margin-bottom: 6px;
     }
-    .bunt-step-btn {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      padding: 0;
-      font-size: 22px;
-      line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--navy);
-      color: var(--cream);
+    .bps-label { font-size: 13px; color: var(--gold-text); font-weight: 700; }
+    .bps-num { font-size: 28px; font-weight: 700; }
+    .bps-num.lana-color { color: var(--burgundy); }
+    .bps-num.lahum-color { color: var(--navy); }
+    .bunt-preset-hint { text-align: center; font-size: 11px; color: var(--navy); opacity: 0.35; margin-bottom: 6px; }
+    .bunt-presets {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      gap: 4px;
     }
-    .bunt-value {
-      font-size: 32px;
-      font-weight: 700;
+    .bp-btn {
+      background: rgba(26,39,68,0.06);
       color: var(--navy);
-      min-width: 40px;
+      border-radius: 10px;
+      padding: 9px 0;
+      font-size: 14px;
+      font-weight: 700;
       text-align: center;
+      transition: all 0.12s;
     }
+    .bp-btn:active { transform: scale(0.9); }
+    .bp-btn.lana-pick { background: var(--burgundy); color: var(--cream); }
+    .bp-btn.lahum-pick { background: var(--navy); color: var(--cream); }
+    [data-theme="dark"] .bp-btn { background: rgba(232,228,220,0.08); }
 
     .preview-bar {
       background: var(--navy);
@@ -695,24 +699,12 @@
 
         <!-- Bunt Points (hidden if kabout or coffee) -->
         <div id="cardPointsSection">
-          <div class="input-row" style="align-items:center">
-            <div style="flex:1;text-align:center">
-              <div class="input-label" style="font-size:13px;margin-bottom:8px">بنط لنا</div>
-              <div class="bunt-stepper">
-                <button class="bunt-step-btn" onclick="stepBunt('lana',-1)" aria-label="أقل">−</button>
-                <span class="bunt-value" id="advBuntLana">0</span>
-                <button class="bunt-step-btn" onclick="stepBunt('lana',1)" aria-label="أكثر">+</button>
-              </div>
-            </div>
-            <div style="flex:1;text-align:center">
-              <div class="input-label" style="font-size:13px;margin-bottom:8px">بنط لهم</div>
-              <div class="bunt-stepper">
-                <button class="bunt-step-btn" onclick="stepBunt('lahum',-1)" aria-label="أقل">−</button>
-                <span class="bunt-value" id="advBuntLahum">0</span>
-                <button class="bunt-step-btn" onclick="stepBunt('lahum',1)" aria-label="أكثر">+</button>
-              </div>
-            </div>
+          <div class="bunt-preset-score">
+            <div><span class="bps-label">لنا</span> <span class="bps-num lana-color" id="advBuntLana">-</span></div>
+            <div><span class="bps-label">لهم</span> <span class="bps-num lahum-color" id="advBuntLahum">-</span></div>
           </div>
+          <div class="bunt-preset-hint">بنط لنا — اضغط مرتين لعكس</div>
+          <div class="bunt-presets" id="buntPresetGrid"></div>
         </div>
 
         <!-- Projects -->
@@ -1494,9 +1486,8 @@
       advState.type = type;
       document.getElementById('advTypeSun').classList.toggle('active', type === 'sun');
       document.getElementById('advTypeHokm').classList.toggle('active', type === 'hokm');
-      // Recalculate bunt on type change
-      const lanaVal = parseInt(document.getElementById('advBuntLana').textContent) || 0;
-      if (lanaVal > 0) stepBunt('lana', 0);
+      // Rebuild presets for new type total
+      buildBuntPresets();
       renderProjects();
       updateAdvPreview();
     }
@@ -1535,14 +1526,44 @@
       updateAdvPreview();
     }
 
-    function stepBunt(team, delta) {
+    let buntSelectedIdx = -1;
+    let buntFlipped = false;
+
+    function buildBuntPresets() {
       const total = BalootScoring.TOTAL_BUNT[advState.type];
-      const el = document.getElementById(team === 'lana' ? 'advBuntLana' : 'advBuntLahum');
-      const otherEl = document.getElementById(team === 'lana' ? 'advBuntLahum' : 'advBuntLana');
-      const current = parseInt(el.textContent) || 0;
-      const newVal = Math.max(0, Math.min(total, current + delta));
-      el.textContent = newVal;
-      otherEl.textContent = Math.max(0, total - newVal);
+      const grid = document.getElementById('buntPresetGrid');
+      const btns = [];
+      for (let i = 0; i <= total; i++) {
+        btns.push(`<button class="bp-btn" id="bp${i}" onclick="pickBunt(${i})">${i}</button>`);
+      }
+      grid.innerHTML = btns.join('');
+      buntSelectedIdx = -1;
+      buntFlipped = false;
+      document.getElementById('advBuntLana').textContent = '-';
+      document.getElementById('advBuntLahum').textContent = '-';
+    }
+
+    function pickBunt(i) {
+      const total = BalootScoring.TOTAL_BUNT[advState.type];
+      if (buntSelectedIdx === i) {
+        buntFlipped = !buntFlipped;
+      } else {
+        buntSelectedIdx = i;
+        buntFlipped = false;
+      }
+
+      const lana = buntFlipped ? (total - i) : i;
+      const lahum = buntFlipped ? i : (total - i);
+
+      document.getElementById('advBuntLana').textContent = lana;
+      document.getElementById('advBuntLahum').textContent = lahum;
+
+      // Update button styles
+      document.querySelectorAll('.bp-btn').forEach((b, j) => {
+        b.className = 'bp-btn';
+        if (j === i) b.classList.add(buntFlipped ? 'lahum-pick' : 'lana-pick');
+      });
+
       updateAdvPreview();
     }
 
@@ -1647,8 +1668,7 @@
       setAdvMult('normal');
       document.getElementById('advKabout').checked = false;
       document.getElementById('cardPointsSection').style.display = '';
-      document.getElementById('advBuntLana').textContent = '0';
-      document.getElementById('advBuntLahum').textContent = '0';
+      buildBuntPresets();
       advState.kaboutWinner = 'lana';
       document.getElementById('kaboutWinnerSection').style.display = 'none';
       renderProjects();
