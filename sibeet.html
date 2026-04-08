@@ -130,29 +130,29 @@
 
     /* ── بنت السبيت ── */
     .sibeet-scores {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 16px 6px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 0 12px 6px;
     }
     .sibeet-player {
-      background: rgba(26,39,68,0.04); border-radius: 16px; padding: 10px;
+      background: rgba(26,39,68,0.04); border-radius: 14px; padding: 8px 6px;
       text-align: center; transition: all 0.3s;
     }
-    .sibeet-player-name { font-size: 13px; color: var(--gold-text); font-weight: 700; cursor: pointer; }
+    .sibeet-player-name { font-size: 12px; color: var(--gold-text); font-weight: 700; cursor: pointer; }
     .sibeet-player-total {
-      font-size: 36px; font-weight: 700; color: var(--navy);
-      line-height: 1.1; margin-bottom: 4px; transition: color 0.3s;
+      font-size: 32px; font-weight: 700; color: var(--navy);
+      line-height: 1.1; margin-bottom: 2px; transition: color 0.3s;
     }
-    .sibeet-player-bar { height: 3px; background: rgba(26,39,68,0.08); border-radius: 2px; margin-bottom: 8px; overflow: hidden; }
+    .sibeet-player-bar { height: 3px; background: rgba(26,39,68,0.08); border-radius: 2px; margin-bottom: 6px; overflow: hidden; }
     .sibeet-player-bar-fill { height: 100%; background: var(--navy); border-radius: 2px; transition: width 0.4s ease; }
     .sibeet-player-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
     .sib-toggle {
-      height: 52px; border-radius: 8px; border: 1.5px solid rgba(26,39,68,0.12);
+      height: 46px; border-radius: 8px; border: 1.5px solid rgba(26,39,68,0.12);
       background: white; color: var(--navy); cursor: pointer; transition: all 0.15s;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 0; font-family: 'Cairo', sans-serif; position: relative;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06); padding: 2px;
+      display: flex; flex-direction: row; align-items: center; justify-content: center;
+      gap: 3px; font-family: 'Cairo', sans-serif; position: relative;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06); padding: 2px 4px;
     }
-    .sib-toggle .card-suit { font-size: 28px; line-height: 1; }
-    .sib-toggle .card-val { font-size: 11px; font-weight: 700; line-height: 1; opacity: 0.7; }
+    .sib-toggle .card-suit { font-size: 22px; line-height: 1; }
+    .sib-toggle .card-val { font-size: 12px; font-weight: 700; line-height: 1; opacity: 0.7; }
     .sib-toggle.spade .card-suit { color: #1A2744; }
     .sib-toggle.diamond .card-suit { color: #C41E3A; }
     .sib-toggle.diamond .card-val { color: #C41E3A; }
@@ -180,29 +180,30 @@
       gap: 0 4px; align-items: center;
     }
     .sibeet-hearts-btn {
-      height: 52px; border-radius: 8px; background: var(--navy); color: var(--cream);
+      height: 46px; border-radius: 8px; background: var(--navy); color: var(--cream);
       font-size: 20px; display: flex; align-items: center; justify-content: center;
       padding: 0; border: none; cursor: pointer; font-family: 'Cairo', sans-serif;
       transition: opacity 0.15s; font-weight: 700;
     }
     .sibeet-hearts-btn:active { opacity: 0.7; }
     .sibeet-hearts-circle {
-      width: 72px; height: 72px; display: flex; align-items: center; justify-content: center;
-      margin: 0 -8px; font-size: 22px; font-weight: 700; color: white;
-      position: relative; padding-top: 6px;
+      width: 52px; height: 52px; display: flex; align-items: center; justify-content: center;
+      margin: 0; position: relative;
     }
-    .sibeet-hearts-circle::before {
-      content: '♥'; position: absolute; inset: 0; font-size: 74px; color: #C41E3A;
-      display: flex; align-items: center; justify-content: center; z-index: 0; line-height: 1;
+    .sibeet-hearts-circle svg.heart-bg {
+      position: absolute; inset: 0; width: 100%; height: 100%;
     }
-    .sibeet-hearts-circle span { position: relative; z-index: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.15); }
-    .sibeet-player-round-total { font-size: 13px; font-weight: 700; color: var(--burgundy); margin-top: 8px; }
+    .sibeet-hearts-circle span {
+      position: relative; z-index: 1; font-size: 18px; font-weight: 700; color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.15); margin-top: 2px;
+    }
+    .sibeet-player-round-total { font-size: 12px; font-weight: 700; color: var(--burgundy); margin-top: 4px; }
     .sibeet-player.danger { background: rgba(114,47,55,0.06); }
     .sibeet-player.danger .sibeet-player-total { color: var(--burgundy); }
     .sibeet-player.danger .sibeet-player-bar-fill { background: var(--burgundy); }
     .sibeet-player.leader .sibeet-player-bar-fill { background: var(--gold); }
 
-    .sibeet-entry { padding: 0 16px 8px; }
+    .sibeet-entry { padding: 0 12px 8px; }
     .sibeet-target-row {
       display: flex; align-items: center; justify-content: center; gap: 6px;
       padding: 2px 0 8px; font-size: 12px; font-weight: 600; color: var(--navy); opacity: 0.5;
@@ -557,7 +558,7 @@
             '<button class="sib-toggle diamond" id="sibD' + i + '" onclick="toggleSibCard(' + i + ',\'diamond\')" aria-label="١٠ ديمن ' + name + '" aria-pressed="false" data-state="0"><span class="mult-badge" id="sibDB' + i + '">×1</span><span class="card-suit">♦</span><span class="card-val">10</span></button>' +
             '<div class="sibeet-hearts-row">' +
               '<button class="sibeet-hearts-btn" onclick="stepHearts(' + i + ',1)" aria-label="زيادة هاص ' + name + '">+</button>' +
-              '<div class="sibeet-hearts-circle" id="sibH' + i + '"><span>0</span></div>' +
+              '<div class="sibeet-hearts-circle" id="sibH' + i + '">' + SVG_HEART + '<span>0</span></div>' +
               '<button class="sibeet-hearts-btn" onclick="stepHearts(' + i + ',-1)" aria-label="إنقاص هاص ' + name + '">−</button>' +
             '</div>' +
           '</div>' +
@@ -634,7 +635,8 @@
       var t = 0; for (var i=0;i<4;i++) t += parseInt(document.getElementById('sibH'+i).textContent)||0; return t;
     }
     function getHeartsVal(i) { return parseInt(document.getElementById('sibH'+i).textContent)||0; }
-    function setHeartsVal(i, val) { document.getElementById('sibH'+i).innerHTML = '<span>'+val+'</span>'; }
+    const SVG_HEART = '<svg class="heart-bg" viewBox="0 0 52 52"><path d="M26 47 C26 47 4 32 4 17 4 9 10 4 17 4 21 4 24 6 26 9 28 6 31 4 35 4 42 4 48 9 48 17 48 32 26 47 26 47Z" fill="#C41E3A"/></svg>';
+    function setHeartsVal(i, val) { document.getElementById('sibH'+i).innerHTML = SVG_HEART+'<span>'+val+'</span>'; }
 
     function stepHearts(player, delta) {
       var cur = getHeartsVal(player);
