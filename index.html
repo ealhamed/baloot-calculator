@@ -258,28 +258,21 @@
     }
     .clarify-btn:active { opacity: 0.7; }
 
-    .proj-card {
-      border-radius: 14px;
-      padding: 8px 12px;
-      margin-bottom: 8px;
+    .proj-header {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 4px 4px;
     }
-    .proj-card.lana-proj {
-      background: rgba(114, 47, 55, 0.06);
-      border-right: 3px solid var(--burgundy);
+    .proj-col-label { font-size: 12px; font-weight: 700; color: var(--gold-text); flex: 1; text-align: center; }
+    .proj-row {
+      display: flex;
+      align-items: center;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(26,39,68,0.04);
     }
-    .proj-card.lahum-proj {
-      background: rgba(26, 39, 68, 0.06);
-      border-right: 3px solid var(--navy);
-    }
-    .proj-card-header {
-      font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    .lana-proj .proj-card-header { color: var(--burgundy); }
-    .lahum-proj .proj-card-header { color: var(--navy); }
-    [data-theme="dark"] .proj-card.lana-proj { background: rgba(168, 68, 80, 0.1); }
-    [data-theme="dark"] .proj-card.lahum-proj { background: rgba(232, 228, 220, 0.06); }
+    .proj-row:last-child { border-bottom: none; }
+    .proj-side { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .proj-name { flex: 0 0 auto; text-align: center; font-size: 13px; font-weight: 600; color: var(--navy); min-width: 50px; }
 
     .bunt-preset-score {
       display: flex;
@@ -732,14 +725,12 @@
 
         <!-- Projects -->
         <div id="projectsSection">
-          <div class="proj-card lana-proj">
-            <div class="proj-card-header">مشاريع لنا</div>
-            <div id="projLana"></div>
+          <div class="proj-header">
+            <span class="proj-col-label">لنا</span>
+            <span class="proj-col-label">المشاريع</span>
+            <span class="proj-col-label">لهم</span>
           </div>
-          <div class="proj-card lahum-proj">
-            <div class="proj-card-header">مشاريع لهم</div>
-            <div id="projLahum"></div>
-          </div>
+          <div id="projRows"></div>
         </div>
 
         <!-- Preview -->
@@ -1598,28 +1589,31 @@
         { key: 'baloot', label: 'بلوت', sun: 0, hokm: 2 }
       ];
 
-      ['Lana', 'Lahum'].forEach(team => {
-        const container = document.getElementById('proj' + team);
-        container.innerHTML = projects
-          .filter(p => p[type] > 0 || p.key === '400')
-          .map(p => {
-            if (p[type] === 0) {
-              // Greyed out أربعمية in حكم
-              return `<div class="stepper-row" style="opacity:0.3" onclick="showSaying('أصلاً عادي ما أبي أربعمية 😢')">
-                <span class="stepper-label" style="text-decoration:line-through">${p.label}</span>
-              </div>`;
-            }
-            return `
-            <div class="stepper-row">
-              <span class="stepper-label">${p.label}</span>
-              <div class="stepper-controls">
-                <button class="stepper-btn" onclick="stepProject('${team}','${p.key}',-1)" aria-label="أقل ${p.label}">−</button>
-                <span class="stepper-count" id="proj_${team}_${p.key}">0</span>
-                <button class="stepper-btn" onclick="stepProject('${team}','${p.key}',1)" aria-label="أكثر ${p.label}">+</button>
-              </div>
+      const container = document.getElementById('projRows');
+      container.innerHTML = projects
+        .filter(p => p[type] > 0 || p.key === '400')
+        .map(p => {
+          if (p[type] === 0) {
+            return `<div class="proj-row" style="opacity:0.25" onclick="showSaying('أصلاً عادي ما أبي أربعمية 😢')">
+              <div class="proj-side"></div>
+              <span class="proj-name" style="text-decoration:line-through">${p.label}</span>
+              <div class="proj-side"></div>
             </div>`;
-          }).join('');
-      });
+          }
+          return `<div class="proj-row">
+            <div class="proj-side">
+              <button class="stepper-btn" onclick="stepProject('Lana','${p.key}',1)" aria-label="أكثر ${p.label} لنا">+</button>
+              <span class="stepper-count" id="proj_Lana_${p.key}">0</span>
+              <button class="stepper-btn" onclick="stepProject('Lana','${p.key}',-1)" aria-label="أقل ${p.label} لنا">−</button>
+            </div>
+            <span class="proj-name">${p.label}</span>
+            <div class="proj-side">
+              <button class="stepper-btn" onclick="stepProject('Lahum','${p.key}',1)" aria-label="أكثر ${p.label} لهم">+</button>
+              <span class="stepper-count" id="proj_Lahum_${p.key}">0</span>
+              <button class="stepper-btn" onclick="stepProject('Lahum','${p.key}',-1)" aria-label="أقل ${p.label} لهم">−</button>
+            </div>
+          </div>`;
+        }).join('');
     }
 
     function stepProject(team, key, delta) {
