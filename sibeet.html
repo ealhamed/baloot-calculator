@@ -301,11 +301,8 @@
     <div class="sibeet-entry">
       <div class="sibeet-target-row">
         <span>اللعب لين:</span>
-        <button class="sibeet-target-btn" onclick="setSibeetTarget(100)">١٠٠</button>
-        <button class="sibeet-target-btn" onclick="setSibeetTarget(150)">١٥٠</button>
-        <button class="sibeet-target-btn" onclick="setSibeetTarget(200)">٢٠٠</button>
-        <input type="number" id="sibeetCustomTarget" class="sibeet-target-input"
-          inputmode="numeric" placeholder="..." min="10"
+        <input type="number" id="sibeetCustomTarget" class="sibeet-target-input active"
+          inputmode="numeric" min="10" value="200"
           onchange="setCustomSibeetTarget(this.value)" onfocus="this.select()">
       </div>
       <div style="text-align:center">
@@ -507,7 +504,7 @@
     const SibeetState = {
       STORAGE_KEY: 'sibeet_state',
       _defaultState() {
-        return { players: ['لاعب ١', 'لاعب ٢', 'لاعب ٣', 'لاعب ٤'], rounds: [], totals: [0,0,0,0], target: 100 };
+        return { players: ['لاعب ١', 'لاعب ٢', 'لاعب ٣', 'لاعب ٤'], rounds: [], totals: [0,0,0,0], target: 200 };
       },
       load() {
         try {
@@ -515,7 +512,7 @@
           if (raw) {
             const p = JSON.parse(raw);
             const d = this._defaultState();
-            return { players: p.players||d.players, rounds: p.rounds||d.rounds, totals: p.totals||d.totals, target: p.target||100 };
+            return { players: p.players||d.players, rounds: p.rounds||d.rounds, totals: p.totals||d.totals, target: p.target||200 };
           }
         } catch(e) {}
         return this._defaultState();
@@ -525,7 +522,7 @@
         s.rounds.push({ scores: [...scores] });
         for (let i=0;i<4;i++) s.totals[i] += scores[i];
         this.save(s);
-        return { gameOver: s.totals.some(t => t >= (s.target||100)) };
+        return { gameOver: s.totals.some(t => t >= (s.target||200)) };
       },
       undoLastRound(s) {
         if (!s.rounds.length) return;
@@ -541,7 +538,7 @@
     // ── UI ───────────────────────────────────────────────────
     function renderSibeet() {
       var s = sibeetState;
-      var tgt = s.target || 100;
+      var tgt = s.target || 200;
       var minScore = Math.min.apply(null, s.totals);
 
       var scores = document.getElementById('sibeetScores');
@@ -566,13 +563,8 @@
         '</div>';
       }).join('');
 
-      var isPreset = [100,150,200].indexOf(s.target) !== -1;
-      document.querySelectorAll('.sibeet-target-btn').forEach(function(btn) {
-        var val = parseInt(btn.textContent.replace(/[٠-٩]/g, function(d) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); }).replace(/[^\d]/g, ''));
-        btn.classList.toggle('active', val === s.target);
-      });
       var ci = document.getElementById('sibeetCustomTarget');
-      if (ci) { if (!isPreset) { ci.value = s.target; ci.classList.add('active'); } else { ci.value = ''; ci.classList.remove('active'); } }
+      if (ci) ci.value = s.target;
 
       var hasRounds = s.rounds.length > 0;
       document.getElementById('sibeetRoundsSection').style.display = hasRounds ? '' : 'none';
@@ -592,7 +584,7 @@
       }
 
       document.getElementById('sibeetValidation').textContent = '';
-      var gameOver = s.totals.some(function(t) { return t >= (s.target||100); });
+      var gameOver = s.totals.some(function(t) { return t >= (s.target||200); });
       var viewOnly = hostConn && !editUnlocked;
       var hideEntry = gameOver || viewOnly;
       var entryEl = document.querySelector('.sibeet-entry');
@@ -665,20 +657,10 @@
       }
     }
 
-    function setSibeetTarget(val) {
-      sibeetState.target = val; SibeetState.save(sibeetState);
-      var ci = document.getElementById('sibeetCustomTarget');
-      if (ci) { ci.value = ''; ci.classList.remove('active'); }
-      renderSibeet();
-    }
-
     function setCustomSibeetTarget(val) {
       var num = parseInt(val);
       if (!num || num < 10) return;
       sibeetState.target = num; SibeetState.save(sibeetState);
-      document.querySelectorAll('.sibeet-target-btn').forEach(function(btn) { btn.classList.remove('active'); });
-      var ci = document.getElementById('sibeetCustomTarget');
-      if (ci) ci.classList.add('active');
       renderSibeet();
     }
 

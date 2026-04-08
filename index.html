@@ -1121,11 +1121,8 @@
       <div class="sibeet-entry">
         <div class="sibeet-target-row">
           <span>اللعب لين:</span>
-          <button class="sibeet-target-btn" onclick="setSibeetTarget(100)">١٠٠</button>
-          <button class="sibeet-target-btn" onclick="setSibeetTarget(150)">١٥٠</button>
-          <button class="sibeet-target-btn" onclick="setSibeetTarget(200)">٢٠٠</button>
-          <input type="number" id="sibeetCustomTarget" class="sibeet-target-input"
-            inputmode="numeric" placeholder="..." min="10"
+          <input type="number" id="sibeetCustomTarget" class="sibeet-target-input active"
+            inputmode="numeric" min="10" value="200"
             onchange="setCustomSibeetTarget(this.value)"
             onfocus="this.select()">
         </div>
@@ -2891,7 +2888,7 @@
           totals: [0, 0, 0, 0],
           doubleQueen: false,
           doubleDiamond: false,
-          target: 100
+          target: 200
         };
       },
 
@@ -2907,7 +2904,7 @@
               totals: parsed.totals || def.totals,
               doubleQueen: parsed.doubleQueen || false,
               doubleDiamond: parsed.doubleDiamond || false,
-              target: parsed.target || 100
+              target: parsed.target || 200
             };
           }
         } catch (e) {}
@@ -2922,7 +2919,7 @@
         state.rounds.push({ scores: [...scores], doubleQueen: state.doubleQueen, doubleDiamond: state.doubleDiamond });
         for (let i = 0; i < 4; i++) state.totals[i] += scores[i];
         this.save(state);
-        const tgt = state.target || 100;
+        const tgt = state.target || 200;
         return { gameOver: state.totals.some(function(t) { return t >= tgt; }) };
       },
 
@@ -2953,7 +2950,7 @@
 
     function renderSibeet() {
       var s = sibeetState;
-      var tgt = s.target || 100;
+      var tgt = s.target || 200;
       var minScore = Math.min.apply(null, s.totals);
 
       // Player cards with embedded controls
@@ -2980,21 +2977,8 @@
       }).join('');
 
       // Target buttons
-      var isPreset = [100, 150, 200].indexOf(s.target) !== -1;
-      document.querySelectorAll('.sibeet-target-btn').forEach(function(btn) {
-        var val = parseInt(btn.textContent.replace(/[٠-٩]/g, function(d) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); }).replace(/[^\d]/g, ''));
-        btn.classList.toggle('active', val === s.target);
-      });
-      var customInput = document.getElementById('sibeetCustomTarget');
-      if (customInput) {
-        if (!isPreset) {
-          customInput.value = s.target;
-          customInput.classList.add('active');
-        } else {
-          customInput.value = '';
-          customInput.classList.remove('active');
-        }
-      }
+      var ci = document.getElementById('sibeetCustomTarget');
+      if (ci) ci.value = s.target;
 
       // Round history
       var hasRounds = s.rounds.length > 0;
@@ -3025,7 +3009,7 @@
       document.getElementById('sibeetValidation').textContent = '';
 
       // Block entry if game is over
-      var gameOver = s.totals.some(function(t) { return t >= (s.target || 100); });
+      var gameOver = s.totals.some(function(t) { return t >= (s.target || 200); });
       var entryEl = document.querySelector('.sibeet-entry');
       if (entryEl) entryEl.style.display = gameOver ? 'none' : '';
       // Hide controls in player cards
@@ -3116,23 +3100,10 @@
       }
     }
 
-    function setSibeetTarget(val) {
-      sibeetState.target = val;
-      SibeetState.save(sibeetState);
-      var customInput = document.getElementById('sibeetCustomTarget');
-      if (customInput) { customInput.value = ''; customInput.classList.remove('active'); }
-      renderSibeet();
-    }
-
     function setCustomSibeetTarget(val) {
       var num = parseInt(val);
       if (!num || num < 10) return;
-      sibeetState.target = num;
-      SibeetState.save(sibeetState);
-      // Deactivate preset buttons, activate input
-      document.querySelectorAll('.sibeet-target-btn').forEach(function(btn) { btn.classList.remove('active'); });
-      var customInput = document.getElementById('sibeetCustomTarget');
-      if (customInput) customInput.classList.add('active');
+      sibeetState.target = num; SibeetState.save(sibeetState);
       renderSibeet();
     }
 
