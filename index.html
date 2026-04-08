@@ -922,6 +922,12 @@
       background: var(--gold);
       color: var(--navy);
     }
+    .sib-toggle.maseera.active {
+      background: var(--gold);
+      border-color: var(--gold);
+      box-shadow: 0 3px 10px rgba(201, 162, 39, 0.3);
+    }
+    .sib-toggle.maseera.active .card-val { color: var(--navy); opacity: 1; }
     .sib-toggle:active { transform: scale(0.93); }
     [data-theme="dark"] .sib-toggle { background: var(--input-bg); border-color: var(--input-border); box-shadow: none; }
     [data-theme="dark"] .sib-toggle.active { background: var(--burgundy); border-color: var(--burgundy); }
@@ -3242,6 +3248,7 @@
           '<div class="sibeet-player-controls">' +
             '<button class="sib-toggle spade" id="sibQ' + i + '" onclick="toggleSibCard(' + i + ',\'queen\')" aria-label="بنت السبيت ' + name + '" aria-pressed="false" data-state="0"><span class="mult-badge" id="sibQB' + i + '">×1</span><span class="card-suit">♠</span><span class="card-val">Q</span></button>' +
             '<button class="sib-toggle diamond" id="sibD' + i + '" onclick="toggleSibCard(' + i + ',\'diamond\')" aria-label="١٠ ديمن ' + name + '" aria-pressed="false" data-state="0"><span class="mult-badge" id="sibDB' + i + '">×1</span><span class="card-suit">♦</span><span class="card-val">10</span></button>' +
+            '<button class="sib-toggle maseera" id="sibM' + i + '" onclick="toggleMaseera(' + i + ')" aria-label="مسيرة ' + name + '" aria-pressed="false" style="grid-column:1/-1;height:32px;font-size:11px;gap:4px"><span class="card-val" style="opacity:1;font-size:11px">مسيرة</span></button>' +
             '<div class="sibeet-hearts-row">' +
               '<button class="sibeet-hearts-btn" onclick="stepHearts(' + i + ',1)" aria-label="زيادة هاص ' + name + '">+</button>' +
               '<div class="sibeet-hearts-circle" id="sibH' + i + '">' + SVG_HEART_BG + '<span>0</span></div>' +
@@ -3275,7 +3282,10 @@
           return '<div class="sibeet-round-row">' +
             '<span class="sibeet-round-num">' + (idx + 1) + '</span>' +
             r.scores.map(function(sc) {
-              return '<span' + (sc === maxScore && maxScore > 0 ? ' class="sibeet-round-high"' : '') + '>' + sc + '</span>';
+              var cls = '';
+              if (sc === maxScore && maxScore > 0) cls = ' class="sibeet-round-high"';
+              else if (sc < 0) cls = ' style="color:var(--gold);font-weight:700"';
+              return '<span' + cls + '>' + sc + '</span>';
             }).join('') +
           '</div>';
         }).join('');
@@ -3367,12 +3377,38 @@
       return state === 2 ? base * 2 : base;
     }
 
+    function toggleMaseera(player) {
+      var el = document.getElementById('sibM' + player);
+      var isActive = el.classList.contains('active');
+      el.classList.toggle('active', !isActive);
+      el.setAttribute('aria-pressed', !isActive);
+      if (navigator.vibrate) navigator.vibrate(10);
+      updateSibeetTotals();
+    }
+
+    function isMaseera(i) {
+      var el = document.getElementById('sibM' + i);
+      return el && el.classList.contains('active');
+    }
+
     function updateSibeetTotals() {
       for (var i = 0; i < 4; i++) {
-        var total = getCardVal('sibQ', i) + getCardVal('sibD', i) + getHeartsVal(i);
+        var raw = getCardVal('sibQ', i) + getCardVal('sibD', i) + getHeartsVal(i);
         var el = document.getElementById('sibPTotal' + i);
-        el.textContent = total > 0 ? '+' + total : '+0';
-        el.style.opacity = total > 0 ? '1' : '0.3';
+        if (isMaseera(i)) {
+          if (raw === 0) {
+            el.textContent = '−10';
+            el.style.color = 'var(--gold)';
+          } else {
+            el.textContent = '+' + (raw * 2) + ' (×2)';
+            el.style.color = 'var(--burgundy)';
+          }
+          el.style.opacity = '1';
+        } else {
+          el.textContent = raw > 0 ? '+' + raw : '+0';
+          el.style.color = 'var(--burgundy)';
+          el.style.opacity = raw > 0 ? '1' : '0.3';
+        }
       }
     }
 
@@ -3421,6 +3457,32 @@
       if (diamondCount !== 1) {
         document.getElementById('sibeetValidation').textContent = 'حدد من عنده ١٠ ديمن';
         return;
+      }
+
+      // Check shoot the moon (الشمس): one player has all 13 hearts + ♠Q + ♦10
+      var moonPlayer = -1;
+      for (var i = 0; i < 4; i++) {
+        var hasQueen = parseInt(document.getElementById('sibQ' + i).dataset.state) > 0;
+        var hasDiamond = parseInt(document.getElementById('sibD' + i).dataset.state) > 0;
+        var hasAllHearts = getHeartsVal(i) === 13;
+        if (hasQueen && hasDiamond && hasAllHearts) {
+          moonPlayer = i;
+          break;
+        }
+      }
+
+      if (moonPlayer >= 0) {
+        // Shoot the moon: player gets 0, everyone else gets +26
+        for (var i = 0; i < 4; i++) {
+          scores[i] = (i === moonPlayer) ? 0 : 26;
+        }
+      } else {
+        // Apply مسيرة rules
+        for (var i = 0; i < 4; i++) {
+          if (isMaseera(i)) {
+            scores[i] = scores[i] === 0 ? -10 : scores[i] * 2;
+          }
+        }
       }
 
       sibeetSubmitLocked = true;
