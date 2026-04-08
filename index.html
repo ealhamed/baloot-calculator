@@ -697,6 +697,100 @@
     /* Dark mode overrides for بنت السبيت */
     [data-theme="dark"] .sibeet-player { background: rgba(232,228,220,0.06); }
     [data-theme="dark"] .sibeet-input { background: var(--input-bg); border-color: var(--input-border); color: var(--text); }
+
+    .sibeet-pcard {
+      background: rgba(26,39,68,0.03);
+      border: 1px solid rgba(26,39,68,0.08);
+      border-radius: 14px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+    }
+    .sibeet-pcard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .sibeet-pcard-name { font-size: 13px; font-weight: 700; color: var(--navy); }
+    .sibeet-pcard-total { font-size: 13px; font-weight: 700; color: var(--burgundy); }
+    .sibeet-pcard-items {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sibeet-card-item {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 6px 4px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.12s;
+      text-align: center;
+    }
+    .sibeet-card-item.toggle-item {
+      background: rgba(26,39,68,0.06);
+      color: var(--navy);
+    }
+    .sibeet-card-item.toggle-item.active {
+      background: var(--burgundy);
+      color: var(--cream);
+    }
+    .sibeet-card-item.hearts-item {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .sibeet-hearts-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--navy);
+      color: var(--cream);
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: none;
+      cursor: pointer;
+      font-family: 'Cairo', sans-serif;
+    }
+    .sibeet-hearts-btn:active { opacity: 0.7; }
+    .sibeet-hearts-count {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--navy);
+      min-width: 20px;
+      text-align: center;
+    }
+    .sibeet-target-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 4px 0 8px;
+      font-size: 12px;
+      color: var(--navy);
+      opacity: 0.5;
+    }
+    .sibeet-target-btn {
+      background: rgba(26,39,68,0.08);
+      color: var(--navy);
+      border-radius: 8px;
+      padding: 2px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      font-family: 'Cairo', sans-serif;
+    }
+    .sibeet-target-btn.active { background: var(--burgundy); color: var(--cream); }
+    [data-theme="dark"] .sibeet-pcard { background: rgba(232,228,220,0.04); border-color: rgba(232,228,220,0.08); }
     [data-theme="dark"] .sibeet-double-btn { background: rgba(232,228,220,0.08); }
 
     /* ── Reduced Motion ────────────────────── */
@@ -888,14 +982,24 @@
       <!-- Scoreboard -->
       <div class="sibeet-scores" id="sibeetScores"></div>
 
+      <!-- Target selector -->
+      <div class="sibeet-target-row">
+        <span>نهاية اللعبة:</span>
+        <button class="sibeet-target-btn" onclick="setSibeetTarget(100)">١٠٠</button>
+        <button class="sibeet-target-btn" onclick="setSibeetTarget(150)">١٥٠</button>
+        <button class="sibeet-target-btn" onclick="setSibeetTarget(200)">٢٠٠</button>
+      </div>
+
       <!-- Score Entry -->
       <div class="sibeet-entry">
-        <div class="sibeet-entry-grid" id="sibeetInputs"></div>
+        <!-- Doubling toggles (per game) -->
         <div class="sibeet-doubles">
           <button class="sibeet-double-btn" id="dblQueen" onclick="toggleSibeetDouble('queen')">بنت السبيت ×٢</button>
           <button class="sibeet-double-btn" id="dblDiamond" onclick="toggleSibeetDouble('diamond')">١٠ ديمن ×٢</button>
         </div>
-        <div style="text-align:center">
+        <!-- Per-player card entry -->
+        <div id="sibeetCardEntry"></div>
+        <div style="text-align:center;margin-top:8px">
           <button class="btn-primary" style="max-width:200px" onclick="submitSibeet()">تأكيد</button>
         </div>
         <div style="text-align:center;margin-top:4px">
@@ -2526,7 +2630,8 @@
           rounds: [],
           totals: [0, 0, 0, 0],
           doubleQueen: false,
-          doubleDiamond: false
+          doubleDiamond: false,
+          target: 100
         };
       },
 
@@ -2541,7 +2646,8 @@
               rounds: parsed.rounds || def.rounds,
               totals: parsed.totals || def.totals,
               doubleQueen: parsed.doubleQueen || false,
-              doubleDiamond: parsed.doubleDiamond || false
+              doubleDiamond: parsed.doubleDiamond || false,
+              target: parsed.target || 100
             };
           }
         } catch (e) {}
@@ -2556,7 +2662,8 @@
         state.rounds.push({ scores: [...scores], doubleQueen: state.doubleQueen, doubleDiamond: state.doubleDiamond });
         for (let i = 0; i < 4; i++) state.totals[i] += scores[i];
         this.save(state);
-        return { gameOver: state.totals.some(function(t) { return t >= 100; }) };
+        const tgt = state.target || 100;
+        return { gameOver: state.totals.some(function(t) { return t >= tgt; }) };
       },
 
       undoLastRound(state) {
@@ -2597,18 +2704,42 @@
         '</div>';
       }).join('');
 
-      // Input fields
-      var inputs = document.getElementById('sibeetInputs');
-      inputs.innerHTML = s.players.map(function(name, i) {
-        return '<div class="sibeet-input-wrap">' +
-          '<span class="sibeet-input-label">' + name.substring(0, 6) + '</span>' +
-          '<input type="number" class="sibeet-input" id="sibIn' + i + '" min="0" inputmode="numeric" placeholder="٠">' +
+      // Card entry per player
+      var queenVal = s.doubleQueen ? 26 : 13;
+      var diamondVal = s.doubleDiamond ? 20 : 10;
+      var cardEntry = document.getElementById('sibeetCardEntry');
+      cardEntry.innerHTML = s.players.map(function(name, i) {
+        return '<div class="sibeet-pcard">' +
+          '<div class="sibeet-pcard-header">' +
+            '<span class="sibeet-pcard-name">' + name + '</span>' +
+            '<span class="sibeet-pcard-total" id="sibPTotal' + i + '">0</span>' +
+          '</div>' +
+          '<div class="sibeet-pcard-items">' +
+            '<button class="sibeet-card-item toggle-item" id="sibQ' + i + '" onclick="toggleSibCard(' + i + ',\'queen\')">' +
+              'بنت<br>السبيت' +
+            '</button>' +
+            '<button class="sibeet-card-item toggle-item" id="sibD' + i + '" onclick="toggleSibCard(' + i + ',\'diamond\')">' +
+              '١٠<br>ديمن' +
+            '</button>' +
+            '<div class="sibeet-card-item hearts-item">' +
+              '<button class="sibeet-hearts-btn" onclick="stepHearts(' + i + ',1)">+</button>' +
+              '<span class="sibeet-hearts-count" id="sibH' + i + '">0</span>' +
+              '<button class="sibeet-hearts-btn" onclick="stepHearts(' + i + ',-1)">−</button>' +
+              '<span style="font-size:10px;color:var(--burgundy)">هاص</span>' +
+            '</div>' +
+          '</div>' +
         '</div>';
       }).join('');
 
       // Doubles
       document.getElementById('dblQueen').classList.toggle('active', s.doubleQueen);
       document.getElementById('dblDiamond').classList.toggle('active', s.doubleDiamond);
+
+      // Target buttons
+      document.querySelectorAll('.sibeet-target-btn').forEach(function(btn) {
+        var val = parseInt(btn.textContent.replace(/[^\d]/g, ''));
+        btn.classList.toggle('active', val === s.target);
+      });
 
       // Round history
       var hasRounds = s.rounds.length > 0;
@@ -2643,22 +2774,82 @@
       renderSibeet();
     }
 
-    function submitSibeet() {
-      var scores = [];
+    function toggleSibCard(player, type) {
+      var el = document.getElementById(type === 'queen' ? 'sibQ' + player : 'sibD' + player);
+      var wasActive = el.classList.contains('active');
+      // Only one player can have each card — deactivate others
+      for (var j = 0; j < 4; j++) {
+        document.getElementById(type === 'queen' ? 'sibQ' + j : 'sibD' + j).classList.remove('active');
+      }
+      if (!wasActive) el.classList.add('active');
+      updateSibeetTotals();
+    }
+
+    function stepHearts(player, delta) {
+      var el = document.getElementById('sibH' + player);
+      var cur = parseInt(el.textContent) || 0;
+      var newVal = Math.max(0, Math.min(13, cur + delta));
+      el.textContent = newVal;
+      updateSibeetTotals();
+    }
+
+    function updateSibeetTotals() {
+      var queenVal = sibeetState.doubleQueen ? 26 : 13;
+      var diamondVal = sibeetState.doubleDiamond ? 20 : 10;
       for (var i = 0; i < 4; i++) {
-        var val = parseInt(document.getElementById('sibIn' + i).value) || 0;
-        if (val < 0) {
-          document.getElementById('sibeetValidation').textContent = 'الأرقام لازم تكون صفر أو أكثر';
-          return;
-        }
-        scores.push(val);
+        var total = 0;
+        if (document.getElementById('sibQ' + i).classList.contains('active')) total += queenVal;
+        if (document.getElementById('sibD' + i).classList.contains('active')) total += diamondVal;
+        total += parseInt(document.getElementById('sibH' + i).textContent) || 0;
+        document.getElementById('sibPTotal' + i).textContent = total;
+      }
+    }
+
+    function setSibeetTarget(val) {
+      sibeetState.target = val;
+      SibeetState.save(sibeetState);
+      renderSibeet();
+    }
+
+    function submitSibeet() {
+      var queenVal = sibeetState.doubleQueen ? 26 : 13;
+      var diamondVal = sibeetState.doubleDiamond ? 20 : 10;
+      var scores = [];
+      var totalHearts = 0;
+
+      for (var i = 0; i < 4; i++) {
+        var total = 0;
+        if (document.getElementById('sibQ' + i).classList.contains('active')) total += queenVal;
+        if (document.getElementById('sibD' + i).classList.contains('active')) total += diamondVal;
+        var hearts = parseInt(document.getElementById('sibH' + i).textContent) || 0;
+        total += hearts;
+        totalHearts += hearts;
+        scores.push(total);
       }
 
-      var total = scores.reduce(function(a, b) { return a + b; }, 0);
-      var expected = SibeetState.getExpectedTotal(sibeetState);
+      // Validate hearts total = 13
+      if (totalHearts !== 13) {
+        document.getElementById('sibeetValidation').textContent = 'مجموع الهاص لازم يكون ١٣ (الحالي: ' + totalHearts + ')';
+        return;
+      }
 
-      if (total !== expected) {
-        document.getElementById('sibeetValidation').textContent = 'المجموع لازم يكون ' + expected + ' (الحالي: ' + total + ')';
+      // Validate queen assigned (exactly one or none)
+      var queenCount = 0;
+      for (var i = 0; i < 4; i++) {
+        if (document.getElementById('sibQ' + i).classList.contains('active')) queenCount++;
+      }
+      if (queenCount !== 1) {
+        document.getElementById('sibeetValidation').textContent = 'حدد من عنده بنت السبيت';
+        return;
+      }
+
+      // Validate diamond assigned
+      var diamondCount = 0;
+      for (var i = 0; i < 4; i++) {
+        if (document.getElementById('sibD' + i).classList.contains('active')) diamondCount++;
+      }
+      if (diamondCount !== 1) {
+        document.getElementById('sibeetValidation').textContent = 'حدد من عنده ١٠ ديمن';
         return;
       }
 
