@@ -859,7 +859,7 @@
         sira:    { sun: 4,  hokm: 2 },
         '50':    { sun: 10, hokm: 5 },
         '100':   { sun: 20, hokm: 10 },
-        '400':   { sun: 40, hokm: 10 },
+        '400':   { sun: 40, hokm: 0 },
         baloot:  { sun: 0,  hokm: 2 }
       },
 
@@ -1372,7 +1372,7 @@
         { key: 'sira', sun: 4, hokm: 2, max: 4 },
         { key: '50', sun: 10, hokm: 5, max: 4 },
         { key: '100', sun: 20, hokm: 10, max: 4 },
-        { key: '400', sun: 40, hokm: 10, max: 1 },
+        { key: '400', sun: 40, hokm: 0, max: 1 },
         { key: 'baloot', sun: 0, hokm: 2, max: 1 }  // max 1 بلوت per round
       ];
       const available = projectDefs.filter(p => p[type] > 0);
@@ -1409,7 +1409,7 @@
     }
 
     function getProjectLabel(key, type) {
-      const labels = { sira: 'سرا', '50': 'خمسين', '100': 'مية', '400': type === 'sun' ? 'أربعمية' : '٤ إكوات', baloot: 'بلوت' };
+      const labels = { sira: 'سرا', '50': 'خمسين', '100': 'مية', '400': type === 'sun' ? 'أربعمية' : '٤ إكك', baloot: 'بلوت' };
       return labels[key] || key;
     }
 
@@ -1552,7 +1552,7 @@
         { key: 'sira', label: 'سرا', sun: 4, hokm: 2 },
         { key: '50', label: 'خمسين', sun: 10, hokm: 5 },
         { key: '100', label: 'مية', sun: 20, hokm: 10 },
-        { key: '400', label: type === 'sun' ? 'أربعمية' : '٤ إكوات', sun: 40, hokm: 10 },
+        { key: '400', label: 'أربعمية', sun: 40, hokm: 0 },
         { key: 'baloot', label: 'بلوت', sun: 0, hokm: 2 }
       ];
 
