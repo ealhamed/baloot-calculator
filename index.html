@@ -2764,6 +2764,46 @@
       });
     }
 
+    // ── Screen Wake Lock & Dim ────────────────────────────────
+    (function() {
+      let wakeLock = null;
+      const DIM_DELAY = 15000;
+      let dimTimer = null;
+
+      // Dim overlay
+      const dimOverlay = document.createElement('div');
+      dimOverlay.id = 'dimOverlay';
+      dimOverlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;pointer-events:none;opacity:0;transition:opacity 0.8s ease';
+      document.body.appendChild(dimOverlay);
+
+      function dim() { dimOverlay.style.opacity = '1'; }
+      function undim() { dimOverlay.style.opacity = '0'; resetDimTimer(); }
+      function resetDimTimer() {
+        clearTimeout(dimTimer);
+        dimTimer = setTimeout(dim, DIM_DELAY);
+      }
+
+      // Listen for any interaction
+      ['pointerdown', 'pointermove', 'keydown', 'scroll', 'touchstart'].forEach(evt => {
+        document.addEventListener(evt, undim, { passive: true });
+      });
+      resetDimTimer();
+
+      // Wake Lock
+      async function requestWakeLock() {
+        try {
+          if ('wakeLock' in navigator) {
+            wakeLock = await navigator.wakeLock.request('screen');
+            wakeLock.addEventListener('release', () => { wakeLock = null; });
+          }
+        } catch(e) {}
+      }
+      requestWakeLock();
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') requestWakeLock();
+      });
+    })();
+
     // ── Theme Manager ───────────────────────────────────────────
     function getPreferredTheme() {
       return 'light';
