@@ -688,8 +688,7 @@
         var raw = getCardVal('sibQ',i) + getCardVal('sibD',i) + getHeartsVal(i);
         var el = document.getElementById('sibPTotal'+i);
         if (isMaseera(i)) {
-          if (raw === 0) {
-            var failed = isMaseeraFailed(i) || raw > 0;
+          var failed = isMaseeraFailed(i) || raw > 0;
           if (!failed) {
             el.textContent = '−30';
             el.style.color = 'var(--gold)';
