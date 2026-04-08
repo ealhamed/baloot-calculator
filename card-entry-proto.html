@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>بنط بالكروت — نموذج</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F5F0E6; --burgundy: #722F37; --gold: #C9A227;
+      --navy: #1A2744; --cream: #F5F0E6; --gold-text: #8B7318;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Cairo', sans-serif; background: var(--bg);
+      max-width: 430px; margin: 0 auto; padding: 16px; direction: rtl;
+      -webkit-tap-highlight-color: transparent; user-select: none;
+    }
+    h2 { text-align: center; color: var(--gold-text); font-size: 16px; margin-bottom: 8px; }
+    .desc { text-align: center; font-size: 11px; color: var(--navy); opacity: 0.4; margin-bottom: 12px; }
+
+    /* Type toggle */
+    .type-toggle { display: flex; gap: 4px; margin-bottom: 12px; }
+    .type-btn {
+      flex: 1; padding: 10px; font-size: 15px; font-weight: 700; border: none;
+      border-radius: 12px; font-family: 'Cairo', sans-serif; cursor: pointer;
+      background: rgba(26,39,68,0.06); color: var(--navy); transition: all 0.15s;
+    }
+    .type-btn.active { background: var(--burgundy); color: var(--cream); }
+
+    /* Team toggle */
+    .team-row { display: flex; gap: 4px; margin-bottom: 12px; }
+    .team-btn {
+      flex: 1; padding: 8px; font-size: 14px; font-weight: 700; border: none;
+      border-radius: 10px; font-family: 'Cairo', sans-serif; cursor: pointer;
+      background: rgba(26,39,68,0.06); color: var(--navy); transition: all 0.15s;
+    }
+    .team-btn.lana { background: var(--burgundy); color: var(--cream); }
+    .team-btn.lahum { background: var(--navy); color: var(--cream); }
+
+    /* Score display */
+    .score-display {
+      display: flex; justify-content: space-around; align-items: center;
+      margin-bottom: 12px;
+    }
+    .score-side { text-align: center; }
+    .score-label { font-size: 13px; color: var(--gold-text); font-weight: 700; }
+    .score-num { font-size: 32px; font-weight: 700; line-height: 1.1; }
+    .score-num.lana { color: var(--burgundy); }
+    .score-num.lahum { color: var(--navy); }
+    .score-raw { font-size: 11px; opacity: 0.4; }
+
+    /* Card grid */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+      justify-items: center;
+    }
+    .card-entry {
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      padding: 0;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+    .card-entry:active { transform: scale(0.95); }
+    .card-entry.has-count {
+      background: transparent;
+    }
+    .card-entry.has-count .card-icon,
+    .card-entry.has-count .card-face {
+      background: var(--gold);
+    }
+    .card-entry.has-count .card-name { color: var(--gold-text); font-weight: 700; }
+    .card-entry.has-count .card-pts { color: var(--gold-text); }
+
+    .card-face {
+      border-radius: 12px;
+      padding: 3px;
+      background: var(--bg);
+      transition: background 0.15s;
+    }
+    .card-face img { border-radius: 9px; display: block; }
+    .card-face img {
+      width: 100%; height: auto; display: block;
+    }
+    .card-name { font-size: 11px; font-weight: 700; color: var(--navy); line-height: 1.2; margin-top: 4px; }
+    .card-pts { font-size: 10px; color: var(--gold-text); font-weight: 600; }
+
+    .card-count {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--gold);
+      color: var(--navy);
+      font-size: 13px;
+      font-weight: 700;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(201,162,39,0.3);
+      z-index: 2;
+    }
+    .card-entry.has-count .card-count { display: flex; }
+
+    /* أرض toggle */
+    .ard-toggle {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px; background: rgba(26,39,68,0.04); border-radius: 12px;
+      margin-bottom: 12px; cursor: pointer;
+      border: 1.5px solid transparent; transition: all 0.15s;
+    }
+    .ard-toggle.active {
+      background: rgba(201,162,39,0.1);
+      border-color: var(--gold);
+    }
+    .ard-label { font-size: 14px; font-weight: 700; color: var(--navy); }
+    .ard-pts { font-size: 12px; color: var(--gold-text); font-weight: 600; }
+
+    /* hokm-only cards */
+    .card-entry.hokm-only { display: none; }
+    .card-grid.hokm .card-entry.hokm-only { display: flex; }
+    /* Center incomplete last row in hokm (8 cards = 3+3+2) */
+    .card-grid.hokm {
+      grid-template-columns: repeat(6, 1fr);
+    }
+    .card-grid.hokm .card-entry { grid-column: span 2; }
+    .card-grid.hokm .card-entry:nth-last-child(2) { grid-column: 2 / span 2; }
+
+    /* Preview */
+    .preview {
+      background: var(--navy); color: var(--cream); border-radius: 14px;
+      padding: 12px 20px; display: flex; justify-content: space-around;
+      font-size: 18px; font-weight: 700;
+    }
+
+    .hint { text-align: center; font-size: 11px; color: var(--navy); opacity: 0.3; margin-top: 8px; }
+  </style>
+</head>
+<body>
+
+<h2>بنط بالكروت — نموذج</h2>
+<div class="desc">اضغط الكرت مرة = ١، مرتين = ٢، ثلاث = ٣، أربع = ٤، خامسة = صفر</div>
+
+<!-- Type -->
+<div class="type-toggle">
+  <button class="type-btn active" id="tSun" onclick="setType('sun')">صن</button>
+  <button class="type-btn" id="tHokm" onclick="setType('hokm')">حكم</button>
+</div>
+
+<!-- Team -->
+<div class="team-row">
+  <button class="team-btn lana" id="teamLana" onclick="setTeam('lana')">كروت لنا</button>
+  <button class="team-btn" id="teamLahum" onclick="setTeam('lahum')">كروت لهم</button>
+</div>
+
+<!-- Score -->
+<div class="score-display">
+  <div class="score-side">
+    <div class="score-label">لنا</div>
+    <div class="score-num lana" id="buntLana">0</div>
+    <div class="score-raw" id="rawLana">0 نقطة</div>
+  </div>
+  <div class="score-side">
+    <div class="score-label">لهم</div>
+    <div class="score-num lahum" id="buntLahum">0</div>
+    <div class="score-raw" id="rawLahum">0 نقطة</div>
+  </div>
+</div>
+
+<!-- Cards -->
+<div class="card-grid" id="cardGrid">
+  <!-- صن + حكم shared -->
+  <div class="card-entry" data-key="ace" data-sun="11" data-hokm="11" data-max="4" onclick="tapCard(this)">
+    <span class="card-count" id="cnt-ace">0</span>
+    <div class="card-face"><img src="cards/ace.png" alt="إكه"></div>
+    <span class="card-name">إكه</span>
+    <span class="card-pts" id="pts-ace">١١</span>
+  </div>
+  <div class="card-entry" data-key="ten" data-sun="10" data-hokm="10" data-max="4" onclick="tapCard(this)">
+    <span class="card-count" id="cnt-ten">0</span>
+    <div class="card-face"><img src="cards/ten.png" alt="عشرة"></div>
+    <span class="card-name">عشرة</span>
+    <span class="card-pts" id="pts-ten">١٠</span>
+  </div>
+  <div class="card-entry" data-key="king" data-sun="4" data-hokm="4" data-max="4" onclick="tapCard(this)">
+    <span class="card-count" id="cnt-king">0</span>
+    <div class="card-face"><img src="cards/king.png" alt="شايب"></div>
+    <span class="card-name">شايب</span>
+    <span class="card-pts" id="pts-king">٤</span>
+  </div>
+  <div class="card-entry" data-key="queen" data-sun="3" data-hokm="3" data-max="4" onclick="tapCard(this)">
+    <span class="card-count" id="cnt-queen">0</span>
+    <div class="card-face"><img src="cards/queen.png" alt="بنت"></div>
+    <span class="card-name">بنت</span>
+    <span class="card-pts" id="pts-queen">٣</span>
+  </div>
+  <div class="card-entry" data-key="jack" data-sun="2" data-hokm="2" data-max="4" onclick="tapCard(this)">
+    <span class="card-count" id="cnt-jack">0</span>
+    <div class="card-face"><img src="cards/jack.png" alt="ولد"></div>
+    <span class="card-name">ولد</span>
+    <span class="card-pts" id="pts-jack">٢</span>
+  </div>
+
+  <!-- أرض -->
+  <div class="card-entry" data-key="ard" data-sun="10" data-hokm="10" data-max="1" onclick="tapCard(this)">
+    <span class="card-count" id="cnt-ard">0</span>
+    <div class="card-face"><img src="cards/ard.png" alt="أرض"></div>
+    <span class="card-name">أرض</span>
+    <span class="card-pts" id="pts-ard">١٠</span>
+  </div>
+
+  <!-- حكم only — higher value first (RTL) -->
+  <div class="card-entry hokm-only" data-key="h9" data-sun="0" data-hokm="14" data-max="1" onclick="tapCard(this)">
+    <span class="card-count" id="cnt-h9">0</span>
+    <div class="card-face"><img src="cards/nine.png" alt="٩ حكم"></div>
+    <span class="card-name">٩ حكم</span>
+    <span class="card-pts" id="pts-h9">١٤</span>
+  </div>
+  <div class="card-entry hokm-only" data-key="hjack" data-sun="0" data-hokm="20" data-max="1" onclick="tapCard(this)">
+    <span class="card-count" id="cnt-hjack">0</span>
+    <div class="card-face"><img src="cards/hjack.png" alt="ولد حكم"></div>
+    <span class="card-name">ولد حكم</span>
+    <span class="card-pts" id="pts-hjack">٢٠</span>
+  </div>
+</div>
+
+<!-- Preview -->
+<div class="preview">
+  <span>لنا: <span id="prevLana">0</span></span>
+  <span>لهم: <span id="prevLahum">0</span></span>
+</div>
+
+<div class="hint">الكروت المختارة = كروت الفريق المحدد — الباقي للفريق الثاني تلقائياً</div>
+
+<script>
+  let type = 'sun';
+  let team = 'lana'; // which team are we counting cards for
+  let counts = {};
+
+  const TOTAL_RAW = { sun: 260, hokm: 162 };
+  const CARDS = {
+    ace:   { sun: 11, hokm: 11, max: 4 },
+    ten:   { sun: 10, hokm: 10, max: 4 },
+    king:  { sun: 4,  hokm: 4,  max: 4 },
+    queen: { sun: 3,  hokm: 3,  max: 4 },
+    jack:  { sun: 2,  hokm: 2,  max: 4 },
+    ard:   { sun: 10, hokm: 10, max: 1 },
+    hjack: { sun: 0,  hokm: 20, max: 1 },
+    h9:    { sun: 0,  hokm: 14, max: 1 }
+  };
+
+  function resetCounts() {
+    counts = {};
+    document.querySelectorAll('.card-entry').forEach(el => {
+      el.classList.remove('has-count');
+      const key = el.dataset.key;
+      document.getElementById('cnt-' + key).textContent = '0';
+    });
+    recalc();
+  }
+
+  function setType(t) {
+    type = t;
+    document.getElementById('tSun').classList.toggle('active', t === 'sun');
+    document.getElementById('tHokm').classList.toggle('active', t === 'hokm');
+    document.getElementById('cardGrid').classList.toggle('hokm', t === 'hokm');
+    // Update point labels
+    document.querySelectorAll('.card-entry').forEach(el => {
+      const key = el.dataset.key;
+      const pts = CARDS[key][t];
+      const ptsEl = document.getElementById('pts-' + key);
+      if (ptsEl) ptsEl.textContent = pts.toLocaleString('ar-SA');
+    });
+    resetCounts();
+  }
+
+  function setTeam(t) {
+    team = t;
+    document.getElementById('teamLana').className = 'team-btn' + (t === 'lana' ? ' lana' : '');
+    document.getElementById('teamLahum').className = 'team-btn' + (t === 'lahum' ? ' lahum' : '');
+    resetCounts();
+  }
+
+  function tapCard(el) {
+    const key = el.dataset.key;
+    const max = CARDS[key].max;
+    const cur = counts[key] || 0;
+    const next = (cur + 1) % (max + 1); // 0→1→2→...→max→0
+    counts[key] = next;
+
+    el.classList.toggle('has-count', next > 0);
+    document.getElementById('cnt-' + key).textContent = next;
+
+    if (navigator.vibrate) navigator.vibrate(next > 0 ? 10 : [5, 20, 5]);
+    // Toggle has-selection class on grid
+    const anySelected = Object.values(counts).some(c => c > 0);
+    document.getElementById('cardGrid').classList.toggle('has-selection', anySelected);
+    recalc();
+  }
+
+  function rawToBunt(raw, t) {
+    if (t === 'sun') {
+      const rem = raw % 10;
+      let rounded;
+      if (rem === 5) rounded = raw;
+      else if (rem < 5) rounded = raw - rem;
+      else rounded = raw + (10 - rem);
+      return (rounded * 2) / 10;
+    } else {
+      return Math.floor(raw / 10);
+    }
+  }
+
+  function recalc() {
+    // Calculate raw points for the selected team
+    let teamRaw = 0;
+    for (const [key, count] of Object.entries(counts)) {
+      if (count > 0) {
+        teamRaw += CARDS[key][type] * count;
+      }
+    }
+    const totalRaw = TOTAL_RAW[type];
+    const opponentRaw = totalRaw - teamRaw;
+
+    // Clamp
+    const myRaw = Math.max(0, Math.min(totalRaw, teamRaw));
+    const oppRaw = Math.max(0, totalRaw - myRaw);
+
+    const myBunt = rawToBunt(myRaw, type);
+    const oppBunt = rawToBunt(oppRaw, type);
+
+    const lanaRaw = team === 'lana' ? myRaw : oppRaw;
+    const lahumRaw = team === 'lana' ? oppRaw : myRaw;
+    const lanaBunt = team === 'lana' ? myBunt : oppBunt;
+    const lahumBunt = team === 'lana' ? oppBunt : myBunt;
+
+    document.getElementById('buntLana').textContent = lanaBunt;
+    document.getElementById('buntLahum').textContent = lahumBunt;
+    document.getElementById('rawLana').textContent = lanaRaw + ' نقطة';
+    document.getElementById('rawLahum').textContent = lahumRaw + ' نقطة';
+    document.getElementById('prevLana').textContent = lanaBunt;
+    document.getElementById('prevLahum').textContent = lahumBunt;
+  }
+
+  // Init
+  setType('sun');
+</script>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root { --bg: #F5F0E6; --burgundy: #722F37; --gold: #C9A227; --gold-text: #8B7318; --navy: #1A2744; --text: #1D1E20; --cream: #F5F0E6; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); max-width: 430px; margin: 0 auto; padding: 16px; direction: rtl; user-select: none; }
+button { font-family: 'Cairo', sans-serif; border: none; cursor: pointer; }
+h2 { text-align: center; font-size: 14px; color: var(--gold-text); margin: 20px 0 8px; }
+h3 { text-align: center; font-size: 11px; color: var(--navy); opacity: 0.3; margin-bottom: 12px; }
+
+/* ── Option A: Compact Row ── */
+.pcA {
+  border: 1px solid rgba(26,39,68,0.08);
+  border-radius: 14px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  background: rgba(26,39,68,0.02);
+}
+.pcA-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.pcA-name { font-size: 14px; font-weight: 700; color: var(--navy); }
+.pcA-score { font-size: 18px; font-weight: 700; color: var(--burgundy); }
+.pcA-score span { font-size: 11px; opacity: 0.5; font-weight: 600; }
+.pcA-items {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pcA-toggle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: rgba(26,39,68,0.05);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pcA-toggle.active { background: var(--burgundy); color: var(--cream); }
+.pcA-toggle .dot {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid rgba(26,39,68,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; transition: all 0.15s;
+}
+.pcA-toggle.active .dot { background: var(--cream); border-color: var(--cream); color: var(--burgundy); }
+.pcA-toggle .tlabel { font-size: 11px; font-weight: 600; }
+.pcA-hearts {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.pcA-hbtn {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--navy); color: var(--cream);
+  font-size: 15px; display: flex; align-items: center; justify-content: center;
+  padding: 0;
+}
+.pcA-hcount { font-size: 16px; font-weight: 700; color: var(--navy); min-width: 18px; text-align: center; }
+.pcA-hlabel { font-size: 10px; color: var(--burgundy); font-weight: 600; }
+
+/* ── Option B: Pill Toggles ── */
+.pcB {
+  border: 1px solid rgba(26,39,68,0.08);
+  border-radius: 14px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  background: rgba(26,39,68,0.02);
+}
+.pcB-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.pcB-name { font-size: 14px; font-weight: 700; color: var(--navy); }
+.pcB-score { font-size: 20px; font-weight: 700; color: var(--burgundy); }
+.pcB-items {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.pcB-pill {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(26,39,68,0.06);
+  color: var(--navy);
+  transition: all 0.15s;
+}
+.pcB-pill.active { background: var(--burgundy); color: var(--cream); }
+.pcB-pill:active { transform: scale(0.93); }
+.pcB-hearts {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.pcB-hbtn {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--navy); color: var(--cream);
+  font-size: 16px; display: flex; align-items: center; justify-content: center;
+  padding: 0;
+}
+.pcB-hcount { font-size: 18px; font-weight: 700; color: var(--navy); min-width: 20px; text-align: center; }
+
+/* ── Option C: Icon Grid ── */
+.pcC {
+  border: 1px solid rgba(26,39,68,0.08);
+  border-radius: 14px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  background: rgba(26,39,68,0.02);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pcC-name { font-size: 12px; font-weight: 700; color: var(--navy); min-width: 44px; }
+.pcC-items {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+.pcC-chip {
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(26,39,68,0.06);
+  color: var(--navy);
+  text-align: center;
+  transition: all 0.15s;
+  line-height: 1.3;
+}
+.pcC-chip.active { background: var(--burgundy); color: var(--cream); }
+.pcC-chip:active { transform: scale(0.9); }
+.pcC-hearts {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.pcC-hbtn {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--navy); color: var(--cream);
+  font-size: 14px; display: flex; align-items: center; justify-content: center;
+  padding: 0;
+}
+.pcC-hcount { font-size: 14px; font-weight: 700; color: var(--navy); min-width: 16px; text-align: center; }
+.pcC-score { font-size: 18px; font-weight: 700; color: var(--burgundy); min-width: 28px; text-align: center; }
+</style>
+</head>
+<body>
+
+<h2>A: صف مدمج مع نقاط</h2>
+<h3>Compact row with checkmark toggles</h3>
+
+<div class="pcA">
+  <div class="pcA-top">
+    <span class="pcA-name">لاعب ١</span>
+    <span class="pcA-score">16 <span>نقطة</span></span>
+  </div>
+  <div class="pcA-items">
+    <div class="pcA-toggle active" onclick="this.classList.toggle('active')">
+      <span class="dot">✓</span>
+      <span class="tlabel">♠ بنت</span>
+    </div>
+    <div class="pcA-toggle" onclick="this.classList.toggle('active')">
+      <span class="dot"></span>
+      <span class="tlabel">♦ ١٠</span>
+    </div>
+    <div class="pcA-hearts">
+      <button class="pcA-hbtn" onclick="stepA(this,1)">+</button>
+      <span class="pcA-hcount">3</span>
+      <button class="pcA-hbtn" onclick="stepA(this,-1)">−</button>
+      <span class="pcA-hlabel">♥</span>
+    </div>
+  </div>
+</div>
+<div class="pcA">
+  <div class="pcA-top">
+    <span class="pcA-name">لاعب ٢</span>
+    <span class="pcA-score">5 <span>نقطة</span></span>
+  </div>
+  <div class="pcA-items">
+    <div class="pcA-toggle" onclick="this.classList.toggle('active')">
+      <span class="dot"></span>
+      <span class="tlabel">♠ بنت</span>
+    </div>
+    <div class="pcA-toggle" onclick="this.classList.toggle('active')">
+      <span class="dot"></span>
+      <span class="tlabel">♦ ١٠</span>
+    </div>
+    <div class="pcA-hearts">
+      <button class="pcA-hbtn" onclick="stepA(this,1)">+</button>
+      <span class="pcA-hcount">5</span>
+      <button class="pcA-hbtn" onclick="stepA(this,-1)">−</button>
+      <span class="pcA-hlabel">♥</span>
+    </div>
+  </div>
+</div>
+
+<h2>B: حبوب مع عداد</h2>
+<h3>Pill toggles, bigger hearts stepper</h3>
+
+<div class="pcB">
+  <div class="pcB-top">
+    <span class="pcB-name">لاعب ١</span>
+    <span class="pcB-score">16</span>
+  </div>
+  <div class="pcB-items">
+    <span class="pcB-pill active" onclick="this.classList.toggle('active')">♠ بنت السبيت</span>
+    <span class="pcB-pill" onclick="this.classList.toggle('active')">♦ ١٠ ديمن</span>
+    <div class="pcB-hearts">
+      <button class="pcB-hbtn" onclick="stepB(this,1)">+</button>
+      <span class="pcB-hcount">3</span>
+      <button class="pcB-hbtn" onclick="stepB(this,-1)">−</button>
+    </div>
+  </div>
+</div>
+<div class="pcB">
+  <div class="pcB-top">
+    <span class="pcB-name">لاعب ٢</span>
+    <span class="pcB-score">5</span>
+  </div>
+  <div class="pcB-items">
+    <span class="pcB-pill" onclick="this.classList.toggle('active')">♠ بنت السبيت</span>
+    <span class="pcB-pill" onclick="this.classList.toggle('active')">♦ ١٠ ديمن</span>
+    <div class="pcB-hearts">
+      <button class="pcB-hbtn" onclick="stepB(this,1)">+</button>
+      <span class="pcB-hcount">5</span>
+      <button class="pcB-hbtn" onclick="stepB(this,-1)">−</button>
+    </div>
+  </div>
+</div>
+
+<h2>C: صف واحد مضغوط</h2>
+<h3>Single compact row — name, chips, hearts, score</h3>
+
+<div class="pcC">
+  <span class="pcC-name">لاعب ١</span>
+  <div class="pcC-items">
+    <span class="pcC-chip active" onclick="this.classList.toggle('active')">♠<br>بنت</span>
+    <span class="pcC-chip" onclick="this.classList.toggle('active')">♦<br>١٠</span>
+    <div class="pcC-hearts">
+      <button class="pcC-hbtn" onclick="stepC(this,1)">+</button>
+      <span class="pcC-hcount">3</span>
+      <button class="pcC-hbtn" onclick="stepC(this,-1)">−</button>
+    </div>
+  </div>
+  <span class="pcC-score">16</span>
+</div>
+<div class="pcC">
+  <span class="pcC-name">لاعب ٢</span>
+  <div class="pcC-items">
+    <span class="pcC-chip" onclick="this.classList.toggle('active')">♠<br>بنت</span>
+    <span class="pcC-chip" onclick="this.classList.toggle('active')">♦<br>١٠</span>
+    <div class="pcC-hearts">
+      <button class="pcC-hbtn" onclick="stepC(this,1)">+</button>
+      <span class="pcC-hcount">5</span>
+      <button class="pcC-hbtn" onclick="stepC(this,-1)">−</button>
+    </div>
+  </div>
+  <span class="pcC-score">5</span>
+</div>
+<div class="pcC">
+  <span class="pcC-name">لاعب ٣</span>
+  <div class="pcC-items">
+    <span class="pcC-chip" onclick="this.classList.toggle('active')">♠<br>بنت</span>
+    <span class="pcC-chip active" onclick="this.classList.toggle('active')">♦<br>١٠</span>
+    <div class="pcC-hearts">
+      <button class="pcC-hbtn" onclick="stepC(this,1)">+</button>
+      <span class="pcC-hcount">0</span>
+      <button class="pcC-hbtn" onclick="stepC(this,-1)">−</button>
+    </div>
+  </div>
+  <span class="pcC-score">10</span>
+</div>
+<div class="pcC">
+  <span class="pcC-name">لاعب ٤</span>
+  <div class="pcC-items">
+    <span class="pcC-chip" onclick="this.classList.toggle('active')">♠<br>بنت</span>
+    <span class="pcC-chip" onclick="this.classList.toggle('active')">♦<br>١٠</span>
+    <div class="pcC-hearts">
+      <button class="pcC-hbtn" onclick="stepC(this,1)">+</button>
+      <span class="pcC-hcount">5</span>
+      <button class="pcC-hbtn" onclick="stepC(this,-1)">−</button>
+    </div>
+  </div>
+  <span class="pcC-score">5</span>
+</div>
+
+<div style="height:40px"></div>
+
+<script>
+function stepA(btn, d) {
+  const c = btn.parentElement.querySelector('.pcA-hcount');
+  c.textContent = Math.max(0, Math.min(13, (parseInt(c.textContent)||0) + d));
+}
+function stepB(btn, d) {
+  const c = btn.parentElement.querySelector('.pcB-hcount');
+  c.textContent = Math.max(0, Math.min(13, (parseInt(c.textContent)||0) + d));
+}
+function stepC(btn, d) {
+  const c = btn.parentElement.querySelector('.pcC-hcount');
+  c.textContent = Math.max(0, Math.min(13, (parseInt(c.textContent)||0) + d));
+}
+</script>
+</body>
+</html>

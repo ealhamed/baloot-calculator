@@ -1,10 +1,8 @@
-const CACHE = 'baloot-v6';
+const CACHE = 'baloot-v7';
 const ASSETS = [
   './',
   './index.html',
-  './sibeet.html',
   './manifest.json',
-  './manifest-sibeet.json',
   './logo.png',
   './cards/ace.png',
   './cards/ten.png',

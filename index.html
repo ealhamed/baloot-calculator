@@ -1424,13 +1424,14 @@
 
       <div class="menu-section">
         <div class="menu-section-title">الألعاب</div>
-        <button class="menu-item" disabled style="opacity:0.5">
+        <button class="menu-item" onclick="switchGame('baloot')" id="menuBaloot">
           <span>حاسبة بلوت</span>
-          <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span id="checkBaloot"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
         </button>
-        <a class="menu-item" href="sibeet.html" style="text-decoration:none">
+        <button class="menu-item" onclick="switchGame('sibeet')" id="menuSibeet">
           <span>بنت السبيت</span>
-        </a>
+          <span id="checkSibeet"></span>
+        </button>
       </div>
 
       <div class="menu-section" id="menuRoomSection">

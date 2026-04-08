@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>E1 تنويعات</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F5F0E6;
+      --burgundy: #722F37;
+      --gold: #C9A227;
+      --navy: #1A2744;
+      --cream: #F5F0E6;
+      --gold-text: #8B7318;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: var(--bg);
+      max-width: 430px;
+      margin: 0 auto;
+      padding: 16px;
+      direction: rtl;
+    }
+    h2 { text-align: center; color: var(--gold-text); font-size: 15px; margin: 20px 0 4px; }
+    h2:first-child { margin-top: 4px; }
+    .desc { text-align: center; font-size: 11px; color: var(--navy); opacity: 0.4; margin-bottom: 10px; }
+    .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .card {
+      background: rgba(26,39,68,0.04);
+      border-radius: 16px;
+      padding: 10px 8px 8px;
+      text-align: center;
+    }
+    .pname { font-size: 13px; color: var(--gold-text); font-weight: 700; }
+    .round-total { font-size: 12px; font-weight: 700; color: var(--burgundy); margin-top: 3px; }
+    .ring-wrap { width: 80px; height: 80px; margin: 4px auto 6px; position: relative; }
+    .ring-progress { width: 80px; height: 80px; }
+    .ring-progress circle { fill: none; stroke-width: 4; stroke-linecap: round; }
+    .ring-progress .track { stroke: rgba(26,39,68,0.08); }
+    .ring-progress .fill { stroke: var(--navy); transition: stroke-dashoffset 0.4s; }
+    .ring-score {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      font-size: 28px; font-weight: 700; color: var(--navy);
+    }
+    .danger .ring-progress .fill { stroke: var(--burgundy); }
+    .danger .ring-score { color: var(--burgundy); }
+
+    /* Shared button base — ALL buttons same size */
+    .btn {
+      height: 40px;
+      border-radius: 10px;
+      border: none;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .btn:active { transform: scale(0.93); }
+    .btn-default { background: rgba(26,39,68,0.07); color: var(--navy); }
+    .btn-active { background: var(--burgundy); color: var(--cream); }
+    .btn-navy { background: var(--navy); color: var(--cream); }
+    .btn-hearts { background: rgba(114,47,55,0.08); color: var(--burgundy); }
+
+    .hcount {
+      font-size: 16px; font-weight: 700; color: var(--navy);
+      min-width: 22px; text-align: center;
+    }
+
+    /* ═══ V1: 2×2 Grid — all 4 buttons equal ═══ */
+    .v1 .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+    }
+    .v1 .hearts-display {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+    }
+    .v1 .hearts-display .btn { flex: 1; }
+    .v1 .hearts-display .hcount { flex: 0 0 32px; }
+
+    /* ═══ V2: 4 columns equal ═══ */
+    .v2 .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 3px;
+      align-items: center;
+    }
+    .v2 .btn { font-size: 13px; height: 42px; }
+    .v2 .hcount { font-size: 14px; grid-column: span 1; text-align: center; }
+
+    /* ═══ V3: 3 columns (♠ | ♦ | hearts group) ═══ */
+    .v3 .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 4px;
+    }
+    .v3 .hearts-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .v3 .hearts-cell .btn { width: 100%; height: 32px; font-size: 16px; }
+    .v3 .hcount { font-size: 18px; line-height: 1; }
+
+    /* ═══ V4: 2 rows — top: ♠ ♦, bottom: − count + ═══ */
+    .v4 .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .v4 .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+    }
+    .v4 .hearts-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 0;
+      align-items: center;
+    }
+    .v4 .hearts-row .hcount { font-size: 18px; }
+
+    /* ═══ V5: Single row of 5 equal items ═══ */
+    .v5 .controls {
+      display: flex;
+      gap: 3px;
+      align-items: center;
+    }
+    .v5 .btn { flex: 1; height: 44px; font-size: 15px; border-radius: 12px; }
+    .v5 .hcount { flex: 0 0 24px; font-size: 16px; text-align: center; }
+
+    /* ═══ V6: Horizontal strip with dividers ═══ */
+    .v6 .controls {
+      display: flex;
+      align-items: center;
+      background: rgba(26,39,68,0.04);
+      border-radius: 12px;
+      padding: 3px;
+      gap: 3px;
+    }
+    .v6 .btn { flex: 1; height: 40px; font-size: 14px; }
+    .v6 .divider { width: 1px; height: 24px; background: rgba(26,39,68,0.1); flex-shrink: 0; }
+    .v6 .hcount { flex: 0 0 24px; font-size: 16px; text-align: center; }
+  </style>
+</head>
+<body>
+
+<!-- ═══ V1: 2×2 Grid ═══ -->
+<h2>V1: شبكة ٢×٢</h2>
+<div class="desc">♠ و ♦ فوق — ناقص والعدد وزايد تحت بصف كامل</div>
+<div class="cards">
+  <div class="card v1">
+    <div class="pname">إبراهيم</div>
+    <div class="ring-wrap">
+      <svg class="ring-progress" viewBox="0 0 80 80"><circle class="track" cx="40" cy="40" r="36"/><circle class="fill" cx="40" cy="40" r="36" stroke-dasharray="226" stroke-dashoffset="124" transform="rotate(-90 40 40)"/></svg>
+      <div class="ring-score">42</div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-active" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♠ بنت</button>
+      <button class="btn btn-default" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♦ ١٠</button>
+      <div class="hearts-display">
+        <button class="btn btn-navy">+</button>
+        <span class="hcount">3</span>
+        <button class="btn btn-navy">−</button>
+      </div>
+    </div>
+    <div class="round-total">+16</div>
+  </div>
+  <div class="card v1 danger">
+    <div class="pname">خالد</div>
+    <div class="ring-wrap">
+      <svg class="ring-progress" viewBox="0 0 80 80"><circle class="track" cx="40" cy="40" r="36"/><circle class="fill" cx="40" cy="40" r="36" stroke-dasharray="226" stroke-dashoffset="40" transform="rotate(-90 40 40)"/></svg>
+      <div class="ring-score">82</div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-default" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♠ بنت</button>
+      <button class="btn btn-active" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♦ ١٠</button>
+      <div class="hearts-display">
+        <button class="btn btn-navy">+</button>
+        <span class="hcount">5</span>
+        <button class="btn btn-navy">−</button>
+      </div>
+    </div>
+    <div class="round-total">+15</div>
+  </div>
+</div>
+
+<!-- ═══ V2: 4 Columns ═══ -->
+<h2>V2: أربع أعمدة متساوية</h2>
+<div class="desc">♠ ♦ − ♥ + كلهم بنفس الحجم بصف واحد — العدد تحت</div>
+<div class="cards">
+  <div class="card v2">
+    <div class="pname">إبراهيم</div>
+    <div class="ring-wrap">
+      <svg class="ring-progress" viewBox="0 0 80 80"><circle class="track" cx="40" cy="40" r="36"/><circle class="fill" cx="40" cy="40" r="36" stroke-dasharray="226" stroke-dashoffset="124" transform="rotate(-90 40 40)"/></svg>
+      <div class="ring-score">42</div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-active" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♠</button>
+      <button class="btn btn-default" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♦</button>
+      <button class="btn btn-navy">+</button>
+      <button class="btn btn-navy">−</button>
+    </div>
+    <div class="hcount" style="margin-top:2px">♥ 3</div>
+    <div class="round-total">+16</div>
+  </div>
+  <div class="card v2 danger">
+    <div class="pname">خالد</div>
+    <div class="ring-wrap">
+      <svg class="ring-progress" viewBox="0 0 80 80"><circle class="track" cx="40" cy="40" r="36"/><circle class="fill" cx="40" cy="40" r="36" stroke-dasharray="226" stroke-dashoffset="40" transform="rotate(-90 40 40)"/></svg>
+      <div class="ring-score">82</div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-default" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♠</button>
+      <button class="btn btn-active" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♦</button>
+      <button class="btn btn-navy">+</button>
+      <button class="btn btn-navy">−</button>
+    </div>
+    <div class="hcount" style="margin-top:2px">♥ 5</div>
+    <div class="round-total">+15</div>
+  </div>
+</div>
+
+<!-- ═══ V3: 3 Columns ═══ -->
+<h2>V3: ثلاث أعمدة</h2>
+<div class="desc">♠ و ♦ بحجم كامل — العمود الثالث فيه + العدد −</div>
+<div class="cards">
+  <div class="card v3">
+    <div class="pname">إبراهيم</div>
+    <div class="ring-wrap">
+      <svg class="ring-progress" viewBox="0 0 80 80"><circle class="track" cx="40" cy="40" r="36"/><circle class="fill" cx="40" cy="40" r="36" stroke-dasharray="226" stroke-dashoffset="124" transform="rotate(-90 40 40)"/></svg>
+      <div class="ring-score">42</div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-active" style="height:100%" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♠ بنت</button>
+      <button class="btn btn-default" style="height:100%" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♦ ١٠</button>
+      <div class="hearts-cell">
+        <button class="btn btn-navy">+</button>
+        <span class="hcount">3</span>
+        <button class="btn btn-navy">−</button>
+      </div>
+    </div>
+    <div class="round-total">+16</div>
+  </div>
+  <div class="card v3 danger">
+    <div class="pname">خالد</div>
+    <div class="ring-wrap">
+      <svg class="ring-progress" viewBox="0 0 80 80"><circle class="track" cx="40" cy="40" r="36"/><circle class="fill" cx="40" cy="40" r="36" stroke-dasharray="226" stroke-dashoffset="40" transform="rotate(-90 40 40)"/></svg>
+      <div class="ring-score">82</div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-default" style="height:100%" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♠ بنت</button>
+      <button class="btn btn-active" style="height:100%" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♦ ١٠</button>
+      <div class="hearts-cell">
+        <button class="btn btn-navy">+</button>
+        <span class="hcount">5</span>
+        <button class="btn btn-navy">−</button>
+      </div>
+    </div>
+    <div class="round-total">+15</div>
+  </div>
+</div>
+
+<!-- ═══ V4: Two Rows ═══ -->
+<h2>V4: صفين متساويين</h2>
+<div class="desc">صف أول: ♠ ♦ — صف ثاني: − العدد + (كل الأزرار بنفس الحجم)</div>
+<div class="cards">
+  <div class="card v4">
+    <div class="pname">إبراهيم</div>
+    <div class="ring-wrap">
+      <svg class="ring-progress" viewBox="0 0 80 80"><circle class="track" cx="40" cy="40" r="36"/><circle class="fill" cx="40" cy="40" r="36" stroke-dasharray="226" stroke-dashoffset="124" transform="rotate(-90 40 40)"/></svg>
+      <div class="ring-score">42</div>
+    </div>
+    <div class="controls">
+      <div class="row">
+        <button class="btn btn-active" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♠ بنت</button>
+        <button class="btn btn-default" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♦ ١٠</button>
+      </div>
+      <div class="hearts-row">
+        <button class="btn btn-navy">+</button>
+        <span class="hcount">♥ 3</span>
+        <button class="btn btn-navy">−</button>
+      </div>
+    </div>
+    <div class="round-total">+16</div>
+  </div>
+  <div class="card v4 danger">
+    <div class="pname">خالد</div>
+    <div class="ring-wrap">
+      <svg class="ring-progress" viewBox="0 0 80 80"><circle class="track" cx="40" cy="40" r="36"/><circle class="fill" cx="40" cy="40" r="36" stroke-dasharray="226" stroke-dashoffset="40" transform="rotate(-90 40 40)"/></svg>
+      <div class="ring-score">82</div>
+    </div>
+    <div class="controls">
+      <div class="row">
+        <button class="btn btn-default" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♠ بنت</button>
+        <button class="btn btn-active" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♦ ١٠</button>
+      </div>
+      <div class="hearts-row">
+        <button class="btn btn-navy">+</button>
+        <span class="hcount">♥ 5</span>
+        <button class="btn btn-navy">−</button>
+      </div>
+    </div>
+    <div class="round-total">+15</div>
+  </div>
+</div>
+
+<!-- ═══ V5: Single Row ═══ -->
+<h2>V5: صف واحد</h2>
+<div class="desc">كل شي بسطر — خمس أزرار متساوية</div>
+<div class="cards">
+  <div class="card v5">
+    <div class="pname">إبراهيم</div>
+    <div class="ring-wrap">
+      <svg class="ring-progress" viewBox="0 0 80 80"><circle class="track" cx="40" cy="40" r="36"/><circle class="fill" cx="40" cy="40" r="36" stroke-dasharray="226" stroke-dashoffset="124" transform="rotate(-90 40 40)"/></svg>
+      <div class="ring-score">42</div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-active" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♠</button>
+      <button class="btn btn-default" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♦</button>
+      <button class="btn btn-navy">−</button>
+      <span class="hcount">3</span>
+      <button class="btn btn-navy">+</button>
+    </div>
+    <div class="round-total">+16</div>
+  </div>
+  <div class="card v5 danger">
+    <div class="pname">خالد</div>
+    <div class="ring-wrap">
+      <svg class="ring-progress" viewBox="0 0 80 80"><circle class="track" cx="40" cy="40" r="36"/><circle class="fill" cx="40" cy="40" r="36" stroke-dasharray="226" stroke-dashoffset="40" transform="rotate(-90 40 40)"/></svg>
+      <div class="ring-score">82</div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-default" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♠</button>
+      <button class="btn btn-active" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♦</button>
+      <button class="btn btn-navy">−</button>
+      <span class="hcount">5</span>
+      <button class="btn btn-navy">+</button>
+    </div>
+    <div class="round-total">+15</div>
+  </div>
+</div>
+
+<!-- ═══ V6: Contained Strip ═══ -->
+<h2>V6: شريط محتوي</h2>
+<div class="desc">كل الأزرار داخل شريط رمادي واحد بفواصل</div>
+<div class="cards">
+  <div class="card v6">
+    <div class="pname">إبراهيم</div>
+    <div class="ring-wrap">
+      <svg class="ring-progress" viewBox="0 0 80 80"><circle class="track" cx="40" cy="40" r="36"/><circle class="fill" cx="40" cy="40" r="36" stroke-dasharray="226" stroke-dashoffset="124" transform="rotate(-90 40 40)"/></svg>
+      <div class="ring-score">42</div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-active" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♠</button>
+      <button class="btn btn-default" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♦</button>
+      <div class="divider"></div>
+      <button class="btn btn-navy">−</button>
+      <span class="hcount">3</span>
+      <button class="btn btn-navy">+</button>
+    </div>
+    <div class="round-total">+16</div>
+  </div>
+  <div class="card v6 danger">
+    <div class="pname">خالد</div>
+    <div class="ring-wrap">
+      <svg class="ring-progress" viewBox="0 0 80 80"><circle class="track" cx="40" cy="40" r="36"/><circle class="fill" cx="40" cy="40" r="36" stroke-dasharray="226" stroke-dashoffset="40" transform="rotate(-90 40 40)"/></svg>
+      <div class="ring-score">82</div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-default" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♠</button>
+      <button class="btn btn-active" onclick="this.classList.toggle('btn-active');this.classList.toggle('btn-default')">♦</button>
+      <div class="divider"></div>
+      <button class="btn btn-navy">−</button>
+      <span class="hcount">5</span>
+      <button class="btn btn-navy">+</button>
+    </div>
+    <div class="round-total">+15</div>
+  </div>
+</div>
+
+<div style="height:32px"></div>
+</body>
+</html>
