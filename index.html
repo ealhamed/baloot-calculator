@@ -1796,7 +1796,7 @@
       if (total < 16) {
         askQuestion('المجموع أقل من ١٦ — تأكد من الأرقام', [
           { label: 'حسناً', value: 'ok' }
-        ], () => { pendingBunt = null; pendingMeta = {}; });
+        ], () => { pendingBunt = null; pendingMeta = {}; }, { skipable: false });
         return;
       }
 
@@ -1815,7 +1815,7 @@
           ], (answer) => {
             if (answer === 'keep') finishSimple();
             else { pendingBunt = null; pendingMeta = {}; }
-          });
+          }, { skipable: false });
         }
         return;
       }
@@ -1865,7 +1865,7 @@
           ], (answer) => {
             if (answer === 'keep') finishSimple();
             else { pendingBunt = null; pendingMeta = {}; }
-          });
+          }, { skipable: false });
         }
         return;
       }
@@ -1972,23 +1972,28 @@
       return obj;
     }
 
-    function askQuestion(question, options, callback) {
+    function askQuestion(question, options, callback, opts) {
       const area = document.getElementById('clarifyArea');
       const qEl = document.getElementById('clarifyQuestion');
       const oEl = document.getElementById('clarifyOptions');
 
       qEl.textContent = question;
+      const skipable = !opts || opts.skipable !== false;
       oEl.innerHTML = options.map((opt, i) =>
         `<button class="clarify-btn" data-idx="${i}">${opt.label}</button>`
-      ).join('');
+      ).join('') + (skipable ? '<button class="clarify-btn clarify-skip" data-skip="1" style="opacity:0.45;font-size:11px">تخطي</button>' : '');
 
       area.style.display = '';
 
       oEl.onclick = (e) => {
         const btn = e.target.closest('.clarify-btn');
         if (!btn) return;
-        const idx = parseInt(btn.dataset.idx);
         area.style.display = 'none';
+        if (btn.dataset.skip) {
+          finishSimple();
+          return;
+        }
+        const idx = parseInt(btn.dataset.idx);
         callback(options[idx].value);
       };
     }
