@@ -1570,8 +1570,13 @@
 
     function updateScrollLock(mode) {
       const hasRounds = appState.currentGame.rounds.length > 0;
+      const session = appState.session;
+      const gameJustEnded = session.games.length > 0 && !hasRounds &&
+        session.wins.lana < 2 && session.wins.lahum < 2;
+      const sessionOver = session.wins.lana >= 2 || session.wins.lahum >= 2;
       // Lock scroll in simple mode with no rounds (fresh state fits in one screen)
-      if (mode === 'simple' && !hasRounds) {
+      // but not when showing new game / session over buttons
+      if (mode === 'simple' && !hasRounds && !gameJustEnded && !sessionOver) {
         document.documentElement.classList.add('no-scroll');
       } else {
         document.documentElement.classList.remove('no-scroll');
