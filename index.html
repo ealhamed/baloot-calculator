@@ -285,29 +285,67 @@
     .bps-num { font-size: 28px; font-weight: 700; }
     .bps-num.lana-color { color: var(--burgundy); }
     .bps-num.lahum-color { color: var(--navy); }
-    .bunt-preset-hint { text-align: center; font-size: 11px; color: var(--navy); opacity: 0.35; margin-bottom: 6px; }
-    .bunt-presets {
+
+    /* ── Card Entry Grid ── */
+    .card-grid {
       display: grid;
-      grid-template-columns: repeat(9, 1fr);
-      gap: 6px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 8px;
+      justify-items: center;
     }
-    .bp-btn {
-      background: rgba(26,39,68,0.06);
-      color: var(--navy);
-      border-radius: 12px;
-      padding: 12px 0;
-      font-size: 15px;
-      font-weight: 700;
+    .card-entry {
+      background: transparent;
+      border: none;
+      padding: 0;
       text-align: center;
-      transition: all 0.12s;
-      min-height: 44px;
       cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
     }
-    .bp-btn:active { transform: scale(0.92); }
-    .bp-btn.lana-pick { background: var(--burgundy); color: var(--cream); }
-    .bp-btn.lahum-pick { background: var(--navy); color: var(--cream); }
-    .bp-btn.bp-disabled { opacity: 0.2; pointer-events: none; }
-    [data-theme="dark"] .bp-btn { background: rgba(232,228,220,0.08); }
+    .card-entry:active { transform: scale(0.95); }
+    .card-entry.has-count { background: transparent; }
+    .card-face {
+      border-radius: 12px;
+      padding: 3px;
+      background: var(--bg);
+      transition: background 0.15s;
+    }
+    .card-face img { width: 100%; height: auto; display: block; border-radius: 9px; }
+    .card-entry.has-count .card-face { background: var(--gold); }
+    .card-entry-name { font-size: 11px; font-weight: 700; color: var(--navy); margin-top: 4px; }
+    .card-entry-pts { font-size: 10px; color: var(--gold-text); font-weight: 600; }
+    .card-entry.has-count .card-entry-name { color: var(--gold-text); }
+    .card-entry.has-count .card-entry-pts { color: var(--gold-text); }
+    .card-count {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--gold);
+      color: var(--navy);
+      font-size: 13px;
+      font-weight: 700;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(201,162,39,0.3);
+      z-index: 2;
+    }
+    .card-entry.has-count .card-count { display: flex; }
+    .card-entry.hokm-only { display: none; }
+    .card-grid.hokm .card-entry.hokm-only { display: flex; }
+    .card-grid.hokm { grid-template-columns: repeat(6, 1fr); }
+    .card-grid.hokm .card-entry { grid-column: span 2; }
+    .card-grid.hokm .card-entry:nth-last-child(2) { grid-column: 2 / span 2; }
+    [data-theme="dark"] .card-face { background: var(--bg); }
+    [data-theme="dark"] .card-entry.has-count .card-face { background: var(--gold); }
 
     .preview-bar {
       background: var(--navy);
@@ -1054,17 +1092,17 @@
           </div>
         </div>
 
-        <!-- Bunt Points -->
+        <!-- Card-based Bunt Entry -->
         <div id="cardPointsSection">
           <div class="bunt-preset-score">
-            <div><span class="bps-label">لنا</span> <span class="bps-num lana-color" id="advBuntLana">-</span></div>
-            <div><span class="bps-label">لهم</span> <span class="bps-num lahum-color" id="advBuntLahum">-</span></div>
+            <div><span class="bps-label">لنا</span> <span class="bps-num lana-color" id="advBuntLana">0</span></div>
+            <div><span class="bps-label">لهم</span> <span class="bps-num lahum-color" id="advBuntLahum">0</span></div>
           </div>
           <div id="buntTeamToggle" style="display:flex;justify-content:center;gap:6px;margin-bottom:6px">
-            <button class="toggle-btn active" id="buntForLana" onclick="setBuntTeam('lana')" style="padding:5px 16px;font-size:12px;border-radius:12px">بنط لنا</button>
-            <button class="toggle-btn" id="buntForLahum" onclick="setBuntTeam('lahum')" style="padding:5px 16px;font-size:12px;border-radius:12px">بنط لهم</button>
+            <button class="toggle-btn active" id="buntForLana" onclick="setBuntTeam('lana')" style="padding:5px 16px;font-size:12px;border-radius:12px">كروت لنا</button>
+            <button class="toggle-btn" id="buntForLahum" onclick="setBuntTeam('lahum')" style="padding:5px 16px;font-size:12px;border-radius:12px">كروت لهم</button>
           </div>
-          <div class="bunt-presets" id="buntPresetGrid"></div>
+          <div class="card-grid" id="cardEntryGrid"></div>
         </div>
 
         <!-- Projects -->
@@ -1967,8 +2005,8 @@
       if (isSun && ['triple', 'four', 'coffee'].includes(advState.multiplier)) {
         setAdvMult('normal');
       }
-      // Rebuild presets for new type total
-      buildBuntPresets();
+      // Rebuild card entry for new type
+      buildCardEntryGrid();
       renderProjects();
       updateAdvPreview();
     }
@@ -2009,65 +2047,89 @@
       updateAdvPreview();
     }
 
-    let buntTeamMode = 'lana'; // which team the bunt grid assigns to
+    let buntTeamMode = 'lana';
+    let cardCounts = {};
+
+    const CARD_DEFS = {
+      ace:   { sun: 11, hokm: 11, max: 4 },
+      ten:   { sun: 10, hokm: 10, max: 4 },
+      king:  { sun: 4,  hokm: 4,  max: 4 },
+      queen: { sun: 3,  hokm: 3,  max: 4 },
+      jack:  { sun: 2,  hokm: 2,  max: 4 },
+      ard:   { sun: 10, hokm: 10, max: 1 },
+      hjack: { sun: 0,  hokm: 20, max: 1 },
+      h9:    { sun: 0,  hokm: 14, max: 1 }
+    };
 
     function setBuntTeam(team) {
       buntTeamMode = team;
       document.getElementById('buntForLana').classList.toggle('active', team === 'lana');
       document.getElementById('buntForLahum').classList.toggle('active', team === 'lahum');
-      // Re-apply current selection with new team
-      if (buntSelectedIdx >= 0) {
-        pickBunt(buntSelectedIdx, true);
-      }
+      recalcCards();
     }
 
-    let buntSelectedIdx = -1;
-    let buntFlipped = false;
+    function buildCardEntryGrid() {
+      const type = advState.type;
+      const grid = document.getElementById('cardEntryGrid');
+      const cards = [
+        { key: 'ace', name: 'إكه', img: 'cards/ace.png' },
+        { key: 'ten', name: 'عشرة', img: 'cards/ten.png' },
+        { key: 'king', name: 'شايب', img: 'cards/king.png' },
+        { key: 'queen', name: 'بنت', img: 'cards/queen.png' },
+        { key: 'jack', name: 'ولد', img: 'cards/jack.png' },
+        { key: 'ard', name: 'أرض', img: 'cards/ard.png' },
+        { key: 'hjack', name: 'ولد حكم', img: 'cards/hjack.png', hokmOnly: true },
+        { key: 'h9', name: '٩ حكم', img: 'cards/nine.png', hokmOnly: true }
+      ];
 
-    function buildBuntPresets() {
-      const max = 26; // always show full grid (صن max)
-      const active = BalootScoring.TOTAL_BUNT[advState.type]; // 16 for حكم, 26 for صن
-      const grid = document.getElementById('buntPresetGrid');
-      const btns = [];
-      for (let i = 0; i <= max; i++) {
-        const disabled = i > active;
-        btns.push(`<button class="bp-btn${disabled ? ' bp-disabled' : ''}" id="bp${i}" ${disabled ? 'disabled' : `onclick="pickBunt(${i})"`} aria-label="${i} بنط">${i}</button>`);
-      }
-      grid.innerHTML = btns.join('');
-      buntSelectedIdx = -1;
-      buntFlipped = false;
-      document.getElementById('advBuntLana').textContent = '-';
-      document.getElementById('advBuntLahum').textContent = '-';
+      grid.innerHTML = cards.map(c => {
+        const pts = CARD_DEFS[c.key][type];
+        const hokmClass = c.hokmOnly ? ' hokm-only' : '';
+        return `<div class="card-entry${hokmClass}" data-key="${c.key}" onclick="tapCardEntry(this)">
+          <span class="card-count" id="ccnt-${c.key}">0</span>
+          <div class="card-face"><img src="${c.img}" alt="${c.name}"></div>
+          <span class="card-entry-name">${c.name}</span>
+          <span class="card-entry-pts" id="cpts-${c.key}">${pts.toLocaleString('ar-SA')}</span>
+        </div>`;
+      }).join('');
+
+      grid.classList.toggle('hokm', type === 'hokm');
+      cardCounts = {};
+      document.getElementById('advBuntLana').textContent = '0';
+      document.getElementById('advBuntLahum').textContent = '0';
     }
 
-    function pickBunt(i, forceUpdate) {
-      const total = BalootScoring.TOTAL_BUNT[advState.type];
-      if (buntSelectedIdx === i && !forceUpdate) {
-        // Toggle team on re-tap as fallback
-        buntTeamMode = buntTeamMode === 'lana' ? 'lahum' : 'lana';
-        setBuntTeam(buntTeamMode);
-        return;
+    function tapCardEntry(el) {
+      const key = el.dataset.key;
+      const max = CARD_DEFS[key].max;
+      const cur = cardCounts[key] || 0;
+      const next = (cur + 1) % (max + 1);
+      cardCounts[key] = next;
+
+      el.classList.toggle('has-count', next > 0);
+      document.getElementById('ccnt-' + key).textContent = next;
+      if (navigator.vibrate) navigator.vibrate(next > 0 ? 10 : [5, 20, 5]);
+      recalcCards();
+    }
+
+    function recalcCards() {
+      const type = advState.type;
+      const totalRaw = BalootScoring.TOTAL_RAW[type];
+      let teamRaw = 0;
+      for (const [key, count] of Object.entries(cardCounts)) {
+        if (count > 0) teamRaw += CARD_DEFS[key][type] * count;
       }
-      buntSelectedIdx = i;
+      teamRaw = Math.max(0, Math.min(totalRaw, teamRaw));
+      const oppRaw = totalRaw - teamRaw;
 
-      const isLana = buntTeamMode === 'lana';
-      const lana = isLana ? i : (total - i);
-      const lahum = isLana ? (total - i) : i;
+      const myBunt = BalootScoring.rawToBunt(teamRaw, type);
+      const oppBunt = BalootScoring.rawToBunt(oppRaw, type);
 
-      document.getElementById('advBuntLana').textContent = lana;
-      document.getElementById('advBuntLahum').textContent = lahum;
+      const lanaBunt = buntTeamMode === 'lana' ? myBunt : oppBunt;
+      const lahumBunt = buntTeamMode === 'lana' ? oppBunt : myBunt;
 
-      // Haptic feedback
-      if (navigator.vibrate) navigator.vibrate(10);
-
-      // Update button styles (preserve disabled state)
-      const active = BalootScoring.TOTAL_BUNT[advState.type];
-      document.querySelectorAll('.bp-btn').forEach((b, j) => {
-        b.className = 'bp-btn';
-        if (j > active) b.classList.add('bp-disabled');
-        if (j === i) b.classList.add(isLana ? 'lana-pick' : 'lahum-pick');
-      });
-
+      document.getElementById('advBuntLana').textContent = lanaBunt;
+      document.getElementById('advBuntLahum').textContent = lahumBunt;
       updateAdvPreview();
     }
 
@@ -2170,7 +2232,7 @@
       document.getElementById('cardPointsSection').style.display = '';
       document.getElementById('projectsSection').style.display = '';
       document.getElementById('advPreview').style.display = '';
-      buildBuntPresets();
+      buildCardEntryGrid();
       advState.kaboutWinner = 'lana';
       document.getElementById('kaboutWinnerSection').style.display = 'none';
       buntTeamMode = 'lana';

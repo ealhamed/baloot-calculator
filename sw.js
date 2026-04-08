@@ -1,4 +1,4 @@
-const CACHE = 'baloot-v3';
+const CACHE = 'baloot-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -6,6 +6,14 @@ const ASSETS = [
   './manifest.json',
   './manifest-sibeet.json',
   './logo.png',
+  './cards/ace.png',
+  './cards/ten.png',
+  './cards/king.png',
+  './cards/queen.png',
+  './cards/jack.png',
+  './cards/nine.png',
+  './cards/ard.png',
+  './cards/hjack.png',
   'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
   'https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap'
