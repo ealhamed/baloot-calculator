@@ -913,7 +913,6 @@
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
         <span id="roomStatusText" style="font-size:11px;color:var(--cream);font-weight:600"></span>
         <div style="display:flex;gap:4px;align-items:center">
-          <button id="editToggleBar" style="font-size:11px;padding:8px 12px;min-height:36px;background:transparent;border:1px solid rgba(245,240,230,0.3);color:var(--cream);border-radius:10px;display:none" onclick="toggleEditFromBar()">تعديل: مقفل</button>
           <button style="font-size:11px;padding:8px 12px;min-height:36px;background:var(--burgundy);border-radius:10px" onclick="shareRoom()">مشاركة</button>
           <button style="font-size:11px;padding:8px 12px;min-height:36px;background:transparent;border:1px solid rgba(245,240,230,0.3);color:var(--cream);border-radius:10px" onclick="leaveRoom()">خروج</button>
         </div>
@@ -1143,14 +1142,6 @@
             <button class="btn-secondary" style="flex:1;font-size:14px;padding:10px;opacity:1;border-color:var(--navy)" onclick="copyRoomLink()">نسخ الرابط</button>
           </div>
           <div id="copyMsg" style="font-size:12px;color:var(--burgundy);text-align:center;margin-bottom:8px;opacity:0;transition:opacity 0.3s"></div>
-
-          <div class="kabout-toggle" style="margin-top:4px">
-            <span class="kabout-label" style="font-size:14px">السماح بالتعديل</span>
-            <label class="switch">
-              <input type="checkbox" id="editLockToggle" onchange="toggleEditLock()">
-              <span class="slider"></span>
-            </label>
-          </div>
         </div>
 
         <div id="roomJoinView" style="display:none">
@@ -2436,7 +2427,6 @@
       document.getElementById('connectedCount').textContent = 'جاري الاتصال...';
       pushOverlay('roomModal');
       document.getElementById('roomModal').classList.add('open');
-      document.getElementById('editLockToggle').checked = false;
       editUnlocked = false;
 
       isHost = true;
@@ -2598,16 +2588,6 @@
       } else { copyRoomLink(); }
     }
 
-    function toggleEditLock() {
-      editUnlocked = document.getElementById('editLockToggle').checked;
-      connections.forEach(c => {
-        if (c.open) c.send({ type: 'edit_lock', payload: { unlocked: editUnlocked } });
-      });
-      if (roomMode === 'firebase' && window.FB && roomCode && isHost) {
-        window.FB.set(window.FB.ref(window.FB.db, 'rooms/' + roomCode + '/editUnlocked'), editUnlocked).catch(() => {});
-      }
-    }
-
     function updateConnCount() {
       const count = connections.filter(c => c.open).length;
       const arabic = count.toLocaleString('ar-SA');
@@ -2618,25 +2598,6 @@
     function showRoomStatus(text) {
       document.getElementById('roomStatus').style.display = '';
       document.getElementById('roomStatusText').textContent = text;
-      // Show edit toggle only for host
-      const editBtn = document.getElementById('editToggleBar');
-      if (isHost) {
-        editBtn.style.display = '';
-        editBtn.textContent = editUnlocked ? 'تعديل: مفتوح' : 'تعديل: مقفل';
-        editBtn.style.background = editUnlocked ? 'rgba(114,47,55,0.6)' : 'transparent';
-      } else {
-        editBtn.style.display = 'none';
-      }
-    }
-
-    function toggleEditFromBar() {
-      editUnlocked = !editUnlocked;
-      document.getElementById('editLockToggle').checked = editUnlocked;
-      toggleEditLock();
-      // Update button text
-      const editBtn = document.getElementById('editToggleBar');
-      editBtn.textContent = editUnlocked ? 'تعديل: مفتوح' : 'تعديل: مقفل';
-      editBtn.style.background = editUnlocked ? 'rgba(114,47,55,0.6)' : 'transparent';
     }
 
     function hideRoomStatus() {
@@ -2680,7 +2641,6 @@
         pushOverlay('roomModal');
         document.getElementById('roomModal').classList.add('open');
       }
-      document.getElementById('editLockToggle').checked = false;
       editUnlocked = false;
 
       const FB = window.FB;
