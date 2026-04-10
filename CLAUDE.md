@@ -1,12 +1,13 @@
 # Baloot Calculator (حاسبة بلوت)
 
-Offline-capable Baloot score calculator PWA with P2P multiplayer.
+Offline-capable Baloot score calculator PWA with P2P multiplayer — sibling to sibeet and konkan calculators in the الديوانية suite.
 
 ## Stack
 - Single-file PWA (`index.html` ~3200 lines, `sibeet.html` ~750 lines)
-- PeerJS v1.5.4 for P2P multiplayer (both calculators)
+- PeerJS v1.5.4 for P2P multiplayer (star topology)
+- Firebase Realtime Database as scaling fallback when PeerJS broker is unavailable
 - QRCode.js for room QR codes
-- Service Worker (`sw.js`) for offline caching
+- Service Worker (`sw.js`, cache `baloot-v9`) for offline caching
 - Al Dewaniah visual identity (burgundy/gold/navy/cream, Cairo font)
 
 ## Commands
@@ -16,19 +17,20 @@ npx http-server . -p 8080    # Local dev server
 
 ## Live URLs
 - **حاسبة بلوت:** https://ealhamed.github.io/baloot-calculator/
-- **بنت السبيت:** https://ealhamed.github.io/baloot-calculator/sibeet.html
+- **بنت السبيت (embedded view):** https://ealhamed.github.io/baloot-calculator/sibeet.html
 - **بنت السبيت (standalone):** https://ealhamed.github.io/sibeet-calculator/
+- **كنكان:** https://ealhamed.github.io/konkan-calculator/
 
 ## Files
 | File | What |
 |------|------|
 | `index.html` | Baloot calculator + embedded بنت السبيت view |
 | `sibeet.html` | Standalone بنت السبيت calculator |
-| `sw.js` | Service worker (cache-first, v3) |
+| `sw.js` | Service worker (cache-first) |
 | `manifest.json` | PWA manifest for baloot |
 | `manifest-sibeet.json` | PWA manifest for sibeet |
-| `logo.png` | Al Dewaniah logo |
-| `icon-192.png`, `icon-512.png` | PWA icons |
+| `firebase.json` / `database.rules.json` / `.firebaserc` | Firebase RTDB config for `baloot-calculator-al-dew` |
+| `logo.png`, `icon-192.png`, `icon-512.png` | Branding |
 
 ## Architecture
 
@@ -40,34 +42,33 @@ npx http-server . -p 8080    # Local dev server
 - **Buyer Failure Rule**: If opponent's score > buyer's score, opponent takes all
 - **Session**: Best of 3 games to 152 بنط
 - **Contextual Sayings**: Triggered by game events (comeback, blowout, close to win, etc.)
-- **P2P Rooms**: PeerJS WebRTC, 4-digit room code + QR, host lock/unlock editing
-- **بنت السبيت View**: Embedded view switchable from burger menu (same code as sibeet.html)
 
 ### بنت السبيت Calculator (sibeet.html)
-- **4-player individual scoring**: Each player card has ♠Q toggle, ♦10 toggle, ♥ hearts stepper
-- **Three-state card toggles**: Off → ×1 (burgundy) → ×2 doubled (gold border) → Off
-- **Hearts**: SVG heart shape with white count, global 13 limit enforced in real-time
-- **Target**: Single editable input, default 200, changeable mid-game
-- **Progress bars**: Per-player, turn burgundy at 80% of target
-- **Leader/danger states**: Visual indicators on player cards
-- **Round history**: Table with highest scorer highlighted per round
-- **Game over**: Ranked overlay with medals and score bars
-- **P2P Rooms**: Same pattern as baloot — host creates, others join, host controls editing
+- 4-player individual scoring; ♠Q / ♦10 three-state toggles; ♥ hearts stepper with 13 cap
+- Editable target (default 200), progress bars, leader/danger states, round history, game-over ranking
+
+### Multiplayer (Room System — shared across both)
+- **PeerJS mode** (default): host generates 4-digit code, viewers scan QR or enter code; ~8 viewer soft cap
+- **Firebase mode** (auto-fallback): on PeerJS broker error, app silently switches to Firebase RTDB with `F-XXXX` code prefix, removing viewer cap
+- **Viewers are read-only** — host's device is the single source of truth. Edit-access toggle was removed; the fallback makes per-session opt-in unnecessary
+- Firebase project: `baloot-calculator-al-dew` (isolated 100-concurrent quota)
 
 ### Shared Features (both calculators)
-- **In-app dialogs**: `appConfirm()` / `appPrompt()` replace native confirm/prompt
-- **SVG icons**: Lucide-style, no emoji icons
-- **Dark mode**: Full theme with CSS variables
-- **Back button**: pushState for menu/modals/dialogs
-- **Haptic feedback**: navigator.vibrate on key interactions
-- **Double-tap protection**: 400ms lock on submit buttons
-- **Accessibility**: aria-pressed, aria-labels, role=radiogroup, aria-live on validation
-- **prefers-reduced-motion**: Respected
-- **PWA**: Offline-first, installable
+- In-app dialogs (`appConfirm`/`appPrompt`) replace native confirm/prompt
+- SVG icons (Lucide-style, no emoji)
+- Dark mode with CSS variables, iOS Safari bottom-strip fix
+- Back button integration via `pushState` for menu/modals/dialogs
+- Haptic feedback (`navigator.vibrate`) on key interactions
+- Double-tap protection (400ms lock on submit)
+- Accessibility: aria-pressed, aria-labels, role=radiogroup, aria-live on validation, `prefers-reduced-motion` respected
+- PWA: offline-first, installable
+
+## Menu
+Links to all three sibling calculators (حاسبة بلوت / بنت السبيت / كنكان) in shared order across all three apps.
 
 ## Design Spec
 See `docs/superpowers/specs/2026-04-06-baloot-calculator-design.md`
 
 ## Repos
-- **baloot-calculator**: https://github.com/ealhamed/baloot-calculator (public)
-- **sibeet-calculator**: https://github.com/ealhamed/sibeet-calculator (public, standalone copy)
+- **baloot-calculator**: https://github.com/ealhamed/baloot-calculator
+- **Siblings**: [sibeet-calculator](https://github.com/ealhamed/sibeet-calculator), [konkan-calculator](https://github.com/ealhamed/konkan-calculator)
