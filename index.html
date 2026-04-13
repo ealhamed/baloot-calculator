@@ -922,10 +922,6 @@
     <div class="header">
       <div class="logo-wrap"><img src="logo.png" alt="الديوانية" style="height:72px"></div>
       <h1>حاسبة بلوت</h1>
-      <div class="mode-toggle" role="radiogroup" aria-label="وضع الإدخال">
-        <button id="btnSimple" class="active" onclick="setMode('simple')" role="radio" aria-checked="true">بسيط</button>
-        <button id="btnAdvanced" onclick="setMode('advanced')" role="radio" aria-checked="false">تفصيلي</button>
-      </div>
       <button class="burger-btn" onclick="openMenu()" aria-label="القائمة"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
       <button class="theme-toggle" onclick="toggleTheme()" aria-label="تغيير المظهر" id="themeToggle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
     </div>
@@ -1368,7 +1364,7 @@
             return {
               session: parsed.session || def.session,
               currentGame: parsed.currentGame || def.currentGame,
-              settings: parsed.settings || def.settings
+              settings: Object.assign({}, parsed.settings || def.settings, { mode: 'simple' })
             };
           }
         } catch (e) { /* ignore corrupt data */ }
@@ -1545,10 +1541,6 @@
       document.getElementById('sessionBar').textContent =
         `${tl('lana')} ${session.wins.lana} - ${session.wins.lahum} ${tl('lahum')}`;
 
-      document.getElementById('btnSimple').classList.toggle('active', settings.mode === 'simple');
-      document.getElementById('btnAdvanced').classList.toggle('active', settings.mode === 'advanced');
-      document.getElementById('btnSimple').setAttribute('aria-checked', settings.mode === 'simple');
-      document.getElementById('btnAdvanced').setAttribute('aria-checked', settings.mode === 'advanced');
 
       // Show correct inline form based on mode
       document.getElementById('simpleForm').style.display = settings.mode === 'simple' ? '' : 'none';
