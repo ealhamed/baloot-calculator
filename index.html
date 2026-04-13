@@ -1808,12 +1808,13 @@
       }
 
       function askTeamThenApply(combo) {
-        // Auto-assign: one-zero → the non-zero team, otherwise → the buyer
+        // Auto-assign only when one side is zero (unambiguous). Otherwise ask.
         if (lahum === 0 && lana > 0) { applyProjects(combo, 'lana'); return; }
         if (lana === 0 && lahum > 0) { applyProjects(combo, 'lahum'); return; }
-        const round = appState.currentGame.rounds[appState.currentGame.rounds.length - 1];
-        const buyerTeam = (round && round.buyer) || (lana >= lahum ? 'lana' : 'lahum');
-        applyProjects(combo, buyerTeam);
+        showClarification('لمن المشاريع؟', [
+          { label: 'لنا', value: 'lana' },
+          { label: 'لهم', value: 'lahum' }
+        ], (team) => { applyProjects(combo, team); });
       }
 
       if (combos.length === 1) {
