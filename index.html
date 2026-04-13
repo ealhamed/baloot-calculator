@@ -913,7 +913,7 @@
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
         <span id="roomStatusText" style="font-size:11px;color:var(--cream);font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
         <div style="display:flex;gap:4px;align-items:center;flex-shrink:0">
-          <button id="editLockBtn" style="display:none;font-size:11px;padding:8px 10px;min-height:36px;background:rgba(201,162,39,0.18);border:1px solid var(--gold);color:var(--gold);border-radius:10px;font-family:'Cairo',sans-serif;font-weight:700;cursor:pointer" onclick="toggleEditLock()">🔒 مقفل</button>
+          <button id="editLockBtn" style="display:none;font-size:11px;padding:8px 10px;min-height:36px;background:rgba(201,162,39,0.18);border:1px solid var(--gold);color:var(--gold);border-radius:10px;font-family:'Cairo',sans-serif;font-weight:700;cursor:pointer" onclick="toggleEditLock()">التعديل مقفل</button>
           <button style="font-size:11px;padding:8px 12px;min-height:36px;background:var(--burgundy);color:var(--cream);border:none;border-radius:10px;font-family:'Cairo',sans-serif;font-weight:700;cursor:pointer" onclick="shareRoom()">مشاركة</button>
           <button style="font-size:11px;padding:8px 12px;min-height:36px;background:transparent;border:1px solid rgba(245,240,230,0.3);color:var(--cream);border-radius:10px;font-family:'Cairo',sans-serif;font-weight:700;cursor:pointer" onclick="leaveRoom()">خروج</button>
         </div>
@@ -2618,12 +2618,12 @@
       var btn = document.getElementById('editLockBtn');
       if (!btn) return;
       if (editUnlocked) {
-        btn.textContent = '🔓 مفتوح';
+        btn.textContent = 'التعديل مفتوح';
         btn.style.background = 'rgba(46,125,50,0.22)';
         btn.style.borderColor = '#66BB6A';
         btn.style.color = '#C8E6C9';
       } else {
-        btn.textContent = '🔒 مقفل';
+        btn.textContent = 'التعديل مقفل';
         btn.style.background = 'rgba(201,162,39,0.18)';
         btn.style.borderColor = 'var(--gold)';
         btn.style.color = 'var(--gold)';
