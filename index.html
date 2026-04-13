@@ -911,10 +911,11 @@
   <main>
     <div id="roomStatus" style="display:none;background:var(--navy);padding:6px 12px">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
-        <span id="roomStatusText" style="font-size:11px;color:var(--cream);font-weight:600"></span>
-        <div style="display:flex;gap:4px;align-items:center">
-          <button style="font-size:11px;padding:8px 12px;min-height:36px;background:var(--burgundy);border-radius:10px" onclick="shareRoom()">مشاركة</button>
-          <button style="font-size:11px;padding:8px 12px;min-height:36px;background:transparent;border:1px solid rgba(245,240,230,0.3);color:var(--cream);border-radius:10px" onclick="leaveRoom()">خروج</button>
+        <span id="roomStatusText" style="font-size:11px;color:var(--cream);font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+        <div style="display:flex;gap:4px;align-items:center;flex-shrink:0">
+          <button id="editLockBtn" style="display:none;font-size:11px;padding:8px 10px;min-height:36px;background:rgba(201,162,39,0.18);border:1px solid var(--gold);color:var(--gold);border-radius:10px;font-family:'Cairo',sans-serif;font-weight:700;cursor:pointer" onclick="toggleEditLock()">🔒 مقفل</button>
+          <button style="font-size:11px;padding:8px 12px;min-height:36px;background:var(--burgundy);color:var(--cream);border:none;border-radius:10px;font-family:'Cairo',sans-serif;font-weight:700;cursor:pointer" onclick="shareRoom()">مشاركة</button>
+          <button style="font-size:11px;padding:8px 12px;min-height:36px;background:transparent;border:1px solid rgba(245,240,230,0.3);color:var(--cream);border-radius:10px;font-family:'Cairo',sans-serif;font-weight:700;cursor:pointer" onclick="leaveRoom()">خروج</button>
         </div>
       </div>
     </div>
@@ -1580,8 +1581,8 @@
       const hasGames = session.games.length > 0;
       document.getElementById('sessionBar').style.display = hasGames ? '' : 'none';
 
-      // If connected as player and edit is locked, hide score entry
-      if (hostConn && !editUnlocked) {
+      // If connected as guest and edit is locked, hide score entry
+      if (roomCode && !isHost && !editUnlocked) {
         document.getElementById('scoreEntry').style.display = 'none';
       }
 
@@ -2530,7 +2531,7 @@
               break;
             case 'edit_lock':
               editUnlocked = msg.payload.unlocked;
-              document.getElementById('scoreEntry').style.display = editUnlocked ? '' : 'none';
+              render();
               break;
           }
         });
@@ -2601,10 +2602,48 @@
     function showRoomStatus(text) {
       document.getElementById('roomStatus').style.display = '';
       document.getElementById('roomStatusText').textContent = text;
+      // Host-only: reveal edit-lock toggle
+      var btn = document.getElementById('editLockBtn');
+      if (btn) {
+        btn.style.display = isHost ? '' : 'none';
+        refreshEditLockBtn();
+      }
     }
 
     function hideRoomStatus() {
       document.getElementById('roomStatus').style.display = 'none';
+    }
+
+    function refreshEditLockBtn() {
+      var btn = document.getElementById('editLockBtn');
+      if (!btn) return;
+      if (editUnlocked) {
+        btn.textContent = '🔓 مفتوح';
+        btn.style.background = 'rgba(46,125,50,0.22)';
+        btn.style.borderColor = '#66BB6A';
+        btn.style.color = '#C8E6C9';
+      } else {
+        btn.textContent = '🔒 مقفل';
+        btn.style.background = 'rgba(201,162,39,0.18)';
+        btn.style.borderColor = 'var(--gold)';
+        btn.style.color = 'var(--gold)';
+      }
+    }
+
+    function toggleEditLock() {
+      if (!isHost) return;
+      editUnlocked = !editUnlocked;
+      refreshEditLockBtn();
+      // Broadcast to P2P guests
+      connections.forEach(function(c) {
+        if (c.open) c.send({ type: 'edit_lock', payload: { unlocked: editUnlocked } });
+      });
+      // Write to Firebase (if in Firebase mode)
+      if (roomMode === 'firebase' && window.FB && roomCode) {
+        window.FB.set(window.FB.ref(window.FB.db, 'rooms/' + roomCode + '/editUnlocked'), editUnlocked).catch(function() {});
+      }
+      // Update host's own render (shouldn't matter since host always edits, but keeps state in sync)
+      render();
     }
 
     function leaveRoom() {
@@ -2704,8 +2743,9 @@
           closeRoomModal();
           showRoomStatus('غرفة F-' + code + ' • متصل');
         }
-        if (data.state) { applyStatePayload(data.state); render(); }
+        if (data.state) { applyStatePayload(data.state); }
         editUnlocked = !!data.editUnlocked;
+        render();
       }, err => {
         console.error(err);
         document.getElementById('joinSpinner').style.display = 'none';
