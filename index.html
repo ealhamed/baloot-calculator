@@ -2435,6 +2435,7 @@
 
       isHost = true;
       connections = [];
+      showRoomStatus('غرفة ' + roomCode + ' • جاري الاتصال...');
 
       peer = new Peer(PEER_PREFIX + roomCode.toLowerCase(), {
         config: {
@@ -2684,6 +2685,7 @@
         document.getElementById('roomModal').classList.add('open');
       }
       editUnlocked = false;
+      showRoomStatus('غرفة F-' + roomCode + ' • جاري الاتصال...');
 
       const FB = window.FB;
       const roomRef = FB.ref(FB.db, 'rooms/' + roomCode);
