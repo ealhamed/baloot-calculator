@@ -238,6 +238,36 @@
     .round-tag.kabout { background: var(--navy-soft); color: var(--navy); }
     .round-tag.proj { background: var(--gold-soft); color: var(--gold-text); }
 
+    /* Split Projects Modal */
+    .split-col {
+      background: rgba(26,39,68,0.04);
+      border-radius: 12px;
+      padding: 10px 8px;
+    }
+    [data-theme="dark"] .split-col { background: rgba(245,240,230,0.05); }
+    .split-col-title {
+      text-align: center; font-weight: 800; color: var(--gold-text);
+      font-size: 13px; margin-bottom: 8px;
+    }
+    .split-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 6px; font-size: 12px; font-weight: 700; color: var(--navy);
+    }
+    [data-theme="dark"] .split-row { color: var(--cream); }
+    .split-row-label { display: flex; flex-direction: column; gap: 0; }
+    .split-row-label .split-row-pts { font-size: 10px; font-weight: 400; opacity: 0.55; }
+    .split-stepper { display: flex; align-items: center; gap: 6px; }
+    .split-stepper button {
+      width: 24px; height: 24px; padding: 0;
+      background: var(--burgundy); color: var(--cream);
+      border: none; border-radius: 50%;
+      font-size: 14px; font-weight: 900; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 4px rgba(114,47,55,0.25);
+    }
+    .split-stepper button:disabled { opacity: 0.25; cursor: not-allowed; box-shadow: none; }
+    .split-stepper .val { min-width: 16px; text-align: center; font-weight: 800; font-size: 13px; }
+
     /* ── Sayings ────────────────────────────── */
     .saying {
       text-align: center;
@@ -1164,6 +1194,21 @@
         </div>
       </div>
     </div>
+
+    <!-- Split Projects Modal (per-team project entry) -->
+    <div id="splitProjectsModal" style="display:none;position:fixed;inset:0;background:rgba(26,39,68,0.55);z-index:200;align-items:center;justify-content:center;padding:16px">
+      <div style="background:var(--bg);border-radius:18px;padding:18px;max-width:440px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 14px 40px rgba(26,39,68,0.25)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-weight:800;font-size:16px;color:var(--navy)">المشاريع لكل فريق</span>
+          <button class="modal-close" onclick="closeSplitProjectsModal()" aria-label="إغلاق"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+        <div id="splitProjectsRemaining" style="text-align:center;font-size:13px;font-weight:700;color:var(--burgundy);margin-bottom:12px">متبقي: 0 بنط</div>
+        <div id="splitProjectsGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button class="btn-primary" id="splitProjectsConfirm" style="flex:1" onclick="confirmSplitProjects()">تأكيد</button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script
@@ -1670,7 +1715,11 @@
 
       // Record the round NOW with whatever we're sure of
       const bunt = { lana, lahum };
-      if (!meta.buyer) meta.buyer = lahum > lana ? 'lahum' : 'lana';
+      if (!meta.buyer) {
+        // Tentative guess: higher-scoring side (will be overwritten by
+        // askBuyerConfirmation if the score turns out to be ambiguous)
+        meta.buyer = lahum > lana ? 'lahum' : 'lana';
+      }
       if (!meta.multiplier) meta.multiplier = 'normal';
       const result = StateManager.addRound(appState, bunt, meta);
 
@@ -1697,17 +1746,16 @@
       // Invalid
       if (total < 16) return { _invalid: true };
 
-      // Kabout
-      if ((lana === 44 && lahum === 0) || (lahum === 44 && lana === 0))
-        return { type: 'sun', kabout: true, buyer: lana === 44 ? 'lana' : 'lahum' };
-      if ((lana === 25 && lahum === 0) || (lahum === 25 && lana === 0))
-        return { type: 'hokm', kabout: true, buyer: lana === 25 ? 'lana' : 'lahum' };
+      // Note: 25/0 and 44/0 are NOT auto-kabout — they have other valid interpretations
+      // (حكم with projects, failure with projects, etc.) so they flow through the
+      // type/kabout question chain in checkKaboutThenProjects below.
 
-      // Buyer failure (one=0, other=full base) — type is certain, buyer isn't
-      if (lana === 0 && (lahum === 26 || lahum === 16))
-        return { type: lahum === 26 ? 'sun' : 'hokm', buyerFailed: true };
-      if (lahum === 0 && (lana === 26 || lana === 16))
-        return { type: lana === 26 ? 'sun' : 'hokm', buyerFailed: true };
+      // Note: (16,0) and (26,0) are NOT auto-failure — they could be normal
+      // wins where the 0-side took only a zero-value trick. Flow through the
+      // type/buyer question chain; askBuyerConfirmation will ask and set
+      // buyerFailed based on which side the user picks as buyer.
+      if (lana === 0 && lahum === 16) return { type: 'hokm' };
+      if (lahum === 0 && lana === 16) return { type: 'hokm' };
 
       // Exact 16
       if (total === 16) return { type: 'hokm' };
@@ -1733,14 +1781,9 @@
     function askUncertainMeta(lana, lahum, meta) {
       const total = lana + lahum;
 
-      // Buyer failure — ask who bought
-      if (meta.buyerFailed) {
-        showClarification('من اشترى؟', [
-          { label: 'لنا', value: 'lana' },
-          { label: 'لهم', value: 'lahum' }
-        ], (answer) => { patchLastRound({ buyer: answer }); });
-        return;
-      }
+      // (No hard-coded buyerFailed branch anymore — (16,0) and (26,0)
+      // flow through the question chain, where askBuyerConfirmation asks
+      // buyer and sets buyerFailed based on the user's answer.)
 
       // Type ambiguous (total >= 26, both صن and حكم valid)
       if (total >= 26 && !meta.type) {
@@ -1763,72 +1806,255 @@
     }
 
     function checkKaboutThenProjects(lana, lahum, type) {
+      const round = appState.currentGame.rounds[appState.currentGame.rounds.length - 1];
       const total = lana + lahum;
       const oneZero = lana === 0 || lahum === 0;
       const kaboutBunt = type === 'sun' ? 44 : 25;
       const base = type === 'sun' ? 26 : 16;
 
+      // Kabout already confirmed by deduceCertainMeta (exact 25/0 or 44/0) — no projects
+      if (round && round.kabout && total === kaboutBunt) {
+        return;
+      }
+
       // When one side=0 and score > kabout base, could be كبوت + projects
-      if (oneZero && total > kaboutBunt) {
+      if (oneZero && total >= kaboutBunt) {
         const kaboutExcess = total - kaboutBunt;
         const normalExcess = total - base;
-        const kaboutCombos = decomposeProjects(kaboutExcess, type);
-        const normalCombos = normalExcess > 0 ? decomposeProjects(normalExcess, type) : [];
+        // Kabout path is valid when kaboutExcess is 0 (clean kabout) OR decomposes into projects
+        const kaboutValid = kaboutExcess === 0 || decomposeProjects(kaboutExcess, type).length > 0;
+        // Normal path is valid only when excess > 0 and decomposes (one=0 with no projects would be a buyer-failure case, handled separately)
+        const normalValid = normalExcess > 0 && decomposeProjects(normalExcess, type).length > 0;
 
-        if (kaboutCombos.length > 0) {
-          // Both كبوت+projects and normal+projects are possible — ask
+        if (kaboutValid && normalValid) {
+          // Both كبوت and non-kabout interpretations exist — ask
           showClarification('كبوت؟', [
             { label: 'ايه', value: 'yes' },
             { label: 'لا', value: 'no' }
           ], (answer) => {
             if (answer === 'yes') {
-              patchLastRound({ kabout: true });
+              // Kabout: buyer is the non-zero side
+              const kaboutBuyer = lana > 0 ? 'lana' : 'lahum';
+              patchLastRound({ kabout: true, buyer: kaboutBuyer });
               if (kaboutExcess > 0) askProjectClarification(lana, lahum, kaboutExcess, type);
+              else askBuyerConfirmation(lana, lahum);
             } else {
               if (normalExcess > 0) askProjectClarification(lana, lahum, normalExcess, type);
+              else askBuyerConfirmation(lana, lahum);
             }
           });
           return;
         }
+
+        if (kaboutValid && !normalValid) {
+          // Only kabout fits the numbers
+          const kaboutBuyer = lana > 0 ? 'lana' : 'lahum';
+          patchLastRound({ kabout: true, buyer: kaboutBuyer });
+          if (kaboutExcess > 0) askProjectClarification(lana, lahum, kaboutExcess, type);
+          else askBuyerConfirmation(lana, lahum);
+          return;
+        }
+        // If only normal is valid, fall through to the plain projects branch below
       }
 
       // No كبوت possibility — just projects
       const excess = total - base;
       if (excess > 0) {
         askProjectClarification(lana, lahum, excess, type);
+      } else {
+        askBuyerConfirmation(lana, lahum);
       }
     }
 
     function askProjectClarification(lana, lahum, excess, type) {
       const combos = decomposeProjects(excess, type);
-      if (combos.length === 0) return; // unusual total, no valid projects
-
-      function applyProjects(combo, team) {
-        patchLastRound({ projects: { [team]: comboToObj(combo) } });
-      }
-
-      function askTeamThenApply(combo) {
-        // Auto-assign only when one side is zero (unambiguous). Otherwise ask.
-        if (lahum === 0 && lana > 0) { applyProjects(combo, 'lana'); return; }
-        if (lana === 0 && lahum > 0) { applyProjects(combo, 'lahum'); return; }
-        showClarification('لمن المشاريع؟', [
-          { label: 'لنا', value: 'lana' },
-          { label: 'لهم', value: 'lahum' }
-        ], (team) => { applyProjects(combo, team); });
-      }
-
-      if (combos.length === 1) {
-        askTeamThenApply(combos[0]);
+      if (combos.length === 0) {
+        askBuyerConfirmation(lana, lahum);
         return;
       }
 
-      const options = combos.slice(0, 4).map((combo, i) => {
-        const desc = combo.map(p => (p.count > 1 ? p.count + '× ' : '') + p.label).join(' + ');
-        return { label: desc, value: i };
+      function applyOneTeam(combo, team) {
+        const projects = { lana: {}, lahum: {} };
+        projects[team] = comboToObj(combo);
+        patchLastRound({ projects });
+        askBuyerConfirmation(lana, lahum);
+      }
+
+      function askComboFor(team) {
+        if (combos.length === 1) {
+          applyOneTeam(combos[0], team);
+          return;
+        }
+        const options = combos.slice(0, 8).map((combo, i) => {
+          const desc = combo.map(p => (p.count > 1 ? p.count + '× ' : '') + p.label).join(' + ');
+          return { label: desc, value: i };
+        });
+        showClarification('أي مشاريع؟', options, (answer) => {
+          applyOneTeam(combos[answer], team);
+        });
+      }
+
+      // Auto-assign when one side is zero (the projects must belong to the non-zero team
+      // because their بنط is the only place the excess could have landed)
+      if (lahum === 0 && lana > 0) { askComboFor('lana'); return; }
+      if (lana === 0 && lahum > 0) { askComboFor('lahum'); return; }
+
+      // Both sides > 0: ask team FIRST so we don't waste a combo click when the
+      // user wants to pick كلاهما (which redistributes freely in the modal)
+      showClarification('لمن المشاريع؟', [
+        { label: 'لنا', value: 'lana' },
+        { label: 'لهم', value: 'lahum' },
+        { label: 'كلاهما', value: 'both' }
+      ], (team) => {
+        if (team === 'both') {
+          openSplitProjectsModal(excess, type, () => askBuyerConfirmation(lana, lahum));
+        } else {
+          askComboFor(team);
+        }
       });
-      showClarification('أي مشاريع؟', options, (answer) => {
-        askTeamThenApply(combos[answer]);
-      });
+    }
+
+    function askBuyerConfirmation(lana, lahum) {
+      const round = appState.currentGame.rounds[appState.currentGame.rounds.length - 1];
+      if (!round) return;
+      // Kabout: buyer is certain (non-zero side), already patched
+      if (round.kabout) return;
+
+      const total = lana + lahum;
+      const oneZero = lana === 0 || lahum === 0;
+      const hasProjects = round.projects && (
+        Object.keys(round.projects.lana || {}).length > 0 ||
+        Object.keys(round.projects.lahum || {}).length > 0
+      );
+
+      // One-zero base or near-base: genuinely ambiguous between normal-win
+      // (buyer = non-zero side, took all point-tricks) and failure
+      // (buyer = zero side, opponent took everything). Always ask.
+      if (oneZero) {
+        showClarification('من اشترى؟', [
+          { label: 'لنا', value: 'lana' },
+          { label: 'لهم', value: 'lahum' }
+        ], (answer) => {
+          const updates = { buyer: answer };
+          // If the buyer ended with 0 بنط, this round is a failure
+          if ((answer === 'lana' && lana === 0) || (answer === 'lahum' && lahum === 0)) {
+            updates.buyerFailed = true;
+          } else {
+            updates.buyerFailed = false;
+          }
+          patchLastRound(updates);
+        });
+        return;
+      }
+
+      // Both sides > 0, exact base, no projects, clear lead → safe deduction
+      // (no failure possible because opponent's 0-value trick path requires one side = 0)
+      const base = round.type === 'sun' ? 26 : 16;
+      if (total === base && !hasProjects && lana !== lahum) {
+        const deduced = lana > lahum ? 'lana' : 'lahum';
+        if (round.buyer !== deduced) patchLastRound({ buyer: deduced });
+        return;
+      }
+
+      // Otherwise (ties, projects, non-base totals) — ask
+      showClarification('من اشترى؟', [
+        { label: 'لنا', value: 'lana' },
+        { label: 'لهم', value: 'lahum' }
+      ], (answer) => { patchLastRound({ buyer: answer }); });
+    }
+
+    // ── Split Projects Modal ───────────────────────────────────
+    const SPLIT_PROJECT_DEFS = [
+      { key: 'sira',   label: 'سرا',     sun: 4,  hokm: 2, max: 4 },
+      { key: '50',     label: 'خمسين',   sun: 10, hokm: 5, max: 4 },
+      { key: '100',    label: 'مية',     sun: 20, hokm: 10, max: 4 },
+      { key: '400',    label: 'أربعمية', sun: 40, hokm: 0, max: 1 },
+      { key: 'baloot', label: 'بلوت',    sun: 0,  hokm: 2, max: 1 }
+    ];
+    let splitProjectsState = { excess: 0, type: 'hokm', onDone: null, lana: {}, lahum: {} };
+
+    function openSplitProjectsModal(excess, type, onDone) {
+      splitProjectsState = { excess, type, onDone, lana: {}, lahum: {} };
+      const grid = document.getElementById('splitProjectsGrid');
+      const relevant = SPLIT_PROJECT_DEFS.filter(p => p[type] > 0);
+      let html = '';
+      for (const team of ['lana', 'lahum']) {
+        html += `<div class="split-col"><div class="split-col-title">${tl(team)}</div>`;
+        for (const p of relevant) {
+          html += `
+            <div class="split-row">
+              <div class="split-row-label"><span>${p.label}</span><span class="split-row-pts">+${p[type]} بنط</span></div>
+              <div class="split-stepper">
+                <button onclick="splitProjectStep('${team}','${p.key}',-1)">−</button>
+                <span class="val" id="split_${team}_${p.key}">0</span>
+                <button onclick="splitProjectStep('${team}','${p.key}',1)">+</button>
+              </div>
+            </div>`;
+        }
+        html += '</div>';
+      }
+      grid.innerHTML = html;
+      document.getElementById('splitProjectsModal').style.display = 'flex';
+      updateSplitRemaining();
+      pushOverlay('splitProjectsModal');
+    }
+
+    function splitProjectStep(team, key, delta) {
+      const p = SPLIT_PROJECT_DEFS.find(x => x.key === key);
+      const current = splitProjectsState[team][key] || 0;
+      const next = current + delta;
+      if (next < 0 || next > p.max) return;
+      splitProjectsState[team][key] = next;
+      document.getElementById(`split_${team}_${key}`).textContent = next;
+      updateSplitRemaining();
+    }
+
+    function splitProjectsCurrentSum() {
+      const type = splitProjectsState.type;
+      let sum = 0;
+      for (const team of ['lana', 'lahum']) {
+        for (const [key, count] of Object.entries(splitProjectsState[team])) {
+          const p = SPLIT_PROJECT_DEFS.find(x => x.key === key);
+          if (p) sum += p[type] * count;
+        }
+      }
+      return sum;
+    }
+
+    function updateSplitRemaining() {
+      const sum = splitProjectsCurrentSum();
+      const remaining = splitProjectsState.excess - sum;
+      const label = document.getElementById('splitProjectsRemaining');
+      if (remaining === 0) {
+        label.textContent = '✓ المجموع مطابق';
+        label.style.color = '#2e7d32';
+      } else if (remaining < 0) {
+        label.textContent = `زيادة: ${-remaining} بنط`;
+        label.style.color = 'var(--burgundy)';
+      } else {
+        label.textContent = `متبقي: ${remaining} بنط`;
+        label.style.color = 'var(--burgundy)';
+      }
+      const btn = document.getElementById('splitProjectsConfirm');
+      btn.disabled = remaining !== 0;
+      btn.style.opacity = remaining === 0 ? '1' : '0.5';
+    }
+
+    function confirmSplitProjects() {
+      if (splitProjectsCurrentSum() !== splitProjectsState.excess) return;
+      const lana = {}, lahum = {};
+      for (const [k, v] of Object.entries(splitProjectsState.lana)) if (v > 0) lana[k] = v;
+      for (const [k, v] of Object.entries(splitProjectsState.lahum)) if (v > 0) lahum[k] = v;
+      patchLastRound({ projects: { lana, lahum } });
+      closeSplitProjectsModal();
+      if (splitProjectsState.onDone) splitProjectsState.onDone();
+    }
+
+    function closeSplitProjectsModal() {
+      document.getElementById('splitProjectsModal').style.display = 'none';
+      if (history.state && history.state.overlay === 'splitProjectsModal') {
+        try { history.back(); } catch(e) {}
+      }
     }
 
     // Update the last recorded round's metadata
@@ -1857,7 +2083,8 @@
           results.push([...current]);
           return;
         }
-        if (remaining < 0 || startIdx >= available.length || results.length >= 6) return;
+        if (remaining < 0 || startIdx >= available.length || results.length >= 32) return;
+        // The count=0 iteration in the loop below already covers "skip this project"
         const p = available[startIdx];
         const maxCount = Math.min(p.max, Math.floor(remaining / p[type]));
         for (let count = 0; count <= maxCount; count++) {
@@ -1866,17 +2093,19 @@
           findCombos(remaining - used, startIdx + 1, current);
           if (count > 0) current.pop();
         }
-        if (results.length === 0 || current.length === 0) {
-          findCombos(remaining, startIdx + 1, current);
-        }
       }
       findCombos(excess, 0, []);
+      // Dedupe and sort by simplicity (fewest total pieces first)
       const seen = new Set();
       return results.filter(combo => {
         const key = combo.map(p => p.key + ':' + p.count).join(',');
         if (seen.has(key)) return false;
         seen.add(key);
         return true;
+      }).sort((a, b) => {
+        const aCount = a.reduce((s, p) => s + p.count, 0);
+        const bCount = b.reduce((s, p) => s + p.count, 0);
+        return aCount - bCount;
       });
     }
 
@@ -3013,6 +3242,11 @@
       }
       if (document.getElementById('roomModal').classList.contains('open')) {
         document.getElementById('roomModal').classList.remove('open');
+        return;
+      }
+      const splitModal = document.getElementById('splitProjectsModal');
+      if (splitModal && splitModal.style.display === 'flex') {
+        splitModal.style.display = 'none';
         return;
       }
       // Close any app-dialog
