@@ -746,6 +746,8 @@
       transition: background 0.15s;
     }
     .menu-item:active { background: var(--navy-soft); }
+    .menu-version { text-align: center; font-size: 10px; color: var(--navy); opacity: 0.35; font-family: monospace; letter-spacing: 0.5px; padding-top: 12px; }
+    [data-theme="dark"] .menu-version { color: var(--cream); }
     .menu-footer {
       margin-top: auto;
       text-align: center;
@@ -1151,6 +1153,7 @@
         </button>
       </div>
 
+      <div class="menu-version">v25</div>
       <div class="menu-footer">With warm regards from ESH</div>
     </div>
 
