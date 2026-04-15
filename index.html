@@ -1153,7 +1153,7 @@
         </button>
       </div>
 
-      <div class="menu-version">v25</div>
+      <div class="menu-version">v26</div>
       <div class="menu-footer">With warm regards from ESH</div>
     </div>
 
@@ -3046,29 +3046,49 @@
 
     // ── Theme Manager ───────────────────────────────────────────
     function getPreferredTheme() {
-      return 'light';
+      return localStorage.getItem('baloot_theme') || 'auto';
     }
 
+    const SVG_AUTO = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3 A9 9 0 0 1 12 21 Z" fill="currentColor" stroke="none"/></svg>';
     const SVG_MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
     const SVG_SUN = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
     const SVG_CHECK = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 
-    function applyTheme(theme) {
-      document.documentElement.setAttribute('data-theme', theme);
-      document.getElementById('themeToggle').innerHTML = theme === 'dark' ? SVG_SUN : SVG_MOON;
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    function resolveTheme(pref) {
+      return pref === 'auto' ? (mql.matches ? 'dark' : 'light') : pref;
+    }
+    function applyTheme(pref) {
+      const resolved = resolveTheme(pref);
+      document.documentElement.setAttribute('data-theme', resolved);
+      // Icon shows what the NEXT click will do. cycle: light -> dark -> auto -> light
+      const iconForPref = pref === 'light' ? SVG_MOON : pref === 'dark' ? SVG_AUTO : SVG_SUN;
+      document.getElementById('themeToggle').innerHTML = iconForPref;
       const themeLabel = document.getElementById('themeLabel');
-      if (themeLabel) themeLabel.innerHTML = theme === 'dark' ? SVG_SUN : SVG_MOON;
+      if (themeLabel) themeLabel.innerHTML = iconForPref;
       const themeName = document.getElementById('themeName');
-      if (themeName) themeName.textContent = theme === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن';
-      localStorage.setItem('baloot_theme', theme);
+      if (themeName) {
+        themeName.textContent = pref === 'light' ? 'الوضع الداكن'
+                              : pref === 'dark' ? 'حسب النظام'
+                              : 'الوضع الفاتح';
+      }
+      localStorage.setItem('baloot_theme', pref);
       const meta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-      if (meta) meta.content = theme === 'dark' ? '#1A1A2E' : '#722F37';
+      if (meta) meta.content = resolved === 'dark' ? '#1A1A2E' : '#722F37';
     }
 
     function toggleTheme() {
-      const current = document.documentElement.getAttribute('data-theme') || 'light';
-      applyTheme(current === 'dark' ? 'light' : 'dark');
+      const current = localStorage.getItem('baloot_theme') || 'auto';
+      const next = current === 'light' ? 'dark'
+                 : current === 'dark' ? 'auto'
+                 : 'light';
+      applyTheme(next);
     }
+
+    mql.addEventListener('change', () => {
+      const current = localStorage.getItem('baloot_theme') || 'auto';
+      if (current === 'auto') applyTheme('auto');
+    });
 
     async function hardReset() {
       closeMenu();
