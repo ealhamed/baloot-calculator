@@ -1594,10 +1594,16 @@
       // Show score entry or new game / session over button
       const sessionOver = session.wins.lana >= 2 || session.wins.lahum >= 2;
       const gameJustEnded = !!appState.pendingNewGameAck && !sessionOver;
+      const blockForViewer = !!(roomCode && !isHost && !editUnlocked);
 
-      document.getElementById('scoreEntry').style.display = (gameJustEnded || sessionOver) ? 'none' : '';
-      document.getElementById('btnNewGame').style.display = gameJustEnded ? '' : 'none';
-      document.getElementById('btnSessionOver').style.display = sessionOver ? '' : 'none';
+      document.getElementById('scoreEntry').style.display =
+        (blockForViewer || gameJustEnded || sessionOver) ? 'none' : '';
+      document.getElementById('btnNewGame').style.display =
+        (!blockForViewer && gameJustEnded) ? '' : 'none';
+      document.getElementById('btnSessionOver').style.display =
+        (!blockForViewer && sessionOver) ? '' : 'none';
+      const undoBtn = document.getElementById('undoBtn');
+      if (undoBtn) undoBtn.style.display = blockForViewer ? 'none' : '';
 
       // Update scroll lock
       updateScrollLock(settings.mode);
@@ -1619,11 +1625,6 @@
       // Hide session bar until at least one game is complete
       const hasGames = session.games.length > 0;
       document.getElementById('sessionBar').style.display = hasGames ? '' : 'none';
-
-      // If connected as guest and edit is locked, hide score entry
-      if (roomCode && !isHost && !editUnlocked) {
-        document.getElementById('scoreEntry').style.display = 'none';
-      }
 
       // Auto-scroll to latest round
       const roundsList = document.getElementById('roundsList');
@@ -1655,7 +1656,13 @@
       }
     }
 
+    // Guests with locked edit may not mutate state
+    function isWriteBlocked() {
+      return !!(roomCode && !isHost && !editUnlocked);
+    }
+
     async function confirmNewGame() {
+      if (isWriteBlocked()) return;
       if (await appConfirm('بدء لعبة جديدة؟')) {
         StateManager.newGame(appState);
         render();
@@ -1665,6 +1672,7 @@
     }
 
     async function confirmNewSession() {
+      if (isWriteBlocked()) return;
       if (await appConfirm('بدء صكة جديدة؟ سيتم مسح جميع النتائج')) {
         StateManager.newSession(appState);
         render();
@@ -1674,6 +1682,7 @@
     }
 
     async function undoRound() {
+      if (isWriteBlocked()) return;
       if (appState.currentGame.rounds.length === 0) return;
       if (!(await appConfirm('تراجع عن آخر جولة؟'))) return;
       StateManager.undoLastRound(appState);
@@ -1692,6 +1701,7 @@
 
     let submitLocked = false;
     function submitSimple() {
+      if (isWriteBlocked()) return;
       if (submitLocked) return;
       const lana = parseInt(document.getElementById('simpleLana').value) || 0;
       const lahum = parseInt(document.getElementById('simpleLahum').value) || 0;
@@ -2398,6 +2408,7 @@
     }
 
     async function submitAdvanced() {
+      if (isWriteBlocked()) return;
       if (advState.multiplier === 'coffee') {
         // Ask who won the coffee round
         const buyerName = tl(advState.buyer);
