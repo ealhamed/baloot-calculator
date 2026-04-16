@@ -1153,7 +1153,7 @@
         </button>
       </div>
 
-      <div class="menu-version">v26</div>
+      <div class="menu-version">v27</div>
       <div class="menu-footer">With warm regards from ESH</div>
     </div>
 
@@ -3146,6 +3146,12 @@
     }
 
     // Apply theme on load
+    // One-time migration: existing users with old 'light' default → auto
+    if (!localStorage.getItem('baloot_theme_auto_migrated')) {
+      var saved = localStorage.getItem('baloot_theme');
+      if (!saved || saved === 'light') localStorage.removeItem('baloot_theme');
+      localStorage.setItem('baloot_theme_auto_migrated', '1');
+    }
     applyTheme(getPreferredTheme());
 
     // Initial render
