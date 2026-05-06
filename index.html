@@ -3433,10 +3433,12 @@
       }
 
       function tokenize(text) {
-        return text
-          .split(/[\s،,.؟?!]+/)
-          .filter(Boolean)
-          .map(t => t.replace(/^و/, '')); // strip leading wa-
+        return text.split(/[\s،,.؟?!]+/).filter(Boolean);
+      }
+      function stripWao(t) { return t && t[0] === 'و' && t.length > 1 ? t.slice(1) : t; }
+      function numValOf(t) {
+        if (NUM_VAL[t] !== undefined) return NUM_VAL[t];
+        return NUM_VAL[stripWao(t)];
       }
 
       function parseTranscript(rawText) {
@@ -3460,23 +3462,24 @@
         let i = 0;
         while (i < tokens.length) {
           const t = tokens[i];
+          const ts = stripWao(t);
 
           // Type
-          if (!type && TYPE_KW[t]) { type = TYPE_KW[t]; i++; continue; }
+          if (!type && TYPE_KW[ts]) { type = TYPE_KW[ts]; i++; continue; }
           // Multiplier
-          if (MULT_KW[t]) { multiplier = MULT_KW[t]; i++; continue; }
+          if (MULT_KW[ts]) { multiplier = MULT_KW[ts]; i++; continue; }
           // Kabout
-          if (t === 'كبوت' || t === 'الكبوت') { kabout = true; i++; continue; }
+          if (ts === 'كبوت' || ts === 'الكبوت') { kabout = true; i++; continue; }
           // Team markers — score context
-          if (LANA_SCORE_KW.has(t))  { currentTeam = 'lana';  projectContext = false; if (!firstTeamMentioned) firstTeamMentioned = 'lana';  i++; continue; }
-          if (LAHUM_SCORE_KW.has(t)) { currentTeam = 'lahum'; projectContext = false; if (!firstTeamMentioned) firstTeamMentioned = 'lahum'; i++; continue; }
+          if (LANA_SCORE_KW.has(ts))  { currentTeam = 'lana';  projectContext = false; if (!firstTeamMentioned) firstTeamMentioned = 'lana';  i++; continue; }
+          if (LAHUM_SCORE_KW.has(ts)) { currentTeam = 'lahum'; projectContext = false; if (!firstTeamMentioned) firstTeamMentioned = 'lahum'; i++; continue; }
           // Team markers — project context (with us / with them)
-          if (LANA_PROJ_KW.has(t))   { currentTeam = 'lana';  projectContext = true;  i++; continue; }
-          if (LAHUM_PROJ_KW.has(t))  { currentTeam = 'lahum'; projectContext = true;  i++; continue; }
+          if (LANA_PROJ_KW.has(ts))   { currentTeam = 'lana';  projectContext = true;  i++; continue; }
+          if (LAHUM_PROJ_KW.has(ts))  { currentTeam = 'lahum'; projectContext = true;  i++; continue; }
 
           // Numbers in project context: each number-word is standalone, never compounded.
-          if (projectContext && (/^\d+$/.test(t) || NUM_VAL[t] !== undefined)) {
-            const v = /^\d+$/.test(t) ? parseInt(t, 10) : NUM_VAL[t];
+          if (projectContext && (/^\d+$/.test(t) || numValOf(t) !== undefined)) {
+            const v = /^\d+$/.test(t) ? parseInt(t, 10) : numValOf(t);
             if (currentTeam && (v === 50 || v === 100 || v === 400)) {
               teamData[currentTeam].projects[String(v)]++;
             }
@@ -3484,31 +3487,40 @@
             continue;
           }
 
-          // Numbers in score context: greedy compound run (مية وستين = 160)
+          // Numbers in score context: compound only when joined by "و" connector
+          // (so "مية وستين" → 160 but "مية وستين تسعين" → 160 then 90).
           let numVal = null;
           if (/^\d+$/.test(t)) {
             numVal = parseInt(t, 10); i++;
-          } else if (NUM_VAL[t] !== undefined) {
-            numVal = 0;
-            while (i < tokens.length && NUM_VAL[tokens[i]] !== undefined) {
-              numVal += NUM_VAL[tokens[i]]; i++;
+          } else if (numValOf(t) !== undefined) {
+            numVal = numValOf(t); i++;
+            while (i < tokens.length && tokens[i][0] === 'و' && numValOf(tokens[i]) !== undefined) {
+              numVal += numValOf(tokens[i]); i++;
             }
           }
           if (numVal !== null) {
-            if (currentTeam) {
-              const team = teamData[currentTeam];
-              if (team.score === null) {
-                team.score = numVal;
-              } else if (numVal === 50 || numVal === 100 || numVal === 400) {
-                team.projects[String(numVal)]++;
-              }
+            // Positional fallback: if no team marker was used, first number → lana, second → lahum.
+            // Same trick covers "نحن 160 ، 90" where "هم" was skipped — the second number routes to lahum.
+            let target = currentTeam;
+            if (!target) {
+              target = teamData.lana.score === null ? 'lana' : 'lahum';
+            } else if (teamData[target].score !== null
+                       && teamData[target === 'lana' ? 'lahum' : 'lana'].score === null
+                       && numVal !== 50 && numVal !== 100 && numVal !== 400) {
+              target = target === 'lana' ? 'lahum' : 'lana';
+            }
+            const team = teamData[target];
+            if (team.score === null) {
+              team.score = numVal;
+            } else if (numVal === 50 || numVal === 100 || numVal === 400) {
+              team.projects[String(numVal)]++;
             }
             continue;
           }
 
           // Non-numeric project keywords (sira / baloot)
-          if (PROJECT_KW[t]) {
-            if (currentTeam) teamData[currentTeam].projects[PROJECT_KW[t]]++;
+          if (PROJECT_KW[ts]) {
+            if (currentTeam) teamData[currentTeam].projects[PROJECT_KW[ts]]++;
             i++;
             continue;
           }
