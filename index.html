@@ -1363,8 +1363,6 @@
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
     import { getDatabase, ref, set, onValue, remove, onDisconnect, push, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
-    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js';
-    import { initializeAppCheck, ReCaptchaV3Provider } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-check.js';
     const firebaseConfig = {
       apiKey: "AIzaSyBWoy80bE_3Mo4u-C2Pvk7OYnDfXM2OjqA",
       authDomain: "baloot-calculator-al-dew.firebaseapp.com",
@@ -1377,21 +1375,6 @@
     const fbApp = initializeApp(firebaseConfig);
     const fbDb = getDatabase(fbApp);
     window.FB = { db: fbDb, ref, set, onValue, remove, onDisconnect, push, serverTimestamp };
-
-    // Voice — App Check + Functions client.
-    // Replace RECAPTCHA_V3_SITE_KEY with the key from Firebase Console (App Check → Apps → reCAPTCHA v3).
-    // Until a real key is set, App Check init silently fails and the function rejects the call when enforcement is on.
-    const RECAPTCHA_V3_SITE_KEY = "REPLACE_WITH_RECAPTCHA_V3_SITE_KEY";
-    if (RECAPTCHA_V3_SITE_KEY && !RECAPTCHA_V3_SITE_KEY.startsWith("REPLACE")) {
-      try {
-        initializeAppCheck(fbApp, {
-          provider: new ReCaptchaV3Provider(RECAPTCHA_V3_SITE_KEY),
-          isTokenAutoRefreshEnabled: true,
-        });
-      } catch (e) { console.warn('App Check init failed', e); }
-    }
-    const fbFunctions = getFunctions(fbApp, 'us-central1');
-    window.__callParseBalootRound = httpsCallable(fbFunctions, 'parseBalootRound');
   </script>
   <script>
     // ── In-App Dialog (replaces native confirm/prompt) ────────
@@ -3353,19 +3336,24 @@
     })();
   </script>
   <script type="module">
-    // ===== Voice input — recorder, preview, apply/edit =====
+    // ===== Voice input — Web Speech transcription + JS parser =====
     (() => {
       const btn = document.getElementById('voiceMicBtn');
       const timerEl = btn?.querySelector('.voice-mic-timer');
       if (!btn) return;
 
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        btn.style.display = 'none';
+        console.info('SpeechRecognition not supported in this browser');
+        return;
+      }
+
       const MAX_SECONDS = 15;
-      let mediaRecorder = null;
-      let stream = null;
-      let chunks = [];
+      let recognition = null;
       let startTs = 0;
       let timerInterval = null;
-      let onStopHandler = null;
+      let userStopped = false;
 
       const setState = (s) => {
         btn.dataset.state = s || '';
@@ -3386,94 +3374,260 @@
         setTimeout(() => t.remove(), 3500);
       }
 
-      async function blobToBase64(blob) {
-        const buf = await blob.arrayBuffer();
-        const bytes = new Uint8Array(buf);
-        const CHUNK = 0x8000;
-        let s = '';
-        for (let i = 0; i < bytes.length; i += CHUNK) {
-          s += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
-        }
-        return btoa(s);
+      // ===== Arabic transcript parser =====
+      // Maps spoken Arabic to the same JSON shape VoicePreview/applyVoiceRound expect.
+
+      const NUM_VAL = {
+        'صفر':0,
+        'واحد':1,'واحدة':1,
+        'اثنين':2,'اثنان':2,'ثنين':2,'اتنين':2,
+        'ثلاثة':3,'ثلاث':3,'تلاتة':3,'تلات':3,
+        'اربعة':4,'اربع':4,
+        'خمسة':5,'خمس':5,
+        'ستة':6,'ست':6,
+        'سبعة':7,'سبع':7,
+        'ثمانية':8,'ثماني':8,'تمانية':8,'تمان':8,
+        'تسعة':9,'تسع':9,
+        'عشرة':10,'عشر':10,
+        'احدعش':11,'احداعشر':11,
+        'اثناعشر':12,'اطناعشر':12,
+        'عشرين':20,
+        'ثلاثين':30,'تلاتين':30,
+        'اربعين':40,
+        'خمسين':50,
+        'ستين':60,
+        'سبعين':70,
+        'ثمانين':80,'تمانين':80,
+        'تسعين':90,
+        'مية':100,'مئة':100,'ماية':100,
+        'ميتين':200,'مئتين':200,'مايتين':200,
+        'ثلاثمية':300,'ثلاثمائة':300,'تلتمية':300,
+        'اربعمية':400,'اربعمائة':400,
+        'خمسمية':500,
+      };
+      const PROJECT_KW = {
+        'سرا':'sira','سيرا':'sira','سرة':'sira','سيره':'sira',
+        'بلوت':'baloot',
+        // 50/100/400 are also valid project labels — handled in second pass below.
+      };
+      // Score-context markers — the next number is a team total.
+      const LANA_SCORE_KW  = new Set(['نحن','احنا','إحنا','علينا','لنا','فريقنا']);
+      const LAHUM_SCORE_KW = new Set(['هم','عليهم','لهم','فريقهم']);
+      // Project-context markers — the next number-words are project values.
+      const LANA_PROJ_KW   = new Set(['معنا','عندنا']);
+      const LAHUM_PROJ_KW  = new Set(['معهم','عندهم']);
+      const TYPE_KW = { 'صن':'sun','سن':'sun','حكم':'hokm' };
+      const MULT_KW = { 'ضعف':'double','دبل':'double','ثري':'triple','ري':'triple','تربل':'triple','فور':'four','قهوة':'coffee' };
+
+      function normalizeArabic(s) {
+        if (!s) return '';
+        // Arabic-Indic digits → ASCII
+        s = s.replace(/[٠-٩]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x0660 + 0x30));
+        // Alif variants → bare alif
+        s = s.replace(/[إأآ]/g, 'ا');
+        // Tatweel removed
+        s = s.replace(/ـ/g, '');
+        // Diacritics removed
+        s = s.replace(/[ً-ْ]/g, '');
+        return s.trim().replace(/\s+/g, ' ');
       }
 
-      async function start() {
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        } catch (err) {
-          btn.style.display = 'none';
-          console.warn('Microphone unavailable', err);
-          showToast('الميكروفون غير متاح');
+      function tokenize(text) {
+        return text
+          .split(/[\s،,.؟?!]+/)
+          .filter(Boolean)
+          .map(t => t.replace(/^و/, '')); // strip leading wa-
+      }
+
+      function parseTranscript(rawText) {
+        if (!rawText) return null;
+        const text = normalizeArabic(rawText);
+        const hasSunWith = /\bصن\s+مع\b/.test(text);
+        const tokens = tokenize(text);
+
+        let type = hasSunWith ? 'sun_with' : null;
+        let multiplier = 'normal';
+        let kabout = false;
+
+        const teamData = {
+          lana:  { score: null, projects: { sira:0,'50':0,'100':0,'400':0,baloot:0 } },
+          lahum: { score: null, projects: { sira:0,'50':0,'100':0,'400':0,baloot:0 } },
+        };
+        let currentTeam = null;
+        let projectContext = false;
+        let firstTeamMentioned = null;
+
+        let i = 0;
+        while (i < tokens.length) {
+          const t = tokens[i];
+
+          // Type
+          if (!type && TYPE_KW[t]) { type = TYPE_KW[t]; i++; continue; }
+          // Multiplier
+          if (MULT_KW[t]) { multiplier = MULT_KW[t]; i++; continue; }
+          // Kabout
+          if (t === 'كبوت' || t === 'الكبوت') { kabout = true; i++; continue; }
+          // Team markers — score context
+          if (LANA_SCORE_KW.has(t))  { currentTeam = 'lana';  projectContext = false; if (!firstTeamMentioned) firstTeamMentioned = 'lana';  i++; continue; }
+          if (LAHUM_SCORE_KW.has(t)) { currentTeam = 'lahum'; projectContext = false; if (!firstTeamMentioned) firstTeamMentioned = 'lahum'; i++; continue; }
+          // Team markers — project context (with us / with them)
+          if (LANA_PROJ_KW.has(t))   { currentTeam = 'lana';  projectContext = true;  i++; continue; }
+          if (LAHUM_PROJ_KW.has(t))  { currentTeam = 'lahum'; projectContext = true;  i++; continue; }
+
+          // Numbers in project context: each number-word is standalone, never compounded.
+          if (projectContext && (/^\d+$/.test(t) || NUM_VAL[t] !== undefined)) {
+            const v = /^\d+$/.test(t) ? parseInt(t, 10) : NUM_VAL[t];
+            if (currentTeam && (v === 50 || v === 100 || v === 400)) {
+              teamData[currentTeam].projects[String(v)]++;
+            }
+            i++;
+            continue;
+          }
+
+          // Numbers in score context: greedy compound run (مية وستين = 160)
+          let numVal = null;
+          if (/^\d+$/.test(t)) {
+            numVal = parseInt(t, 10); i++;
+          } else if (NUM_VAL[t] !== undefined) {
+            numVal = 0;
+            while (i < tokens.length && NUM_VAL[tokens[i]] !== undefined) {
+              numVal += NUM_VAL[tokens[i]]; i++;
+            }
+          }
+          if (numVal !== null) {
+            if (currentTeam) {
+              const team = teamData[currentTeam];
+              if (team.score === null) {
+                team.score = numVal;
+              } else if (numVal === 50 || numVal === 100 || numVal === 400) {
+                team.projects[String(numVal)]++;
+              }
+            }
+            continue;
+          }
+
+          // Non-numeric project keywords (sira / baloot)
+          if (PROJECT_KW[t]) {
+            if (currentTeam) teamData[currentTeam].projects[PROJECT_KW[t]]++;
+            i++;
+            continue;
+          }
+
+          i++; // unknown token
+        }
+
+        const buyer = firstTeamMentioned || 'lana';
+        const kaboutWinner = kabout ? buyer : null;
+
+        const anyProjects =
+          Object.values(teamData.lana.projects).some(n => n > 0) ||
+          Object.values(teamData.lahum.projects).some(n => n > 0);
+        const isAdvanced = type !== null || multiplier !== 'normal' || kabout || anyProjects;
+
+        const bunt = {
+          lana:  teamData.lana.score  ?? 0,
+          lahum: teamData.lahum.score ?? 0,
+        };
+
+        const out = {
+          ok: true,
+          mode: isAdvanced ? 'advanced' : 'simple',
+          bunt,
+          transcript: rawText,
+          confidence: (bunt.lana > 0 || bunt.lahum > 0 || kabout) ? 0.85 : 0.3,
+          warnings: [],
+        };
+
+        if (isAdvanced) {
+          out.meta = {
+            type: type || 'hokm',
+            buyer,
+            multiplier,
+            kabout,
+            kaboutWinner,
+            projects: { lana: teamData.lana.projects, lahum: teamData.lahum.projects },
+          };
+        }
+
+        if (bunt.lana === 0 && bunt.lahum === 0 && !kabout) {
+          out.warnings.push('ما قدرت أفهم النتيجة، حاول مرة ثانية');
+          out.confidence = 0.2;
+        }
+
+        return out;
+      }
+
+      // Expose for unit testing in console
+      window.__parseTranscript = parseTranscript;
+
+      // ===== Click handler — toggle recognition =====
+      btn.addEventListener('click', () => {
+        if (btn.dataset.state === 'parsing') return;
+        if (recognition) {
+          userStopped = true;
+          try { recognition.stop(); } catch (_) {}
           return;
         }
-        const supportsWebm = (typeof MediaRecorder !== 'undefined') &&
-          MediaRecorder.isTypeSupported &&
-          MediaRecorder.isTypeSupported('audio/webm;codecs=opus');
-        const mimeType = supportsWebm ? 'audio/webm;codecs=opus' : 'audio/mp4';
-        try {
-          mediaRecorder = new MediaRecorder(stream, { mimeType });
-        } catch (e) {
-          mediaRecorder = new MediaRecorder(stream);
-        }
-        chunks = [];
-        mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
-        mediaRecorder.onstop = () => {
-          const blob = new Blob(chunks, { type: mediaRecorder.mimeType || mimeType });
-          stream.getTracks().forEach(t => t.stop());
-          stream = null;
-          const usedMime = mediaRecorder.mimeType || mimeType;
-          mediaRecorder = null;
+
+        recognition = new SpeechRec();
+        recognition.lang = 'ar-SA';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        userStopped = false;
+        let gotResult = false;
+
+        recognition.onresult = (e) => {
+          gotResult = true;
+          const transcript = e.results[0]?.[0]?.transcript || '';
+          const parsed = parseTranscript(transcript);
+          if (!parsed || (parsed.bunt.lana === 0 && parsed.bunt.lahum === 0 && !parsed.meta?.kabout)) {
+            // Show preview anyway so user can see the transcript and edit
+          }
+          if (parsed) {
+            VoicePreview.show(parsed, {
+              onConfirm: (p) => applyVoiceRound(p),
+              onEdit:    (p) => editVoiceRound(p),
+            });
+          }
+        };
+
+        recognition.onerror = (e) => {
+          if (e.error === 'no-speech') showToast('ما سمعت شي');
+          else if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+            showToast('الميكروفون مرفوض');
+            btn.style.display = 'none';
+          } else if (e.error === 'aborted') {
+            // user-cancelled — silent
+          } else {
+            showToast('خطأ: ' + e.error);
+          }
+        };
+
+        recognition.onend = () => {
+          recognition = null;
           clearInterval(timerInterval);
           timerInterval = null;
           if (timerEl) timerEl.textContent = '';
-          const handler = onStopHandler;
-          onStopHandler = null;
-          if (handler) handler(blob, usedMime);
+          setState('');
         };
-        mediaRecorder.start();
+
+        try {
+          recognition.start();
+        } catch (err) {
+          recognition = null;
+          showToast('تعذّر بدء التسجيل');
+          return;
+        }
+
         startTs = Date.now();
+        setState('recording');
         timerInterval = setInterval(() => {
           updateTimer();
-          if ((Date.now() - startTs) / 1000 >= MAX_SECONDS) stop();
+          if ((Date.now() - startTs) / 1000 >= MAX_SECONDS) {
+            try { recognition?.stop(); } catch (_) {}
+          }
         }, 250);
-        setState('recording');
-      }
-
-      function stop(handler) {
-        if (handler) onStopHandler = handler;
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-          mediaRecorder.stop();
-        }
-      }
-
-      function isRecording() { return mediaRecorder?.state === 'recording'; }
-
-      btn.addEventListener('click', async () => {
-        if (btn.dataset.state === 'parsing') return;
-        if (isRecording()) {
-          stop(async (blob, mimeType) => {
-            setState('parsing');
-            try {
-              const audioBase64 = await blobToBase64(blob);
-              const call = window.__callParseBalootRound;
-              if (!call) throw new Error('voice function client not ready');
-              const { data } = await call({ audioBase64, mimeType });
-              if (!data || !data.bunt) throw new Error('empty parse result');
-              VoicePreview.show(data, {
-                onConfirm: (parsed) => applyVoiceRound(parsed),
-                onEdit:    (parsed) => editVoiceRound(parsed),
-              });
-            } catch (err) {
-              const msg = err?.message || 'تعذّر تحليل الصوت';
-              showToast(msg);
-              console.error('voice parse failed', err);
-            } finally {
-              setState('');
-            }
-          });
-        } else {
-          await start();
-        }
       });
 
       // ===== Preview overlay =====
