@@ -3561,11 +3561,33 @@
       window.__parseTranscript = parseTranscript;
 
       // ===== Click handler — toggle recognition =====
+      function forceCleanup() {
+        recognition = null;
+        clearInterval(timerInterval);
+        timerInterval = null;
+        if (timerEl) timerEl.textContent = '';
+        setState('');
+      }
+
+      // Some browsers (mobile Chrome, iOS Safari) ignore stop() and never fire onend,
+      // so we chain stop() → abort() → manual cleanup with short timeouts.
+      function safeStop(rec) {
+        try { rec.stop(); } catch (_) {}
+        setTimeout(() => {
+          if (recognition === rec) {
+            try { rec.abort(); } catch (_) {}
+            setTimeout(() => {
+              if (recognition === rec) forceCleanup();
+            }, 300);
+          }
+        }, 700);
+      }
+
       btn.addEventListener('click', () => {
         if (btn.dataset.state === 'parsing') return;
         if (recognition) {
           userStopped = true;
-          try { recognition.stop(); } catch (_) {}
+          safeStop(recognition);
           return;
         }
 
@@ -3604,13 +3626,7 @@
           }
         };
 
-        recognition.onend = () => {
-          recognition = null;
-          clearInterval(timerInterval);
-          timerInterval = null;
-          if (timerEl) timerEl.textContent = '';
-          setState('');
-        };
+        recognition.onend = () => { forceCleanup(); };
 
         try {
           recognition.start();
@@ -3624,8 +3640,8 @@
         setState('recording');
         timerInterval = setInterval(() => {
           updateTimer();
-          if ((Date.now() - startTs) / 1000 >= MAX_SECONDS) {
-            try { recognition?.stop(); } catch (_) {}
+          if ((Date.now() - startTs) / 1000 >= MAX_SECONDS && recognition) {
+            safeStop(recognition);
           }
         }, 250);
       });
