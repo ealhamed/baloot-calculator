@@ -935,6 +935,114 @@
         transition-duration: 0.01ms !important;
       }
     }
+
+    /* Voice input — mic button */
+    .voice-mic {
+      position: fixed;
+      bottom: calc(96px + env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      border: none;
+      background: var(--burgundy, #7a2d3a);
+      color: var(--cream, #f5f0e6);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 2px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.35);
+      cursor: pointer;
+      z-index: 50;
+      transition: transform .15s ease, background .2s ease;
+      font-family: 'Cairo', sans-serif;
+    }
+    .voice-mic:active { transform: translateX(-50%) scale(.94); }
+    .voice-mic[data-state="recording"] {
+      background: #c0392b;
+      animation: voicePulse 1.1s ease-in-out infinite;
+    }
+    .voice-mic[data-state="parsing"] {
+      background: #555;
+      cursor: progress;
+    }
+    .voice-mic[data-state="parsing"] svg { opacity: .35; }
+    .voice-mic-timer {
+      font-size: 10px; line-height: 1;
+      opacity: .9; font-variant-numeric: tabular-nums;
+    }
+    .voice-mic-timer:empty { display: none; }
+    @keyframes voicePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(192,57,43,.55); }
+      50%      { box-shadow: 0 0 0 18px rgba(192,57,43,0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .voice-mic[data-state="recording"] { animation: none; }
+    }
+
+    /* Voice input — preview overlay */
+    .voice-preview {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,.6);
+      z-index: 60;
+      padding: 16px;
+    }
+    .voice-preview[hidden] { display: none; }
+    .voice-preview-card {
+      background: var(--card, #fff);
+      color: var(--fg, #111);
+      border-radius: 16px;
+      width: min(420px, 100%);
+      padding: 18px 18px 14px;
+      box-shadow: 0 24px 48px rgba(0,0,0,.4);
+      display: flex; flex-direction: column; gap: 12px;
+      font-family: 'Cairo', sans-serif;
+    }
+    .voice-preview-header {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .voice-mode-badge {
+      background: var(--burgundy, #7a2d3a); color: var(--cream, #f5f0e6);
+      padding: 4px 10px; border-radius: 999px;
+      font-size: 12px; font-weight: 700;
+    }
+    .voice-close {
+      background: transparent; border: none; font-size: 24px; cursor: pointer;
+      color: inherit; line-height: 1; padding: 4px 8px;
+    }
+    .voice-preview-transcript { font-size: 14px; opacity: .85; }
+    .voice-label { color: #888; margin-inline-end: 6px; }
+    .voice-warning {
+      background: #fff3cd; color: #856404; border-radius: 8px;
+      padding: 8px 12px; font-size: 13px;
+    }
+    .voice-preview-result {
+      background: rgba(0,0,0,.05); border-radius: 12px; padding: 12px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .voice-row { display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; }
+    .voice-row b { font-variant-numeric: tabular-nums; }
+    .voice-meta { font-size: 13px; opacity: .8; line-height: 1.5; }
+    .voice-meta:not([hidden]) { display: block; }
+    .voice-preview-actions {
+      display: flex; gap: 8px; margin-top: 4px;
+    }
+    .voice-preview-actions button {
+      flex: 1; padding: 10px; border-radius: 10px; font-weight: 700;
+      font-family: 'Cairo', sans-serif; cursor: pointer;
+    }
+    .voice-btn-primary   { background: var(--burgundy, #7a2d3a); color: var(--cream, #f5f0e6); border: none; }
+    .voice-btn-secondary { background: rgba(0,0,0,.06); color: inherit; border: 1px solid rgba(0,0,0,.12); }
+
+    /* Voice input — toast */
+    .voice-toast {
+      position: fixed; bottom: calc(180px + env(safe-area-inset-bottom)); left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.88); color: #fff;
+      padding: 10px 16px; border-radius: 10px;
+      font-size: 14px; z-index: 70; pointer-events: none;
+      max-width: 92%; text-align: center;
+      font-family: 'Cairo', sans-serif;
+    }
   </style>
 </head>
 <body>
@@ -1209,6 +1317,39 @@
         <div id="splitProjectsGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
         <div style="display:flex;gap:8px;margin-top:14px">
           <button class="btn-primary" id="splitProjectsConfirm" style="flex:1" onclick="confirmSplitProjects()">تأكيد</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Voice input — mic button (single-shot tap to start, tap again to stop) -->
+    <button id="voiceMicBtn" type="button" class="voice-mic" aria-label="إدخال صوتي" aria-pressed="false">
+      <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+        <path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/>
+      </svg>
+      <span class="voice-mic-timer" aria-hidden="true"></span>
+    </button>
+
+    <!-- Voice input — preview overlay -->
+    <div id="voicePreview" class="voice-preview" hidden aria-modal="true" role="dialog">
+      <div class="voice-preview-card">
+        <div class="voice-preview-header">
+          <span id="voicePreviewMode" class="voice-mode-badge"></span>
+          <button type="button" class="voice-close" id="voicePreviewClose" aria-label="إلغاء">×</button>
+        </div>
+        <div class="voice-preview-transcript">
+          <span class="voice-label">سمعت:</span>
+          <span id="voicePreviewTranscript">—</span>
+        </div>
+        <div id="voicePreviewWarning" class="voice-warning" hidden></div>
+        <div class="voice-preview-result">
+          <div class="voice-row"><span>لنا</span><b id="voicePreviewLana">0</b></div>
+          <div class="voice-row"><span>لهم</span><b id="voicePreviewLahum">0</b></div>
+          <div id="voicePreviewMeta" class="voice-meta" hidden></div>
+        </div>
+        <div class="voice-preview-actions">
+          <button type="button" id="voicePreviewCancel" class="voice-btn-secondary">إلغاء</button>
+          <button type="button" id="voicePreviewEdit"   class="voice-btn-secondary">تعديل</button>
+          <button type="button" id="voicePreviewConfirm" class="voice-btn-primary">تأكيد</button>
         </div>
       </div>
     </div>
@@ -3194,6 +3335,473 @@
       } catch(e) {}
     })();
   </script>
+  <script type="module">
+    // ===== Voice input — Web Speech transcription + JS parser =====
+    (() => {
+      const btn = document.getElementById('voiceMicBtn');
+      const timerEl = btn?.querySelector('.voice-mic-timer');
+      if (!btn) return;
+
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        btn.style.display = 'none';
+        console.info('SpeechRecognition not supported in this browser');
+        return;
+      }
+
+      const MAX_SECONDS = 15;
+      let recognition = null;
+      let startTs = 0;
+      let timerInterval = null;
+      let userStopped = false;
+
+      const setState = (s) => {
+        btn.dataset.state = s || '';
+        btn.setAttribute('aria-pressed', s === 'recording' ? 'true' : 'false');
+      };
+
+      const updateTimer = () => {
+        if (!timerEl) return;
+        const elapsed = Math.floor((Date.now() - startTs) / 1000);
+        timerEl.textContent = elapsed > 0 ? `${elapsed}s` : '';
+      };
+
+      function showToast(msg) {
+        const t = document.createElement('div');
+        t.className = 'voice-toast';
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 3500);
+      }
+
+      // ===== Arabic transcript parser =====
+      // Maps spoken Arabic to the same JSON shape VoicePreview/applyVoiceRound expect.
+
+      const NUM_VAL = {
+        'صفر':0,
+        'واحد':1,'واحدة':1,
+        'اثنين':2,'اثنان':2,'ثنين':2,'اتنين':2,
+        'ثلاثة':3,'ثلاث':3,'تلاتة':3,'تلات':3,
+        'اربعة':4,'اربع':4,
+        'خمسة':5,'خمس':5,
+        'ستة':6,'ست':6,
+        'سبعة':7,'سبع':7,
+        'ثمانية':8,'ثماني':8,'تمانية':8,'تمان':8,
+        'تسعة':9,'تسع':9,
+        'عشرة':10,'عشر':10,
+        'احدعش':11,'احداعشر':11,
+        'اثناعشر':12,'اطناعشر':12,
+        'عشرين':20,
+        'ثلاثين':30,'تلاتين':30,
+        'اربعين':40,
+        'خمسين':50,
+        'ستين':60,
+        'سبعين':70,
+        'ثمانين':80,'تمانين':80,
+        'تسعين':90,
+        'مية':100,'مئة':100,'ماية':100,
+        'ميتين':200,'مئتين':200,'مايتين':200,
+        'ثلاثمية':300,'ثلاثمائة':300,'تلتمية':300,
+        'اربعمية':400,'اربعمائة':400,
+        'خمسمية':500,
+      };
+      const PROJECT_KW = {
+        'سرا':'sira','سيرا':'sira','سرة':'sira','سيره':'sira',
+        'بلوت':'baloot',
+        // 50/100/400 are also valid project labels — handled in second pass below.
+      };
+      // Score-context markers — the next number is a team total.
+      const LANA_SCORE_KW  = new Set(['نحن','احنا','إحنا','علينا','لنا','فريقنا']);
+      const LAHUM_SCORE_KW = new Set(['هم','عليهم','لهم','فريقهم']);
+      // Project-context markers — the next number-words are project values.
+      const LANA_PROJ_KW   = new Set(['معنا','عندنا']);
+      const LAHUM_PROJ_KW  = new Set(['معهم','عندهم']);
+      const TYPE_KW = { 'صن':'sun','سن':'sun','حكم':'hokm' };
+      const MULT_KW = { 'ضعف':'double','دبل':'double','ثري':'triple','ري':'triple','تربل':'triple','فور':'four','قهوة':'coffee' };
+
+      function normalizeArabic(s) {
+        if (!s) return '';
+        // Arabic-Indic digits → ASCII
+        s = s.replace(/[٠-٩]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x0660 + 0x30));
+        // Alif variants → bare alif
+        s = s.replace(/[إأآ]/g, 'ا');
+        // Tatweel removed
+        s = s.replace(/ـ/g, '');
+        // Diacritics removed
+        s = s.replace(/[ً-ْ]/g, '');
+        return s.trim().replace(/\s+/g, ' ');
+      }
+
+      function tokenize(text) {
+        return text
+          .split(/[\s،,.؟?!]+/)
+          .filter(Boolean)
+          .map(t => t.replace(/^و/, '')); // strip leading wa-
+      }
+
+      function parseTranscript(rawText) {
+        if (!rawText) return null;
+        const text = normalizeArabic(rawText);
+        const hasSunWith = /\bصن\s+مع\b/.test(text);
+        const tokens = tokenize(text);
+
+        let type = hasSunWith ? 'sun_with' : null;
+        let multiplier = 'normal';
+        let kabout = false;
+
+        const teamData = {
+          lana:  { score: null, projects: { sira:0,'50':0,'100':0,'400':0,baloot:0 } },
+          lahum: { score: null, projects: { sira:0,'50':0,'100':0,'400':0,baloot:0 } },
+        };
+        let currentTeam = null;
+        let projectContext = false;
+        let firstTeamMentioned = null;
+
+        let i = 0;
+        while (i < tokens.length) {
+          const t = tokens[i];
+
+          // Type
+          if (!type && TYPE_KW[t]) { type = TYPE_KW[t]; i++; continue; }
+          // Multiplier
+          if (MULT_KW[t]) { multiplier = MULT_KW[t]; i++; continue; }
+          // Kabout
+          if (t === 'كبوت' || t === 'الكبوت') { kabout = true; i++; continue; }
+          // Team markers — score context
+          if (LANA_SCORE_KW.has(t))  { currentTeam = 'lana';  projectContext = false; if (!firstTeamMentioned) firstTeamMentioned = 'lana';  i++; continue; }
+          if (LAHUM_SCORE_KW.has(t)) { currentTeam = 'lahum'; projectContext = false; if (!firstTeamMentioned) firstTeamMentioned = 'lahum'; i++; continue; }
+          // Team markers — project context (with us / with them)
+          if (LANA_PROJ_KW.has(t))   { currentTeam = 'lana';  projectContext = true;  i++; continue; }
+          if (LAHUM_PROJ_KW.has(t))  { currentTeam = 'lahum'; projectContext = true;  i++; continue; }
+
+          // Numbers in project context: each number-word is standalone, never compounded.
+          if (projectContext && (/^\d+$/.test(t) || NUM_VAL[t] !== undefined)) {
+            const v = /^\d+$/.test(t) ? parseInt(t, 10) : NUM_VAL[t];
+            if (currentTeam && (v === 50 || v === 100 || v === 400)) {
+              teamData[currentTeam].projects[String(v)]++;
+            }
+            i++;
+            continue;
+          }
+
+          // Numbers in score context: greedy compound run (مية وستين = 160)
+          let numVal = null;
+          if (/^\d+$/.test(t)) {
+            numVal = parseInt(t, 10); i++;
+          } else if (NUM_VAL[t] !== undefined) {
+            numVal = 0;
+            while (i < tokens.length && NUM_VAL[tokens[i]] !== undefined) {
+              numVal += NUM_VAL[tokens[i]]; i++;
+            }
+          }
+          if (numVal !== null) {
+            if (currentTeam) {
+              const team = teamData[currentTeam];
+              if (team.score === null) {
+                team.score = numVal;
+              } else if (numVal === 50 || numVal === 100 || numVal === 400) {
+                team.projects[String(numVal)]++;
+              }
+            }
+            continue;
+          }
+
+          // Non-numeric project keywords (sira / baloot)
+          if (PROJECT_KW[t]) {
+            if (currentTeam) teamData[currentTeam].projects[PROJECT_KW[t]]++;
+            i++;
+            continue;
+          }
+
+          i++; // unknown token
+        }
+
+        const buyer = firstTeamMentioned || 'lana';
+        const kaboutWinner = kabout ? buyer : null;
+
+        const anyProjects =
+          Object.values(teamData.lana.projects).some(n => n > 0) ||
+          Object.values(teamData.lahum.projects).some(n => n > 0);
+        const isAdvanced = type !== null || multiplier !== 'normal' || kabout || anyProjects;
+
+        const bunt = {
+          lana:  teamData.lana.score  ?? 0,
+          lahum: teamData.lahum.score ?? 0,
+        };
+
+        const out = {
+          ok: true,
+          mode: isAdvanced ? 'advanced' : 'simple',
+          bunt,
+          transcript: rawText,
+          confidence: (bunt.lana > 0 || bunt.lahum > 0 || kabout) ? 0.85 : 0.3,
+          warnings: [],
+        };
+
+        if (isAdvanced) {
+          out.meta = {
+            type: type || 'hokm',
+            buyer,
+            multiplier,
+            kabout,
+            kaboutWinner,
+            projects: { lana: teamData.lana.projects, lahum: teamData.lahum.projects },
+          };
+        }
+
+        if (bunt.lana === 0 && bunt.lahum === 0 && !kabout) {
+          out.warnings.push('ما قدرت أفهم النتيجة، حاول مرة ثانية');
+          out.confidence = 0.2;
+        }
+
+        return out;
+      }
+
+      // Expose for unit testing in console
+      window.__parseTranscript = parseTranscript;
+
+      // ===== Click handler — toggle recognition =====
+      btn.addEventListener('click', () => {
+        if (btn.dataset.state === 'parsing') return;
+        if (recognition) {
+          userStopped = true;
+          try { recognition.stop(); } catch (_) {}
+          return;
+        }
+
+        recognition = new SpeechRec();
+        recognition.lang = 'ar-SA';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        userStopped = false;
+        let gotResult = false;
+
+        recognition.onresult = (e) => {
+          gotResult = true;
+          const transcript = e.results[0]?.[0]?.transcript || '';
+          const parsed = parseTranscript(transcript);
+          if (!parsed || (parsed.bunt.lana === 0 && parsed.bunt.lahum === 0 && !parsed.meta?.kabout)) {
+            // Show preview anyway so user can see the transcript and edit
+          }
+          if (parsed) {
+            VoicePreview.show(parsed, {
+              onConfirm: (p) => applyVoiceRound(p),
+              onEdit:    (p) => editVoiceRound(p),
+            });
+          }
+        };
+
+        recognition.onerror = (e) => {
+          if (e.error === 'no-speech') showToast('ما سمعت شي');
+          else if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+            showToast('الميكروفون مرفوض');
+            btn.style.display = 'none';
+          } else if (e.error === 'aborted') {
+            // user-cancelled — silent
+          } else {
+            showToast('خطأ: ' + e.error);
+          }
+        };
+
+        recognition.onend = () => {
+          recognition = null;
+          clearInterval(timerInterval);
+          timerInterval = null;
+          if (timerEl) timerEl.textContent = '';
+          setState('');
+        };
+
+        try {
+          recognition.start();
+        } catch (err) {
+          recognition = null;
+          showToast('تعذّر بدء التسجيل');
+          return;
+        }
+
+        startTs = Date.now();
+        setState('recording');
+        timerInterval = setInterval(() => {
+          updateTimer();
+          if ((Date.now() - startTs) / 1000 >= MAX_SECONDS) {
+            try { recognition?.stop(); } catch (_) {}
+          }
+        }, 250);
+      });
+
+      // ===== Preview overlay =====
+      const VoicePreview = (() => {
+        const overlay = document.getElementById('voicePreview');
+        const modeEl = document.getElementById('voicePreviewMode');
+        const transcriptEl = document.getElementById('voicePreviewTranscript');
+        const warnEl = document.getElementById('voicePreviewWarning');
+        const lanaEl = document.getElementById('voicePreviewLana');
+        const lahumEl = document.getElementById('voicePreviewLahum');
+        const metaEl = document.getElementById('voicePreviewMeta');
+        const closeBtn = document.getElementById('voicePreviewClose');
+        const cancelBtn = document.getElementById('voicePreviewCancel');
+        const editBtn = document.getElementById('voicePreviewEdit');
+        const confirmBtn = document.getElementById('voicePreviewConfirm');
+
+        const PROJ = { sira: 'سرا', '50': 'خمسين', '100': 'مية', '400': 'أربعمية', baloot: 'بلوت' };
+        const TYPES = { sun: 'صن', hokm: 'حكم', sun_with: 'صن مع' };
+        const MULTS = { normal: '', double: 'دبل', triple: 'ثري', four: 'فور', coffee: 'قهوة' };
+
+        let current = null;
+        let onConfirm = null;
+        let onEdit = null;
+
+        function projectsLine(team, projects) {
+          if (!projects) return '';
+          const parts = Object.entries(projects)
+            .filter(([, n]) => Number(n) > 0)
+            .map(([k, n]) => Number(n) > 1 ? `${PROJ[k] || k}×${n}` : (PROJ[k] || k));
+          return parts.length ? `${team}: ${parts.join('، ')}` : '';
+        }
+
+        function show(parsed, handlers) {
+          current = parsed;
+          onConfirm = handlers.onConfirm;
+          onEdit = handlers.onEdit;
+
+          modeEl.textContent = parsed.mode === 'advanced' ? 'متقدم' : 'بسيط';
+          transcriptEl.textContent = parsed.transcript || '—';
+          lanaEl.textContent = parsed.bunt?.lana ?? 0;
+          lahumEl.textContent = parsed.bunt?.lahum ?? 0;
+
+          const lowConf = (parsed.confidence ?? 1) < 0.6;
+          const warns = [...(parsed.warnings || [])];
+          if (lowConf) warns.unshift('نتيجة غير مؤكدة، تأكد قبل الحفظ');
+          if (warns.length) {
+            warnEl.textContent = warns.join(' · ');
+            warnEl.hidden = false;
+          } else {
+            warnEl.hidden = true;
+          }
+
+          if (parsed.mode === 'advanced' && parsed.meta) {
+            const m = parsed.meta;
+            const parts = [];
+            if (TYPES[m.type]) parts.push(TYPES[m.type]);
+            if (m.buyer)       parts.push(`المشتري: ${m.buyer === 'lana' ? 'لنا' : 'لهم'}`);
+            if (MULTS[m.multiplier]) parts.push(MULTS[m.multiplier]);
+            if (m.kabout)      parts.push(`كبوت${m.kaboutWinner ? ' لـ' + (m.kaboutWinner === 'lana' ? 'لنا' : 'لهم') : ''}`);
+            const projL = projectsLine('لنا', m.projects?.lana);
+            const projR = projectsLine('لهم', m.projects?.lahum);
+            if (projL) parts.push(projL);
+            if (projR) parts.push(projR);
+            metaEl.textContent = parts.join(' • ');
+            metaEl.hidden = parts.length === 0;
+          } else {
+            metaEl.textContent = '';
+            metaEl.hidden = true;
+          }
+
+          overlay.hidden = false;
+        }
+
+        function hide() {
+          overlay.hidden = true;
+          current = null;
+          onConfirm = null;
+          onEdit = null;
+        }
+
+        closeBtn.addEventListener('click', hide);
+        cancelBtn.addEventListener('click', hide);
+        confirmBtn.addEventListener('click', () => {
+          const cb = onConfirm; const data = current;
+          hide();
+          if (cb) cb(data);
+        });
+        editBtn.addEventListener('click', () => {
+          const cb = onEdit; const data = current;
+          hide();
+          if (cb) cb(data);
+        });
+
+        return { show, hide };
+      })();
+
+      // ===== Apply / edit a parsed voice round into the calculator =====
+      function hasProjects(meta) {
+        if (!meta?.projects) return false;
+        for (const team of ['lana','lahum']) {
+          const p = meta.projects[team] || {};
+          for (const k in p) if (Number(p[k]) > 0) return true;
+        }
+        return false;
+      }
+
+      function setProjectCounts(team, counts) {
+        if (!counts) return;
+        const teamCap = team === 'lana' ? 'Lana' : 'Lahum';
+        for (const key of ['sira','50','100','400','baloot']) {
+          const target = Number(counts[key]) || 0;
+          if (target <= 0) continue;
+          // The advanced UI uses a +/- counter per project. Each click increments by 1.
+          const incBtn = document.getElementById(`proj${teamCap}_${key}_inc`)
+                      || document.querySelector(`[data-proj-team="${team}"][data-proj-key="${key}"][data-proj-action="inc"]`);
+          if (!incBtn) return; // counter not found — leave for user to add manually
+          for (let i = 0; i < target; i++) incBtn.click();
+        }
+      }
+
+      function applyVoiceRound(parsed) {
+        if (!parsed || !parsed.bunt) return;
+        const bunt = {
+          lana:  Number(parsed.bunt.lana)  || 0,
+          lahum: Number(parsed.bunt.lahum) || 0,
+        };
+
+        // Simple: addRound takes final scores directly.
+        if (parsed.mode === 'simple' || !parsed.meta) {
+          if (typeof StateManager !== 'undefined' && typeof appState !== 'undefined') {
+            StateManager.addRound(appState, bunt, {});
+            if (typeof render === 'function') render();
+            if (typeof broadcastState === 'function') broadcastState();
+          }
+          return;
+        }
+
+        // Advanced: route through the advanced form so the existing failure/multiplier math runs.
+        editVoiceRound(parsed, /*autoSubmit*/ !hasProjects(parsed.meta));
+      }
+
+      function editVoiceRound(parsed, autoSubmit = false) {
+        if (!parsed) return;
+        const m = parsed.meta || {};
+        if (typeof setMode === 'function') setMode('advanced');
+
+        // Type / buyer / multiplier / kabout — drive via the existing toggle handlers if present.
+        if (m.type && typeof setAdvType === 'function') setAdvType(m.type === 'sun_with' ? 'sun' : m.type);
+        if (m.buyer && typeof setAdvBuyer === 'function') setAdvBuyer(m.buyer);
+        if (m.multiplier && typeof setAdvMult === 'function') setAdvMult(m.multiplier);
+        if (m.kabout && m.kaboutWinner && typeof setKaboutWinner === 'function') setKaboutWinner(m.kaboutWinner);
+
+        // Bunt — write to the displayed bunt cells if they exist.
+        const elL = document.getElementById('advBuntLana');
+        const elR = document.getElementById('advBuntLahum');
+        if (elL) elL.textContent = String(parsed.bunt?.lana ?? 0);
+        if (elR) elR.textContent = String(parsed.bunt?.lahum ?? 0);
+
+        // Projects — best-effort prefill via the existing counter UI.
+        setProjectCounts('lana',  m.projects?.lana);
+        setProjectCounts('lahum', m.projects?.lahum);
+
+        if (autoSubmit && typeof submitAdvanced === 'function') {
+          // Defer one tick so the UI updates first.
+          setTimeout(() => submitAdvanced(), 0);
+        }
+      }
+
+      // Expose for debugging from the browser console.
+      window.__voiceApply = applyVoiceRound;
+      window.__voiceEdit  = editVoiceRound;
+    })();
+  </script>
+
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
