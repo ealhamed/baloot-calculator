@@ -1027,9 +1027,10 @@
       display: flex; gap: 8px; margin-top: 4px;
     }
     .voice-preview-actions button {
-      flex: 1; padding: 10px; border-radius: 10px; font-weight: 700;
-      font-family: 'Cairo', sans-serif; cursor: pointer;
+      flex: 1; padding: 10px 6px; border-radius: 10px; font-weight: 700;
+      font-family: 'Cairo', sans-serif; cursor: pointer; font-size: 13px;
     }
+    .voice-preview-actions button:disabled { opacity: .35; cursor: not-allowed; }
     .voice-btn-primary   { background: var(--burgundy, #7a2d3a); color: var(--cream, #f5f0e6); border: none; }
     .voice-btn-secondary { background: rgba(0,0,0,.06); color: inherit; border: 1px solid rgba(0,0,0,.12); }
 
@@ -1347,8 +1348,9 @@
           <div id="voicePreviewMeta" class="voice-meta" hidden></div>
         </div>
         <div class="voice-preview-actions">
-          <button type="button" id="voicePreviewCancel" class="voice-btn-secondary">إلغاء</button>
-          <button type="button" id="voicePreviewEdit"   class="voice-btn-secondary">تعديل</button>
+          <button type="button" id="voicePreviewCancel"  class="voice-btn-secondary">إلغاء</button>
+          <button type="button" id="voicePreviewRetry"   class="voice-btn-secondary">إعادة</button>
+          <button type="button" id="voicePreviewEdit"    class="voice-btn-secondary">تعديل</button>
           <button type="button" id="voicePreviewConfirm" class="voice-btn-primary">تأكيد</button>
         </div>
       </div>
@@ -3611,30 +3613,43 @@
         userStopped = false;
         let gotResult = false;
 
+        function showOverlayWith(transcript, warningOverride) {
+          const parsed = transcript
+            ? parseTranscript(transcript)
+            : {
+                ok: true, mode: 'simple',
+                bunt: { lana: 0, lahum: 0 },
+                transcript: '',
+                confidence: 0,
+                warnings: [warningOverride || 'ما سمعت شي، حاول مرة ثانية'],
+              };
+          if (warningOverride && parsed && (!parsed.warnings || !parsed.warnings.length)) {
+            parsed.warnings = [warningOverride];
+          }
+          VoicePreview.show(parsed, {
+            onConfirm: (p) => applyVoiceRound(p),
+            onEdit:    (p) => editVoiceRound(p),
+            onRetry:   () => { setTimeout(() => btn.click(), 50); },
+          });
+        }
+
         recognition.onresult = (e) => {
           gotResult = true;
           const transcript = e.results[0]?.[0]?.transcript || '';
-          const parsed = parseTranscript(transcript);
-          if (!parsed || (parsed.bunt.lana === 0 && parsed.bunt.lahum === 0 && !parsed.meta?.kabout)) {
-            // Show preview anyway so user can see the transcript and edit
-          }
-          if (parsed) {
-            VoicePreview.show(parsed, {
-              onConfirm: (p) => applyVoiceRound(p),
-              onEdit:    (p) => editVoiceRound(p),
-            });
-          }
+          showOverlayWith(transcript);
         };
 
         recognition.onerror = (e) => {
-          if (e.error === 'no-speech') showToast('ما سمعت شي');
-          else if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+          if (e.error === 'no-speech') {
+            // Show overlay with retry instead of a fleeting toast.
+            showOverlayWith('', 'ما سمعت شي، حاول مرة ثانية');
+          } else if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
             showToast('الميكروفون مرفوض');
             btn.style.display = 'none';
           } else if (e.error === 'aborted') {
             // user-cancelled — silent
           } else {
-            showToast('خطأ: ' + e.error);
+            showOverlayWith('', 'خطأ في التعرف الصوتي: ' + e.error);
           }
         };
 
@@ -3669,6 +3684,7 @@
         const metaEl = document.getElementById('voicePreviewMeta');
         const closeBtn = document.getElementById('voicePreviewClose');
         const cancelBtn = document.getElementById('voicePreviewCancel');
+        const retryBtn = document.getElementById('voicePreviewRetry');
         const editBtn = document.getElementById('voicePreviewEdit');
         const confirmBtn = document.getElementById('voicePreviewConfirm');
 
@@ -3679,6 +3695,7 @@
         let current = null;
         let onConfirm = null;
         let onEdit = null;
+        let onRetry = null;
 
         function projectsLine(team, projects) {
           if (!projects) return '';
@@ -3692,6 +3709,17 @@
           current = parsed;
           onConfirm = handlers.onConfirm;
           onEdit = handlers.onEdit;
+          onRetry = handlers.onRetry;
+
+          // Decide what's actionable.
+          const transcriptText = parsed.transcript || '';
+          const hasScores = (parsed.bunt?.lana || 0) > 0 || (parsed.bunt?.lahum || 0) > 0;
+          const hasKabout = !!parsed.meta?.kabout;
+          const canConfirm = hasScores || hasKabout;
+          const canEdit    = canConfirm || transcriptText.length > 0; // need at least a transcript to edit
+          confirmBtn.disabled = !canConfirm;
+          editBtn.disabled = !canEdit;
+          retryBtn.style.display = onRetry ? '' : 'none';
 
           modeEl.textContent = parsed.mode === 'advanced' ? 'متقدم' : 'بسيط';
           transcriptEl.textContent = parsed.transcript || '—';
@@ -3734,19 +3762,27 @@
           current = null;
           onConfirm = null;
           onEdit = null;
+          onRetry = null;
         }
 
         closeBtn.addEventListener('click', hide);
         cancelBtn.addEventListener('click', hide);
         confirmBtn.addEventListener('click', () => {
+          if (confirmBtn.disabled) return;
           const cb = onConfirm; const data = current;
           hide();
           if (cb) cb(data);
         });
         editBtn.addEventListener('click', () => {
+          if (editBtn.disabled) return;
           const cb = onEdit; const data = current;
           hide();
           if (cb) cb(data);
+        });
+        retryBtn.addEventListener('click', () => {
+          const cb = onRetry;
+          hide();
+          if (cb) cb();
         });
 
         return { show, hide };
