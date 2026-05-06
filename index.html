@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="#722F37">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#1C1C1E">
   <title>حاسبة بلوت - الديوانية</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -14,20 +14,20 @@
   <style>@font-face { font-family: 'Cairo'; font-display: swap; }</style>
   <style>
     :root {
-      --bg: #F5F0E6;
-      --bg-subtle: #EDE8DA;
-      --burgundy: #722F37;
-      --burgundy-glow: rgba(114, 47, 55, 0.15);
-      --gold: #C9A227;
-      --gold-soft: rgba(201, 162, 39, 0.12);
-      --navy: #1A2744;
-      --navy-soft: rgba(26, 39, 68, 0.06);
-      --text: #1D1E20;
-      --cream: #F5F0E6;
-      --gold-text: #8B7318;
-      --card-bg: #FDFAF3;
+      --bg: #F5F5F7;
+      --bg-subtle: #ECECEE;
+      --burgundy: #1C1C1E;
+      --burgundy-glow: rgba(28, 28, 30, 0.10);
+      --gold: #FFB800;
+      --gold-soft: rgba(255, 184, 0, 0.12);
+      --navy: #1C1C1E;
+      --navy-soft: rgba(28, 28, 30, 0.06);
+      --text: #1C1C1E;
+      --cream: #F5F5F7;
+      --gold-text: #A87000;
+      --card-bg: #FFFFFF;
       --input-bg: #FFFFFF;
-      --input-border: rgba(26, 39, 68, 0.12);
+      --input-border: rgba(28, 28, 30, 0.12);
       --shadow-sm: 0 1px 3px rgba(26, 39, 68, 0.06);
       --shadow-md: 0 4px 12px rgba(26, 39, 68, 0.08);
       --shadow-lg: 0 8px 24px rgba(26, 39, 68, 0.1);
@@ -149,7 +149,7 @@
     .team { text-align: center; flex: 1; position: relative; z-index: 1; }
     .team-label { color: var(--gold); font-size: 15px; font-weight: 700; opacity: 0.8; letter-spacing: 0.5px; }
     .team-score {
-      color: #F5F0E6;
+      color: #F5F5F7;
       font-size: 56px;
       font-weight: 900;
       line-height: 1;
@@ -776,20 +776,20 @@
 
     /* ── Dark Mode ─────────────────────────── */
     [data-theme="dark"] {
-      --bg: #141422;
-      --bg-subtle: #1C1C32;
-      --burgundy: #B84A58;
-      --burgundy-glow: rgba(184, 74, 88, 0.2);
-      --gold: #D4AF37;
-      --gold-soft: rgba(212, 175, 55, 0.1);
-      --gold-text: #D4AF37;
-      --navy: #E8E4DC;
-      --navy-soft: rgba(232, 228, 220, 0.06);
-      --text: #E8E4DC;
-      --cream: #141422;
-      --card-bg: #1E1E36;
-      --input-bg: #252542;
-      --input-border: rgba(232, 228, 220, 0.1);
+      --bg: #000000;
+      --bg-subtle: #1C1C1E;
+      --burgundy: #1C1C1E;
+      --burgundy-glow: rgba(255, 184, 0, 0.15);
+      --gold: #FFB800;
+      --gold-soft: rgba(255, 184, 0, 0.10);
+      --gold-text: #FFB800;
+      --navy: #F5F5F7;
+      --navy-soft: rgba(245, 245, 247, 0.06);
+      --text: #F5F5F7;
+      --cream: #F5F5F7;
+      --card-bg: #1C1C1E;
+      --input-bg: #2C2C2E;
+      --input-border: rgba(245, 245, 247, 0.10);
       --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
       --shadow-md: 0 4px 12px rgba(0,0,0,0.25);
       --shadow-lg: 0 8px 24px rgba(0,0,0,0.3);
@@ -2795,8 +2795,8 @@
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       new QRCode(qrBox, {
         text: joinUrl, width: 160, height: 160,
-        colorDark: isDark ? '#E8E4DC' : '#1A2744',
-        colorLight: isDark ? '#1A1A2E' : '#F5F0E6',
+        colorDark: isDark ? '#F5F5F7' : '#1C1C1E',
+        colorLight: isDark ? '#000000' : '#F5F5F7',
         correctLevel: QRCode.CorrectLevel.M
       });
       document.getElementById('connectedCount').textContent = 'جاري الاتصال...';
@@ -2929,7 +2929,7 @@
       const joinUrl = getJoinUrl();
       const qrBox = document.getElementById('qrBox'); qrBox.innerHTML = '';
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      new QRCode(qrBox, { text: joinUrl, width: 160, height: 160, colorDark: isDark ? '#E8E4DC' : '#1A2744', colorLight: isDark ? '#1A1A2E' : '#F5F0E6', correctLevel: QRCode.CorrectLevel.M });
+      new QRCode(qrBox, { text: joinUrl, width: 160, height: 160, colorDark: isDark ? '#F5F5F7' : '#1C1C1E', colorLight: isDark ? '#000000' : '#F5F5F7', correctLevel: QRCode.CorrectLevel.M });
       pushOverlay('roomModal');
       document.getElementById('roomModal').classList.add('open');
     }
@@ -3217,7 +3217,7 @@
       }
       localStorage.setItem('baloot_theme', pref);
       const meta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-      if (meta) meta.content = resolved === 'dark' ? '#1A1A2E' : '#722F37';
+      if (meta) meta.content = resolved === 'dark' ? '#000000' : '#1C1C1E';
     }
 
     function toggleTheme() {
