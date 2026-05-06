@@ -1,4 +1,4 @@
-const CACHE = 'baloot-v2.8';
+const CACHE = 'baloot-v2.9';
 const ASSETS = [
   './',
   './index.html',
