@@ -3538,6 +3538,34 @@
           Object.values(teamData.lahum.projects).some(n => n > 0);
         const isAdvanced = type !== null || multiplier !== 'normal' || kabout || anyProjects;
 
+        // Fill the missing team's score from Baloot rules where the math forces it.
+        //   stated < base, type known      → complement (base − stated)
+        //   stated == base                 → other side = 0
+        //   stated > base                  → leave null (ambiguous: kabout vs projects)
+        //   kabout                         → loser = 0; winner stays null (computed downstream)
+        //   both stated, sum ≠ base        → soft warning, no mutation
+        const NORM_BASE = { sun: 26, hokm: 16 };
+        const normWarnings = [];
+        const concreteType = (type === 'sun' || type === 'hokm') ? type : null;
+        if (kabout && kaboutWinner) {
+          const loser = kaboutWinner === 'lana' ? 'lahum' : 'lana';
+          if (teamData[loser].score === null) teamData[loser].score = 0;
+        } else if (concreteType) {
+          const base = NORM_BASE[concreteType];
+          const lanaSet  = teamData.lana.score  !== null;
+          const lahumSet = teamData.lahum.score !== null;
+          if (lanaSet && !lahumSet && teamData.lana.score <= base) {
+            teamData.lahum.score = base - teamData.lana.score;
+          } else if (lahumSet && !lanaSet && teamData.lahum.score <= base) {
+            teamData.lana.score = base - teamData.lahum.score;
+          } else if (lanaSet && lahumSet
+                     && teamData.lana.score  <= base
+                     && teamData.lahum.score <= base) {
+            const sum = teamData.lana.score + teamData.lahum.score;
+            if (sum !== base) normWarnings.push(`المجموع ${sum} — متوقع ${base}`);
+          }
+        }
+
         const bunt = {
           lana:  teamData.lana.score  ?? 0,
           lahum: teamData.lahum.score ?? 0,
@@ -3562,6 +3590,8 @@
             projects: { lana: teamData.lana.projects, lahum: teamData.lahum.projects },
           };
         }
+
+        if (normWarnings.length) out.warnings.push(...normWarnings);
 
         if (bunt.lana === 0 && bunt.lahum === 0 && !kabout) {
           out.warnings.push('ما قدرت أفهم النتيجة، حاول مرة ثانية');
@@ -3723,8 +3753,9 @@
 
           modeEl.textContent = parsed.mode === 'advanced' ? 'متقدم' : 'بسيط';
           transcriptEl.textContent = parsed.transcript || '—';
-          lanaEl.textContent = parsed.bunt?.lana ?? 0;
-          lahumEl.textContent = parsed.bunt?.lahum ?? 0;
+          const _kab = parsed.meta?.kabout && parsed.meta?.kaboutWinner;
+          lanaEl.textContent  = (_kab && parsed.meta.kaboutWinner === 'lana')  ? 'كبوت' : (parsed.bunt?.lana  ?? 0);
+          lahumEl.textContent = (_kab && parsed.meta.kaboutWinner === 'lahum') ? 'كبوت' : (parsed.bunt?.lahum ?? 0);
 
           const lowConf = (parsed.confidence ?? 1) < 0.6;
           const warns = [...(parsed.warnings || [])];
